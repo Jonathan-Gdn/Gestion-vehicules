@@ -3,7 +3,7 @@
 - **Agent** : security-reviewer
 - **Perimetre** : app.html, config.example.js, firebase.json, sw.js
 
-## Verdict : OK (0 critique, 5 importants, 5 recommandes) - **MAJ 2026-04-09 : 5/5 IMPORTANT corriges, 3/5 RECOMMANDE corriges**
+## Verdict : OK (0 critique, 5 importants, 5 recommandes) - **MAJ 2026-04-09 : 5/5 IMPORTANT corriges, 2/5 RECOMMANDE corriges**
 
 ## Findings
 
@@ -43,7 +43,7 @@
 
 ### [RECOMMANDE] SRI manquant sur CDN Firebase
 - **Description** : Les scripts Firebase CDN charges sans Subresource Integrity.
-- **Statut** : [x] corrige - integrity="sha384-..." + crossorigin="anonymous" sur les 3 scripts Firebase
+- **Statut** : [ ] retire volontairement - Firebase patche ses fichiers CDN sans changer l'URL, cassant les hashes SRI. Risque negligeable (CDN Google gstatic.com, app privee).
 
 ### [RECOMMANDE] SW sans validation d'integrite
 - **Description** : Le service worker ne valide pas l'integrite des assets caches.

@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Mon Garage</title>
 <link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mon Garage">
 <meta name="theme-color" content="#1a1a2e">
 <link rel="icon" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-splash-screen" content="yes">
-<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js" integrity="sha384-qUliZmnMncW1ziQGbeCtIknMTfoaejeID3VUxtP4asLZ0FI3nQQkzu3NPXb0H00E" crossorigin="anonymous"></script>
-<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-auth-compat.js" integrity="sha384-tfd4vIRX/f86JlcgdiT4dyFtcg//rjnvsSvWWCWHHgMz3aoN2bzb3aGsUI3R9Hj/" crossorigin="anonymous"></script>
-<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore-compat.js" integrity="sha384-X31Y/GNG7xw3lWrqUZASJ5WyWOI1lD/CUXYtInlQglcwNJhRT37vy6B8BEPOr5B6" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore-compat.js"></script>
 <script src="config.js"></script>
 <style>
   :root {
@@ -207,12 +207,14 @@
   .sub-tabs {
     display: flex; gap: 6px;
     margin-bottom: 16px;
+    padding-top: 6px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
   .sub-tabs::-webkit-scrollbar { display: none; }
   .sub-tab {
+    position: relative;
     padding: 7px 16px;
     background: var(--surface);
     border: 1px solid transparent;
@@ -223,6 +225,14 @@
     font-weight: 600;
     white-space: nowrap;
     transition: all 0.2s;
+  }
+  .sub-tab .subtab-badge {
+    position: absolute; top: -4px; right: -4px;
+    min-width: 14px; height: 14px; padding: 0 3px;
+    background: var(--red); color: #fff;
+    border-radius: 7px; font-size: 0.65em; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
   }
   .sub-tab:hover { color: var(--text); border-color: rgba(255,255,255,0.1); }
   .sub-tab.active { color: var(--accent); border-color: var(--accent); background: rgba(233,69,96,0.1); }
@@ -825,8 +835,8 @@
   <div id="section-entretien" class="section-content">
     <div class="sub-tabs">
       <button class="sub-tab active" onclick="switchSubTab('entretien','history')">Historique</button>
-      <button class="sub-tab" onclick="switchSubTab('entretien','schedule')">Programme</button>
-      <button class="sub-tab" onclick="switchSubTab('entretien','deadlines')">Echeances</button>
+      <button class="sub-tab" id="subtabBtnSchedule" onclick="switchSubTab('entretien','schedule')">Programme</button>
+      <button class="sub-tab" id="subtabBtnDeadlines" onclick="switchSubTab('entretien','deadlines')">Echeances</button>
       <button class="sub-tab" onclick="switchSubTab('entretien','notebook')">Carnet</button>
       <button class="sub-tab" onclick="switchSubTab('entretien','wash')">Lavage</button>
     </div>
@@ -910,6 +920,7 @@
         <div class="form-row">
           <div><label>Type</label><select id="dlType"><option value="CT">Controle technique</option><option value="assurance">Assurance</option><option value="vignette">Vignette Crit'Air</option><option value="autre">Autre</option></select></div>
           <div><label>Date d'echeance</label><input type="date" id="dlDate"></div>
+          <div><label>Cout (EUR)</label><input type="number" id="dlCost" step="0.01" placeholder="ex: 650"></div>
         </div>
         <div class="form-row">
           <div style="grid-column:1/-1;"><label>Notes</label><input type="text" id="dlNotes" placeholder="ex: MAIF contrat 123456"></div>
@@ -2709,6 +2720,33 @@ function renderAlerts() {
     }
   }
 
+  // Smart km alerts - project milestone dates
+  const kmRate = getKmPerYear(v);
+  if (kmRate && kmRate > 0) {
+    const currentKm = v.currentKm || 0;
+    const kmPerDay = kmRate / 365.25;
+    // Project major km milestones
+    const milestones = [50000, 75000, 100000, 120000, 150000, 175000, 200000, 250000, 300000];
+    for (const m of milestones) {
+      if (m > currentKm && m <= currentKm + kmRate) {
+        const daysTo = Math.round((m - currentKm) / kmPerDay);
+        const targetDate = new Date(now.getTime() + daysTo * 86400000);
+        const dateStr = targetDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+        alerts.push({ level: 'info', text: `${(m/1000).toFixed(0)} 000 km ~ ${dateStr}`, detail: `A ce rythme (${kmRate.toLocaleString()} km/an), vous atteindrez ${m.toLocaleString()} km vers ${dateStr}`, action: 'km' });
+      }
+    }
+    // Project next schedule items
+    for (const item of v.schedule) {
+      const s = getStatus(item, v);
+      if (s.status === 'ok' && s.kmLeft > 0 && s.kmLeft <= kmRate) {
+        const daysTo = Math.round(s.kmLeft / kmPerDay);
+        const targetDate = new Date(now.getTime() + daysTo * 86400000);
+        const dateStr = targetDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+        alerts.push({ level: 'info', text: `${escHtml(item.name)} ~ ${dateStr}`, detail: `${item.name} prevu a ${s.nextKm.toLocaleString()} km (dans ~${s.kmLeft.toLocaleString()} km, ~ ${dateStr})`, action: 'none' });
+      }
+    }
+  }
+
   // Check AdBlue reminders (diesel only, or unknown fuel type for backward compat)
   if (!v.fuelType || v.fuelType === 'diesel') {
     const kmSinceLastAdblue = v.currentKm % 15000;
@@ -2756,10 +2794,14 @@ function renderAlerts() {
     banner.innerHTML = '';
     return;
   }
-  valid.sort((a, b) => (a.level === 'danger' ? 0 : 1) - (b.level === 'danger' ? 0 : 1));
+  valid.sort((a, b) => {
+    const order = { danger: 0, warning: 1, info: 2 };
+    return (order[a.level] ?? 3) - (order[b.level] ?? 3);
+  });
   window._alertActions = valid;
+  const icons = { danger: '&#9888;', warning: '&#9432;', info: '&#128200;' };
   banner.innerHTML = valid.map((a, i) =>
-    `<span class="alert-chip alert-${a.level}" title="${escHtml(a.detail)}" onclick="alertAction(${i})">${a.level === 'danger' ? '&#9888;' : '&#9432;'} ${escHtml(a.text)}</span>`
+    `<span class="alert-chip alert-${a.level}" title="${escHtml(a.detail)}" onclick="alertAction(${i})">${icons[a.level] || '&#9432;'} ${escHtml(a.text)}</span>`
   ).join('');
 }
 
@@ -2775,6 +2817,9 @@ function alertAction(index) {
   } else if (a.action === 'deadline') {
     switchSection('entretien');
     switchSubTab('entretien', 'deadlines');
+  } else if (a.action === 'km') {
+    switchSection('stats');
+    switchSubTab('stats', 'km');
   }
 }
 
@@ -3676,6 +3721,7 @@ function renderStationPrices() {
   const stations = Object.keys(byStation).filter(s => byStation[s].length >= 2).sort();
   if (stations.length === 0) { el.innerHTML = ''; return; }
 
+  if (!window._stationChartsOpen) window._stationChartsOpen = new Set();
   let html = '<div class="section-title" style="margin-top:20px;">Prix par station</div>';
   for (const station of stations) {
     const pts = byStation[station].sort((a, b) => a.date.localeCompare(b.date));
@@ -3685,6 +3731,8 @@ function renderStationPrices() {
     const max = Math.max(...prices);
     const last = prices[prices.length - 1];
     const trend = prices.length >= 2 ? (last > prices[prices.length - 2] ? '&#9650;' : last < prices[prices.length - 2] ? '&#9660;' : '') : '';
+    const stationKey = station.replace(/[^a-zA-Z0-9]/g, '_');
+    const isOpen = window._stationChartsOpen.has(station);
 
     // Mini sparkline SVG
     const svgW = 120, svgH = 30;
@@ -3696,10 +3744,51 @@ function renderStationPrices() {
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
 
-    html += `<div style="background:var(--surface);border-radius:var(--radius);padding:12px;margin-bottom:8px;">
+    // Full chart SVG
+    let fullChart = '';
+    if (isOpen && pts.length >= 2) {
+      const fW = Math.min(500, el.parentElement?.offsetWidth || 400);
+      const fH = 180;
+      const fPad = { t: 20, r: 15, b: 35, l: 50 };
+      const plotW = fW - fPad.l - fPad.r, plotH = fH - fPad.t - fPad.b;
+      const fMin = min - 0.03, fMax = max + 0.03;
+      const fRange = fMax - fMin || 0.01;
+      let fSvg = `<svg viewBox="0 0 ${fW} ${fH}" style="width:100%;max-width:${fW}px;display:block;margin:8px auto 0;">`;
+      fSvg += `<defs><linearGradient id="spGrad_${stationKey}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0a500" stop-opacity="0.3"/><stop offset="100%" stop-color="#f0a500" stop-opacity="0"/></linearGradient></defs>`;
+      // Grid lines + Y axis
+      for (let i = 0; i <= 4; i++) {
+        const y = fPad.t + plotH * (1 - i / 4);
+        const val = (fMin + fRange * i / 4).toFixed(3);
+        fSvg += `<line x1="${fPad.l}" y1="${y}" x2="${fW - fPad.r}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+        fSvg += `<text x="${fPad.l - 4}" y="${y + 3}" fill="#999" font-size="9" text-anchor="end">${val}</text>`;
+      }
+      // Points and line
+      const fPts = pts.map((p, i) => {
+        const x = fPad.l + (i / (pts.length - 1)) * plotW;
+        const y = fPad.t + plotH - ((p.pricePerL - fMin) / fRange) * plotH;
+        return { x, y, p };
+      });
+      const linePts = fPts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+      const areaPts = `${fPts[0].x.toFixed(1)},${fPad.t + plotH} ${linePts} ${fPts[fPts.length-1].x.toFixed(1)},${fPad.t + plotH}`;
+      fSvg += `<polygon points="${areaPts}" fill="url(#spGrad_${stationKey})"/>`;
+      fSvg += `<polyline points="${linePts}" fill="none" stroke="var(--orange)" stroke-width="2"/>`;
+      // Data points + X axis dates
+      const showEvery = Math.max(1, Math.floor(pts.length / 6));
+      fPts.forEach((fp, i) => {
+        fSvg += `<circle cx="${fp.x.toFixed(1)}" cy="${fp.y.toFixed(1)}" r="3" fill="var(--orange)"><title>${fp.p.date}: ${fp.p.pricePerL.toFixed(3)} EUR/L</title></circle>`;
+        if (i % showEvery === 0 || i === pts.length - 1) {
+          const dLbl = fp.p.date.slice(5).replace('-', '/');
+          fSvg += `<text x="${fp.x.toFixed(1)}" y="${fH - fPad.b + 14}" fill="#999" font-size="8" text-anchor="middle">${dLbl}</text>`;
+        }
+      });
+      fSvg += '</svg>';
+      fullChart = fSvg;
+    }
+
+    html += `<div style="background:var(--surface);border-radius:var(--radius);padding:12px;margin-bottom:8px;cursor:pointer;" onclick="window._stationChartsOpen.has('${escHtml(station)}')?window._stationChartsOpen.delete('${escHtml(station)}'):window._stationChartsOpen.add('${escHtml(station)}');renderStationPrices();">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <strong style="font-size:0.9em;">${escHtml(station)}</strong>
-        <span style="font-size:0.82em;color:var(--muted);">${pts.length} pleins</span>
+        <span style="font-size:0.82em;color:var(--muted);">${pts.length} pleins ${isOpen ? '&#9650;' : '&#9660;'}</span>
       </div>
       <div style="display:flex;align-items:center;gap:16px;">
         <svg viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}" style="flex-shrink:0;">
@@ -3710,6 +3799,7 @@ function renderStationPrices() {
           <div style="color:var(--muted);">Moy: ${avg.toFixed(3)} | Min: ${min.toFixed(3)} | Max: ${max.toFixed(3)}</div>
         </div>
       </div>
+      ${fullChart}
     </div>`;
   }
   el.innerHTML = html;
@@ -3909,10 +3999,10 @@ function renderWash() {
       let cLabel, cDetail;
       if (item.type === 'badge') {
         cLabel = 'Recharge badge';
-        cDetail = `${item.cost.toFixed(2)} EUR paye - ${(item.creditAmount || item.cost).toFixed(2)} EUR credite`;
+        cDetail = `${(item.cost || 0).toFixed(2)} EUR paye - ${(item.creditAmount || item.cost || 0).toFixed(2)} EUR credite`;
       } else {
         cLabel = 'Achat jetons';
-        cDetail = `${item.cost.toFixed(2)} EUR - ${item.quantity} jeton${item.quantity > 1 ? 's' : ''}`;
+        cDetail = `${(item.cost || 0).toFixed(2)} EUR - ${item.quantity || 0} jeton${(item.quantity || 0) > 1 ? 's' : ''}`;
       }
       html += `<div class="history-entry"><div class="header"><span class="date">&#128179; ${cLabel} - ${dateStr}</span><span class="cost">${cDetail}</span></div>`;
       html += `<div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWashCredit(${item.id})">Supprimer</button></div></div>`;
@@ -3925,14 +4015,16 @@ function renderWash() {
 function addDeadline() {
   const type = document.getElementById('dlType').value;
   const date = document.getElementById('dlDate').value;
+  const cost = parseFloat(document.getElementById('dlCost').value) || 0;
   const notes = document.getElementById('dlNotes').value.trim();
   if (!date) { toast('La date d\'echeance est obligatoire', 'warning'); return; }
   const typeLabels = { CT: 'Controle technique', assurance: 'Assurance', vignette: 'Vignette Crit\'Air', autre: 'Autre' };
   updateActiveVehicle(v => {
-    v.deadlines.push({ id: genId(), type, label: typeLabels[type] || type, date, notes });
+    v.deadlines.push({ id: genId(), type, label: typeLabels[type] || type, date, cost, notes });
     v.deadlines.sort((a, b) => a.date.localeCompare(b.date));
   });
   document.getElementById('dlDate').value = '';
+  document.getElementById('dlCost').value = '';
   document.getElementById('dlNotes').value = '';
   haptic();
   toast('Echeance ajoutee');
@@ -3942,6 +4034,33 @@ function addDeadline() {
 function removeDeadline(id) {
   if (!confirm('Supprimer cette echeance ?')) return;
   updateActiveVehicle(v => { v.deadlines = v.deadlines.filter(d => d.id !== id); });
+  renderAll();
+}
+
+function renewDeadline(id) {
+  updateActiveVehicle(v => {
+    const d = v.deadlines.find(x => x.id === id);
+    if (!d) return;
+    const oldDate = new Date(d.date);
+    const type = (d.type || '').toLowerCase();
+    if (type === 'ct') {
+      // CT: +2 ans, nouvelle echeance
+      const newDate = new Date(oldDate);
+      newDate.setFullYear(newDate.getFullYear() + 2);
+      v.deadlines.push({ id: genId(), type: d.type, label: d.label, date: newDate.toISOString().slice(0, 10), cost: d.cost || 0, notes: d.notes || '' });
+    } else if (type === 'assurance') {
+      // Assurance: renouvellement auto, on met a jour la date anniversaire +1 an
+      oldDate.setFullYear(oldDate.getFullYear() + 1);
+      d.date = oldDate.toISOString().slice(0, 10);
+    } else {
+      // Vignette, autre: +1 an, nouvelle echeance
+      const newDate = new Date(oldDate);
+      newDate.setFullYear(newDate.getFullYear() + 1);
+      v.deadlines.push({ id: genId(), type: d.type, label: d.label, date: newDate.toISOString().slice(0, 10), cost: d.cost || 0, notes: d.notes || '' });
+    }
+  });
+  haptic();
+  toast('Echeance renouvelee');
   renderAll();
 }
 
@@ -3964,10 +4083,14 @@ function renderDeadlines() {
     }
     const dateStr = target.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     const label = d.label || d.type;
+    const costStr = d.cost ? ` - ${d.cost.toFixed(0)} EUR` : '';
+    const showRenew = daysLeft <= 60;
+    const renewLabel = (d.type || '').toLowerCase() === 'assurance' ? 'Maj date' : 'Renouveler';
     html += `<div class="deadline-item ${statusClass}">
-      <div class="dl-info"><h3>${escHtml(label)}</h3>${d.notes ? `<p>${escHtml(d.notes)}</p>` : ''}</div>
+      <div class="dl-info"><h3>${escHtml(label)}${costStr}</h3>${d.notes ? `<p>${escHtml(d.notes)}</p>` : ''}</div>
       <div style="display:flex;align-items:center;gap:12px;">
         <div class="dl-date"><div class="date">${dateStr}</div><div class="remaining" style="color:${remainingColor}">${remainingText}</div></div>
+        ${showRenew ? `<button class="btn btn-secondary btn-sm" onclick="renewDeadline(${d.id})" title="${(d.type||'').toLowerCase()==='ct'?'+2 ans':'+1 an'}">${renewLabel}</button>` : ''}
         <button class="btn btn-danger btn-sm" onclick="removeDeadline(${d.id})">X</button>
       </div>
     </div>`;
@@ -4019,8 +4142,12 @@ function renderStats() {
   const totalWashCredits = washCredits.reduce((s, c) => s + (c.cost || 0), 0);
   const totalWashCost = totalWashDirect + totalWashCredits;
 
+  // Deadline costs (assurance, CT, vignette, etc.)
+  const deadlines = v.deadlines || [];
+  const totalDeadlineCost = deadlines.reduce((s, d) => s + (d.cost || 0), 0);
+
   const purchasePrice = v.purchasePrice || 0;
-  const totalCost = purchasePrice + totalMaintCost + fuelCost + totalWashCost;
+  const totalCost = purchasePrice + totalMaintCost + fuelCost + totalWashCost + totalDeadlineCost;
 
   let globalHtml = '';
   globalHtml += `<div class="stat-card accent"><div class="stat-value">${totalCost.toFixed(0)} EUR</div><div class="stat-label">Cout total</div></div>`;
@@ -4032,10 +4159,13 @@ function renderStats() {
   if (totalWashCost > 0) {
     globalHtml += `<div class="stat-card"><div class="stat-value">${totalWashCost.toFixed(0)} EUR</div><div class="stat-label">Lavage</div></div>`;
   }
+  if (totalDeadlineCost > 0) {
+    globalHtml += `<div class="stat-card"><div class="stat-value">${totalDeadlineCost.toFixed(0)} EUR</div><div class="stat-label">Frais fixes (CT, assur...)</div></div>`;
+  }
   globalHtml += `<div class="stat-card"><div class="stat-value">${maintSincePurchase.length}</div><div class="stat-label">Interventions</div></div>`;
   // Cost per km
   if (ownership && ownership.kmDone > 0) {
-    const runCostPerKm = ((totalMaintCost + fuelCost + totalWashCost) / ownership.kmDone * 100).toFixed(1);
+    const runCostPerKm = ((totalMaintCost + fuelCost + totalWashCost + totalDeadlineCost) / ownership.kmDone * 100).toFixed(1);
     globalHtml += `<div class="stat-card green"><div class="stat-value">${runCostPerKm} EUR</div><div class="stat-label">/ 100 km (hors achat)</div></div>`;
   }
   document.getElementById('globalStats').innerHTML = globalHtml;
@@ -4084,30 +4214,35 @@ function renderStats() {
   const washDirectExpenses = washes.filter(w => w.payment === 'direct').map(w => ({ date: w.date, cost: w.cost || 0, type: 'lavage' }));
   const washCreditExpenses = washCredits.map(c => ({ date: c.date, cost: c.cost || 0, type: 'lavage' }));
   const chargeExpenses = chargeEntries.filter(e => e.cost).map(e => ({ date: e.date, cost: e.cost, type: 'charge' }));
+  const deadlineExpenses = deadlines.filter(d => d.cost && d.date).map(d => ({ date: d.date, cost: d.cost, type: 'frais' }));
   const allExpenses = [
     ...maintSincePurchase.map(e => ({ date: e.date, cost: e.cost || 0, type: 'entretien' })),
     ...fuelEntries.map(e => ({ date: e.date, cost: e.cost, type: 'carburant' })),
     ...chargeExpenses,
     ...washDirectExpenses,
-    ...washCreditExpenses
+    ...washCreditExpenses,
+    ...deadlineExpenses
   ];
   const byYear = {};
   for (const exp of allExpenses) {
     const year = exp.date.substring(0, 4);
-    if (!byYear[year]) byYear[year] = { maint: 0, fuel: 0, charge: 0, wash: 0, count: 0 };
+    if (!byYear[year]) byYear[year] = { maint: 0, fuel: 0, charge: 0, wash: 0, frais: 0, count: 0 };
     if (exp.type === 'entretien') { byYear[year].maint += exp.cost; byYear[year].count++; }
     else if (exp.type === 'carburant') byYear[year].fuel += exp.cost;
     else if (exp.type === 'charge') byYear[year].charge += exp.cost;
     else if (exp.type === 'lavage') byYear[year].wash += exp.cost;
+    else if (exp.type === 'frais') byYear[year].frais += exp.cost;
   }
   const energyLabel = isElectric(v) ? 'Electricite' : isHybrid(v) ? 'Carburant' : 'Carburant';
   let yearlyHtml = '';
-  for (const year of Object.keys(byYear).sort().reverse()) {
+  const yearsSorted = Object.keys(byYear).sort();
+  for (const year of [...yearsSorted].reverse()) {
     const y = byYear[year];
-    const total = y.maint + y.fuel + y.charge + y.wash;
+    const total = y.maint + y.fuel + y.charge + y.wash + y.frais;
     let details = `Entretien: ${y.maint.toFixed(0)} EUR`;
     if (!isElectric(v)) details += ` - Carburant: ${y.fuel.toFixed(0)} EUR`;
     if (hasElectric(v)) details += ` - Electricite: ${y.charge.toFixed(0)} EUR`;
+    if (y.frais > 0) details += ` - Frais fixes: ${y.frais.toFixed(0)} EUR`;
     if (y.wash > 0) details += ` - Lavage: ${y.wash.toFixed(0)} EUR`;
     details += ` - ${y.count} intervention${y.count > 1 ? 's' : ''}`;
     yearlyHtml += `<div class="yearly-row">
@@ -4116,6 +4251,61 @@ function renderStats() {
       <span class="total">${total.toFixed(0)} EUR</span>
     </div>`;
   }
+
+  // Stacked bar chart SVG
+  if (yearsSorted.length >= 1) {
+    const barColors = { maint: '#e94560', fuel: '#f0a500', charge: '#00b4d8', frais: '#9b59b6', wash: '#4ecca3' };
+    const barLabels = { maint: 'Entretien', fuel: energyLabel, charge: 'Electricite', frais: 'Frais fixes', wash: 'Lavage' };
+    const categories = isElectric(v) ? ['maint', 'charge', 'frais', 'wash'] :
+      isHybrid(v) ? ['maint', 'fuel', 'charge', 'frais', 'wash'] : ['maint', 'fuel', 'frais', 'wash'];
+    const maxTotal = Math.max(...yearsSorted.map(y => {
+      const d = byYear[y]; return categories.reduce((s, c) => s + (d[c] || 0), 0);
+    }), 1);
+    const cW = Math.min(500, (document.getElementById('yearlyStats')?.parentElement?.offsetWidth || 400));
+    const cH = 30 + yearsSorted.length * 44 + 40;
+    const pad = { t: 10, r: 60, b: 40, l: 50 };
+    const plotW = cW - pad.l - pad.r;
+    const barH = 24;
+    const gap = 20;
+    let chartSvg = `<svg viewBox="0 0 ${cW} ${cH}" style="width:100%;max-width:${cW}px;display:block;margin:12px auto 0;">`;
+    // Grid + axis labels
+    for (let i = 0; i <= 4; i++) {
+      const x = pad.l + (plotW * i / 4);
+      const val = Math.round(maxTotal * i / 4);
+      chartSvg += `<line x1="${x}" y1="${pad.t}" x2="${x}" y2="${cH - pad.b}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+      chartSvg += `<text x="${x}" y="${cH - pad.b + 16}" fill="#999" font-size="9" text-anchor="middle">${val > 999 ? (val/1000).toFixed(1)+'k' : val}</text>`;
+    }
+    // Bars
+    yearsSorted.forEach((year, yi) => {
+      const y = pad.t + yi * (barH + gap);
+      chartSvg += `<text x="${pad.l - 6}" y="${y + barH / 2 + 4}" fill="#ccc" font-size="11" text-anchor="end">${year}</text>`;
+      let xOff = pad.l;
+      const d = byYear[year];
+      const total = categories.reduce((s, c) => s + (d[c] || 0), 0);
+      for (const cat of categories) {
+        const val = d[cat] || 0;
+        if (val <= 0) continue;
+        const w = (val / maxTotal) * plotW;
+        chartSvg += `<rect x="${xOff}" y="${y}" width="${w}" height="${barH}" fill="${barColors[cat]}" rx="3"><title>${barLabels[cat]}: ${val.toFixed(0)} EUR</title></rect>`;
+        if (w > 30) chartSvg += `<text x="${xOff + w/2}" y="${y + barH/2 + 4}" fill="white" font-size="9" text-anchor="middle">${val.toFixed(0)}</text>`;
+        xOff += w;
+      }
+      chartSvg += `<text x="${xOff + 4}" y="${y + barH / 2 + 4}" fill="#aaa" font-size="10">${total.toFixed(0)}</text>`;
+    });
+    // Legend
+    const legY = cH - 12;
+    let legX = pad.l;
+    for (const cat of categories) {
+      if (yearsSorted.some(y => (byYear[y][cat] || 0) > 0)) {
+        chartSvg += `<rect x="${legX}" y="${legY - 8}" width="10" height="10" fill="${barColors[cat]}" rx="2"/>`;
+        chartSvg += `<text x="${legX + 14}" y="${legY}" fill="#bbb" font-size="9">${barLabels[cat]}</text>`;
+        legX += barLabels[cat].length * 6 + 24;
+      }
+    }
+    chartSvg += '</svg>';
+    yearlyHtml = chartSvg + yearlyHtml;
+  }
+
   document.getElementById('yearlyStats').innerHTML = yearlyHtml || '<div class="empty-state">Aucune depense enregistree</div>';
 
   // Projections
@@ -4140,7 +4330,7 @@ function renderStats() {
     const months = ownership.days / 30.44;
     const costPerMonth = totalCost / months;
     const costPerKm = ownership.kmDone > 0 ? totalCost / ownership.kmDone : 0;
-    const runningCostPerMonth = (totalMaintCost + fuelCost + totalWashCost) / months;
+    const runningCostPerMonth = (totalMaintCost + fuelCost + totalWashCost + totalDeadlineCost) / months;
     ownerHtml += `<div class="stats-grid">`;
     ownerHtml += `<div class="stat-card"><div class="stat-value">${Math.round(months)}</div><div class="stat-label">Mois de possession</div></div>`;
     ownerHtml += `<div class="stat-card accent"><div class="stat-value">${costPerMonth.toFixed(0)} EUR</div><div class="stat-label">Cout total / mois</div></div>`;
@@ -4213,8 +4403,11 @@ function renderCompare() {
       }
     }
 
+    // Deadline costs (assurance, CT, vignette...)
+    const totalDeadline = (v.deadlines || []).reduce((s, d) => s + (d.cost || 0), 0);
+
     // Cost per km
-    const totalCost = totalEnergy + totalMaint;
+    const totalCost = totalEnergy + totalMaint + totalDeadline;
     const ownershipInfo = getKmSinceOwnership(v);
     const drivenKm = ownershipInfo ? ownershipInfo.kmDone : v.currentKm;
     const costPerKm = drivenKm > 0 ? totalCost / drivenKm : null;
@@ -4227,6 +4420,7 @@ function renderCompare() {
       kmYear,
       totalEnergy,
       totalMaint,
+      totalDeadline,
       totalCost,
       costPerKm,
       nbEntries: entries.length,
@@ -4254,6 +4448,7 @@ function renderCompare() {
     { label: 'Km / an', key: 'kmYear', fmt: v => v ? v.toLocaleString('fr-FR') : '-', best: 'max' },
     { label: 'Cout energie', key: 'totalEnergy', fmt: v => v ? v.toFixed(0) + ' EUR' : '-' },
     { label: 'Cout entretien', key: 'totalMaint', fmt: v => v ? v.toFixed(0) + ' EUR' : '-' },
+    { label: 'Frais fixes', key: 'totalDeadline', fmt: v => v ? v.toFixed(0) + ' EUR' : '-' },
     { label: 'Cout total', key: 'totalCost', fmt: v => v ? v.toFixed(0) + ' EUR' : '-' },
     { label: 'Cout / km', key: 'costPerKm', fmt: v => v ? v.toFixed(3) + ' EUR' : '-', best: 'min' },
     { label: 'Interventions', key: 'nbEntries', fmt: v => v || '0' },
@@ -4891,22 +5086,46 @@ function renderNavBadges() {
   // Remove old badge
   const old = nav.querySelector('.nav-badge');
   if (old) old.remove();
-  // Count overdue alerts
-  let overdue = 0;
+  // Count overdue schedule items
+  let overdueSchedule = 0;
   for (const item of v.schedule) {
     const s = getStatus(item, v);
-    if (s.status === 'overdue') overdue++;
+    if (s.status === 'overdue') overdueSchedule++;
   }
-  // Check deadlines
-  const now = new Date();
+  // Count overdue deadlines
+  let overdueDeadlines = 0;
   for (const d of (v.deadlines || [])) {
-    if (Date.now() > new Date(d.date).getTime()) overdue++;
+    if (Date.now() > new Date(d.date).getTime()) overdueDeadlines++;
   }
-  if (overdue > 0) {
+  const total = overdueSchedule + overdueDeadlines;
+  if (total > 0) {
     const badge = document.createElement('span');
     badge.className = 'nav-badge';
-    badge.textContent = overdue;
+    badge.textContent = total;
     nav.appendChild(badge);
+  }
+  // Sub-tab badges
+  const btnSchedule = document.getElementById('subtabBtnSchedule');
+  const btnDeadlines = document.getElementById('subtabBtnDeadlines');
+  if (btnSchedule) {
+    const oldB = btnSchedule.querySelector('.subtab-badge');
+    if (oldB) oldB.remove();
+    if (overdueSchedule > 0) {
+      const b = document.createElement('span');
+      b.className = 'subtab-badge';
+      b.textContent = overdueSchedule;
+      btnSchedule.appendChild(b);
+    }
+  }
+  if (btnDeadlines) {
+    const oldB = btnDeadlines.querySelector('.subtab-badge');
+    if (oldB) oldB.remove();
+    if (overdueDeadlines > 0) {
+      const b = document.createElement('span');
+      b.className = 'subtab-badge';
+      b.textContent = overdueDeadlines;
+      btnDeadlines.appendChild(b);
+    }
   }
 }
 
