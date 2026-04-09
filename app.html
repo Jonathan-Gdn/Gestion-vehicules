@@ -2587,7 +2587,7 @@ function renderKmTab() {
       }
       const nextKm = lastKm + s.kmInterval;
       if (nextKm > v.currentKm) {
-        milestones.push({ label: `${nextKm.toLocaleString()} km - ${s.name}`, km: nextKm });
+        milestones.push({ label: `${nextKm.toLocaleString()} km - ${escHtml(s.name)}`, km: nextKm });
       }
     }
     // Add round km milestones
@@ -2860,7 +2860,7 @@ function renderAlerts() {
         const daysTo = Math.round(s.kmLeft / kmPerDay);
         const targetDate = new Date(now.getTime() + daysTo * 86400000);
         const dateStr = targetDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-        alerts.push({ level: 'info', text: `${escHtml(item.name)} ~ ${dateStr}`, detail: `${item.name} prevu a ${s.nextKm.toLocaleString()} km (dans ~${s.kmLeft.toLocaleString()} km, ~ ${dateStr})`, action: 'none' });
+        alerts.push({ level: 'info', text: `${escHtml(item.name)} ~ ${dateStr}`, detail: `${escAttr(item.name)} prevu a ${s.nextKm.toLocaleString()} km (dans ~${s.kmLeft.toLocaleString()} km, ~ ${dateStr})`, action: 'none' });
       }
     }
   }
@@ -2919,7 +2919,7 @@ function renderAlerts() {
   window._alertActions = valid;
   const icons = { danger: '&#9888;', warning: '&#9432;', info: '&#128200;' };
   banner.innerHTML = valid.map((a, i) =>
-    `<span class="alert-chip alert-${a.level}" title="${escHtml(a.detail)}" onclick="alertAction(${i})">${icons[a.level] || '&#9432;'} ${escHtml(a.text)}</span>`
+    `<span class="alert-chip alert-${a.level}" title="${escAttr(a.detail)}" onclick="alertAction(${i})">${icons[a.level] || '&#9432;'} ${escHtml(a.text)}</span>`
   ).join('');
 }
 
@@ -3011,7 +3011,7 @@ function renderDashboard() {
   for (const item of items) {
     const badgeClass = item.status === 'overdue' ? 'badge-overdue' : item.status === 'warning' ? 'badge-warning' : 'badge-ok';
     const badgeText = item.status === 'overdue' ? 'En retard' : item.status === 'warning' ? 'Bientot' : 'OK';
-    html += `<div class="maint-card ${item.status}" onclick="dashboardCardClick('${escHtml(item.name)}')"><div class="info"><h3>${escHtml(item.name)}</h3><p>${escHtml(item.statusText)}</p></div><span class="badge ${badgeClass}">${badgeText}</span></div>`;
+    html += `<div class="maint-card ${item.status}" onclick="dashboardCardClick('${escAttr(item.name)}')"><div class="info"><h3>${escHtml(item.name)}</h3><p>${escHtml(item.statusText)}</p></div><span class="badge ${badgeClass}">${badgeText}</span></div>`;
   }
   list.innerHTML = html || '<div class="empty-state">Aucune operation dans le programme</div>';
 }
@@ -3903,7 +3903,7 @@ function renderStationPrices() {
       fullChart = fSvg;
     }
 
-    html += `<div style="background:var(--surface);border-radius:var(--radius);padding:12px;margin-bottom:8px;cursor:pointer;" onclick="window._stationChartsOpen.has('${escHtml(station)}')?window._stationChartsOpen.delete('${escHtml(station)}'):window._stationChartsOpen.add('${escHtml(station)}');renderStationPrices();">
+    html += `<div style="background:var(--surface);border-radius:var(--radius);padding:12px;margin-bottom:8px;cursor:pointer;" onclick="window._stationChartsOpen.has('${escAttr(station)}')?window._stationChartsOpen.delete('${escAttr(station)}'):window._stationChartsOpen.add('${escAttr(station)}');renderStationPrices();">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <strong style="font-size:0.9em;">${escHtml(station)}</strong>
         <span style="font-size:0.82em;color:var(--muted);">${pts.length} pleins ${isOpen ? '&#9650;' : '&#9660;'}</span>
@@ -4752,7 +4752,7 @@ function exportCarnet() {
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Mon Garage - ${v.name}</title>
+<title>Mon Garage - ${escHtml(v.name)}</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #222; font-size: 14px; }
   h1 { font-size: 1.5em; border-bottom: 2px solid #333; padding-bottom: 8px; }
@@ -5080,6 +5080,7 @@ function handleImport(event) {
 
 // ── Utils ──
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function escAttr(s) { return escHtml(s).replace(/'/g, '&#39;').replace(/"/g, '&quot;'); }
 function sanitizeCsvCell(val) { const s = String(val); return /^[=+\-@\t\r]/.test(s) ? "'" + s : s; }
 let _idCounter = 0;
 function genId() { return Date.now() * 1000 + (++_idCounter % 1000); }
@@ -5117,6 +5118,15 @@ function getActiveSection() {
   return el ? el.id.replace('section-', '') : 'dashboard';
 }
 
+function updateSearchBars(v) {
+  const histBar = document.getElementById('historySearchBar');
+  if (histBar) histBar.style.display = (v.entries || []).length > 3 ? 'flex' : 'none';
+  const fuelBar = document.getElementById('fuelSearchBar');
+  if (fuelBar) fuelBar.style.display = (v.fuelEntries || []).length > 3 ? 'flex' : 'none';
+  const chargeBar = document.getElementById('chargeSearchBar');
+  if (chargeBar) chargeBar.style.display = (v.chargeEntries || []).length > 3 ? 'flex' : 'none';
+}
+
 function renderAll(section) {
   const v = getActiveVehicle();
   renderVehicleSelector();
@@ -5126,13 +5136,7 @@ function renderAll(section) {
   for (const fn of fns) {
     try { fn(); } catch (e) { console.error('renderAll error in ' + fn.name + ':', e); }
   }
-  // Show search bars when there's enough data
-  const histBar = document.getElementById('historySearchBar');
-  if (histBar) histBar.style.display = (v.entries || []).length > 3 ? 'flex' : 'none';
-  const fuelBar = document.getElementById('fuelSearchBar');
-  if (fuelBar) fuelBar.style.display = (v.fuelEntries || []).length > 3 ? 'flex' : 'none';
-  const chargeBar = document.getElementById('chargeSearchBar');
-  if (chargeBar) chargeBar.style.display = (v.chargeEntries || []).length > 3 ? 'flex' : 'none';
+  updateSearchBars(v);
 }
 
 function renderAllSections() {
@@ -5144,13 +5148,7 @@ function renderAllSections() {
   for (const fn of fns) {
     try { fn(); } catch (e) { console.error('renderAll error in ' + fn.name + ':', e); }
   }
-  const histBar = document.getElementById('historySearchBar');
-  if (histBar) histBar.style.display = (v.entries || []).length > 3 ? 'flex' : 'none';
-  const fuelBar = document.getElementById('fuelSearchBar');
-  if (fuelBar) fuelBar.style.display = (v.fuelEntries || []).length > 3 ? 'flex' : 'none';
-  const chargeBar = document.getElementById('chargeSearchBar');
-  if (chargeBar) chargeBar.style.display = (v.chargeEntries || []).length > 3 ? 'flex' : 'none';
-  updateNavForVehicleType();
+  updateSearchBars(v);
 }
 
 // ── Profile menu ──
