@@ -282,6 +282,24 @@ async function clearFirebaseConfig() {
   .subtab-content { display: none; }
   .subtab-content.active { display: block; }
 
+  /* Calendar */
+  .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .cal-nav button { background: var(--surface); border: 1px solid rgba(255,255,255,0.1); color: var(--text); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 1em; }
+  .cal-nav .cal-title { font-weight: 600; font-size: 1.05em; text-transform: capitalize; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-header { text-align: center; font-size: 0.7em; color: var(--muted); padding: 4px 0; font-weight: 600; text-transform: uppercase; }
+  .cal-day { background: var(--surface); border-radius: 6px; min-height: 44px; padding: 4px; cursor: pointer; position: relative; text-align: center; font-size: 0.85em; transition: background 0.15s; }
+  .cal-day:hover { background: var(--card); }
+  .cal-day.today { outline: 2px solid var(--accent); }
+  .cal-day.other-month { opacity: 0.3; }
+  .cal-day.selected { background: var(--card); }
+  .cal-day .day-num { font-weight: 600; }
+  .cal-dots { display: flex; gap: 2px; justify-content: center; margin-top: 2px; flex-wrap: wrap; }
+  .cal-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .cal-detail { margin-top: 12px; }
+  .cal-detail-item { background: var(--surface); border-radius: 8px; padding: 10px 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+  .cal-detail-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
   /* Action bar */
   .action-bar {
     display: flex; gap: 6px; margin-bottom: 12px;
@@ -867,6 +885,7 @@ async function clearFirebaseConfig() {
     </button>
     <div class="profile-menu" id="profileMenu">
       <div class="profile-menu-email" id="userEmail"></div>
+      <div id="garageSwitcher" style="display:none;"></div>
       <button class="profile-menu-item" onclick="openSharePanel(); toggleProfileMenu();">Partager</button>
       <button class="profile-menu-item" id="notifToggleBtn" onclick="toggleNotifications(); toggleProfileMenu();">Activer notifications</button>
       <button class="profile-menu-item" onclick="resetFirebaseConfig()">Reinitialiser config</button>
@@ -890,8 +909,12 @@ async function clearFirebaseConfig() {
   <div id="section-dashboard" class="section-content active">
     <div id="onboardingBanner"></div>
 
+    <!-- Pending entries banner -->
+    <div id="pendingEntriesBanner"></div>
+
     <!-- Quick actions -->
     <div class="quick-actions" id="quickActions"></div>
+    <input type="file" id="quickCaptureInput" accept="image/*" capture="environment" style="display:none" onchange="processQuickCapture(this)">
 
     <!-- Vehicle info panel -->
     <div class="vehicle-info-panel" id="vehicleInfoPanel"></div>
@@ -903,6 +926,12 @@ async function clearFirebaseConfig() {
     <div id="nextFillEstimate"></div>
 
     <div id="dashboardList"></div>
+
+    <!-- Consumption trend chart -->
+    <div id="dashConsoTrend"></div>
+
+    <!-- Cost breakdown donut -->
+    <div id="dashCostDonut"></div>
   </div>
 
   <!-- === Section: Entretien (Historique + Programme + Echeances) === -->
@@ -913,6 +942,7 @@ async function clearFirebaseConfig() {
       <button class="sub-tab" id="subtabBtnDeadlines" onclick="switchSubTab('entretien','deadlines')">Echeances</button>
       <button class="sub-tab" onclick="switchSubTab('entretien','notebook')">Carnet</button>
       <button class="sub-tab" onclick="switchSubTab('entretien','wash')">Lavage</button>
+      <button class="sub-tab" onclick="switchSubTab('entretien','tires')">Pneus</button>
     </div>
 
     <!-- Sub: Historique -->
@@ -973,8 +1003,24 @@ async function clearFirebaseConfig() {
         </div>
       </div>
       <div class="search-bar" id="historySearchBar" style="display:none">
-        <input type="text" id="historySearch" placeholder="Rechercher dans l'historique..." oninput="filterHistory()">
+        <input type="text" id="historySearch" placeholder="Rechercher..." oninput="clearTimeout(this._dbt); this._dbt=setTimeout(applyHistoryFilters,250)">
         <button class="search-clear" id="historySearchClear" onclick="clearHistorySearch()">&times;</button>
+        <button class="btn btn-secondary btn-sm" onclick="toggleHistoryFilters()" style="margin-left:6px;white-space:nowrap;font-size:0.78em;">Filtres</button>
+      </div>
+      <div id="historyFilterPanel" class="form-collapse" style="display:none;">
+        <div style="background:var(--surface);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;">
+          <div class="form-row" style="gap:8px;">
+            <div><label for="histSortBy" style="font-size:0.78em;">Tri</label><select id="histSortBy" onchange="applyHistoryFilters()" style="font-size:0.85em;"><option value="date-desc">Date (recent)</option><option value="date-asc">Date (ancien)</option><option value="cost-desc">Cout (eleve)</option><option value="cost-asc">Cout (faible)</option><option value="km-desc">Km (eleve)</option><option value="km-asc">Km (faible)</option></select></div>
+            <div><label for="histDateFrom" style="font-size:0.78em;">De</label><input type="month" id="histDateFrom" onchange="applyHistoryFilters()" style="font-size:0.85em;"></div>
+            <div><label for="histDateTo" style="font-size:0.78em;">A</label><input type="month" id="histDateTo" onchange="applyHistoryFilters()" style="font-size:0.85em;"></div>
+          </div>
+          <div class="form-row" style="gap:8px;margin-top:6px;">
+            <div><label for="histCostMin" style="font-size:0.78em;">Cout min</label><input type="number" id="histCostMin" placeholder="0" onchange="applyHistoryFilters()" style="font-size:0.85em;"></div>
+            <div><label for="histCostMax" style="font-size:0.78em;">Cout max</label><input type="number" id="histCostMax" placeholder="..." onchange="applyHistoryFilters()" style="font-size:0.85em;"></div>
+            <div><label for="histOpFilter" style="font-size:0.78em;">Operation</label><select id="histOpFilter" onchange="applyHistoryFilters()" style="font-size:0.85em;"><option value="">Toutes</option></select></div>
+          </div>
+          <div style="text-align:right;margin-top:6px;"><button class="btn btn-secondary btn-sm" onclick="resetHistoryFilters()" style="font-size:0.75em;">Reinitialiser</button></div>
+        </div>
       </div>
       <div id="historyList"></div>
     </div>
@@ -1059,6 +1105,41 @@ async function clearFirebaseConfig() {
       <div id="washSummary" style="margin-top:16px;"></div>
       <div id="washList" style="margin-top:12px;"></div>
     </div>
+
+    <!-- Sub: Pneus -->
+    <div id="subtab-entretien-tires" class="subtab-content">
+      <div class="form-section">
+        <h3 style="margin-bottom:14px; font-size:1em;" id="tireFormTitle">Nouveau jeu de pneus</h3>
+        <div class="form-row">
+          <div><label for="tireBrand">Marque</label><input type="text" id="tireBrand" placeholder="ex: Michelin"></div>
+          <div><label for="tireModel">Modele</label><input type="text" id="tireModel" placeholder="ex: Primacy 4"></div>
+        </div>
+        <div class="form-row">
+          <div><label for="tireType">Type</label><select id="tireType"><option value="ete">Ete</option><option value="hiver">Hiver</option><option value="4s">4 saisons</option></select></div>
+          <div><label for="tireSize">Dimension</label><input type="text" id="tireSize" placeholder="ex: 205/55 R16"></div>
+        </div>
+        <div class="form-row">
+          <div><label for="tireInstallDate">Date de pose</label><input type="date" id="tireInstallDate"></div>
+          <div><label for="tireInstallKm">Km a la pose</label><input type="number" id="tireInstallKm" placeholder="ex: 52000"></div>
+        </div>
+        <div class="form-row">
+          <div><label for="tireWear">Usure (1=neuf, 10=use)</label><input type="range" id="tireWear" min="1" max="10" value="1" oninput="document.getElementById('tireWearVal').textContent=this.value"><span id="tireWearVal" style="font-size:0.85em;margin-left:6px;">1</span></div>
+          <div><label for="tirePosition">Position</label><select id="tirePosition"><option value="all">Tous (4)</option><option value="av">Avant (2)</option><option value="ar">Arriere (2)</option></select></div>
+        </div>
+        <div class="form-row">
+          <div style="grid-column:1/-1;"><label for="tireNotes">Notes</label><input type="text" id="tireNotes" placeholder="ex: DOT 2024, achat Norauto"></div>
+        </div>
+        <div class="form-row">
+          <div><label for="tireCost">Cout (EUR)</label><input type="number" id="tireCost" step="0.01" placeholder="ex: 320"></div>
+          <div style="display:flex;align-items:end;gap:8px;">
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="tireActive" checked> Montes actuellement</label>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addTire()">Enregistrer</button>
+        <button class="btn btn-secondary" id="cancelTireBtn" onclick="cancelTireEdit()" style="margin-left:8px;display:none;">Annuler</button>
+      </div>
+      <div id="tiresList" style="margin-top:12px;"></div>
+    </div>
   </div>
 
   <!-- === Section: Carburant === -->
@@ -1121,12 +1202,38 @@ async function clearFirebaseConfig() {
     </div><!-- /fuelFormWrapper -->
     <div class="section-title">Historique des pleins</div>
     <div class="search-bar" id="fuelSearchBar" style="display:none">
-      <input type="text" id="fuelSearch" placeholder="Rechercher un plein..." oninput="filterFuel()">
+      <input type="text" id="fuelSearch" placeholder="Rechercher..." oninput="clearTimeout(this._dbt); this._dbt=setTimeout(applyFuelFilters,250)">
       <button class="search-clear" id="fuelSearchClear" onclick="clearFuelSearch()">&times;</button>
+      <button class="btn btn-secondary btn-sm" onclick="toggleFuelFilters()" style="margin-left:6px;white-space:nowrap;font-size:0.78em;">Filtres</button>
+    </div>
+    <div id="fuelFilterPanel" class="form-collapse" style="display:none;">
+      <div style="background:var(--surface);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;">
+        <div class="form-row" style="gap:8px;">
+          <div><label for="fuelSortBy" style="font-size:0.78em;">Tri</label><select id="fuelSortBy" onchange="applyFuelFilters()" style="font-size:0.85em;"><option value="date-desc">Date (recent)</option><option value="date-asc">Date (ancien)</option><option value="cost-desc">Cout (eleve)</option><option value="cost-asc">Cout (faible)</option><option value="km-desc">Km (eleve)</option><option value="km-asc">Km (faible)</option></select></div>
+          <div><label for="fuelDateFrom" style="font-size:0.78em;">De</label><input type="month" id="fuelDateFrom" onchange="applyFuelFilters()" style="font-size:0.85em;"></div>
+          <div><label for="fuelDateTo" style="font-size:0.78em;">A</label><input type="month" id="fuelDateTo" onchange="applyFuelFilters()" style="font-size:0.85em;"></div>
+        </div>
+        <div class="form-row" style="gap:8px;margin-top:6px;">
+          <div><label for="fuelCostMin" style="font-size:0.78em;">Cout min</label><input type="number" id="fuelCostMin" placeholder="0" onchange="applyFuelFilters()" style="font-size:0.85em;"></div>
+          <div><label for="fuelCostMax" style="font-size:0.78em;">Cout max</label><input type="number" id="fuelCostMax" placeholder="..." onchange="applyFuelFilters()" style="font-size:0.85em;"></div>
+          <div><label for="fuelStationFilter" style="font-size:0.78em;">Station</label><select id="fuelStationFilter" onchange="applyFuelFilters()" style="font-size:0.85em;"><option value="">Toutes</option></select></div>
+        </div>
+        <div style="text-align:right;margin-top:6px;"><button class="btn btn-secondary btn-sm" onclick="resetFuelFilters()" style="font-size:0.75em;">Reinitialiser</button></div>
+      </div>
     </div>
     <div id="fuelList"></div>
     <div id="stationPriceHistory"></div>
     <div id="nextFillEstimate"></div>
+    <!-- Station map -->
+    <div class="section-title" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+      <span>Stations a proximite</span>
+      <button class="btn btn-secondary btn-sm" id="stationMapToggle" onclick="toggleStationMap()" style="font-size:0.78em;">Afficher la carte</button>
+    </div>
+    <div id="stationMapContainer" style="display:none;">
+      <div id="stationMap" style="height:350px;border-radius:var(--radius);margin-bottom:10px;background:var(--surface);"></div>
+      <div id="stationMapStatus" style="font-size:0.82em;color:var(--muted);margin-bottom:8px;"></div>
+      <div id="nearbyStationsList"></div>
+    </div>
   </div>
 
   <!-- === Section: Energie (EV/Hybride) === -->
@@ -1166,7 +1273,7 @@ async function clearFirebaseConfig() {
     <div class="stats-grid" id="chargeStats"></div>
     <div class="section-title">Historique des charges</div>
     <div class="search-bar" id="chargeSearchBar" style="display:none">
-      <input type="text" id="chargeSearch" placeholder="Rechercher une charge..." oninput="filterCharge()">
+      <input type="text" id="chargeSearch" placeholder="Rechercher une charge..." oninput="clearTimeout(this._dbt); this._dbt=setTimeout(filterCharge,250)">
       <button class="search-clear" id="chargeSearchClear" onclick="clearChargeSearch()">&times;</button>
     </div>
     <div id="chargeList"></div>
@@ -1200,6 +1307,7 @@ async function clearFirebaseConfig() {
       <button class="sub-tab active" onclick="switchSubTab('stats','km')">Kilometrage</button>
       <button class="sub-tab" onclick="switchSubTab('stats','synthese')">Synthese</button>
       <button class="sub-tab" onclick="switchSubTab('stats','compare')">Comparaison</button>
+      <button class="sub-tab" onclick="switchSubTab('stats','calendar')">Calendrier</button>
     </div>
 
     <!-- Sub: Kilometrage -->
@@ -1235,11 +1343,17 @@ async function clearFirebaseConfig() {
       <div id="projectionsList"></div>
       <div class="section-title">Cout de possession</div>
       <div id="ownershipStats"></div>
+      <div id="depreciationCard"></div>
     </div>
 
     <!-- Sub: Comparaison multi-vehicules -->
     <div id="subtab-stats-compare" class="subtab-content">
       <div id="compareContent"></div>
+    </div>
+
+    <!-- Sub: Calendrier -->
+    <div id="subtab-stats-calendar" class="subtab-content">
+      <div id="calendarView"></div>
     </div>
   </div>
 
@@ -1275,22 +1389,50 @@ async function clearFirebaseConfig() {
 <!-- Share panel modal -->
 <div class="modal-overlay" id="shareModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
   <div class="modal">
-    <h2 id="shareModalTitle">Partager l'historique</h2>
-    <p style="color:var(--muted);font-size:0.85em;margin-bottom:14px;">Generez un lien en lecture seule. Seuls la date et les operations sont visibles (pas de km, prix ou infos perso).</p>
-    <div id="shareList"></div>
-    <div style="margin-top:14px;">
-      <label>Vehicule</label>
-      <select id="shareVehicleSelect" style="margin-bottom:10px;"></select>
-      <label>Expiration</label>
-      <select id="shareExpiry">
-        <option value="7">7 jours</option>
-        <option value="30">30 jours</option>
-        <option value="1">24 heures</option>
-      </select>
+    <h2 id="shareModalTitle">Partage</h2>
+
+    <!-- Sub-tabs: Lien lecture seule | Partage famille -->
+    <div style="display:flex;gap:0;margin-bottom:14px;border-bottom:2px solid var(--surface);">
+      <button class="btn btn-sm" id="shareTabLink" onclick="switchShareTab('link')" style="flex:1;border-radius:8px 8px 0 0;border-bottom:2px solid var(--accent);">Lien lecture seule</button>
+      <button class="btn btn-secondary btn-sm" id="shareTabFamily" onclick="switchShareTab('family')" style="flex:1;border-radius:8px 8px 0 0;border-bottom:2px solid transparent;">Partage famille</button>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeSharePanel()">Fermer</button>
-      <button class="btn btn-primary" onclick="createShare()">Generer un lien</button>
+
+    <!-- Tab: Lien lecture seule -->
+    <div id="shareTabLinkContent">
+      <p style="color:var(--muted);font-size:0.85em;margin-bottom:14px;">Generez un lien en lecture seule. Seuls la date et les operations sont visibles (pas de km, prix ou infos perso).</p>
+      <div id="shareList"></div>
+      <div style="margin-top:14px;">
+        <label>Vehicule</label>
+        <select id="shareVehicleSelect" style="margin-bottom:10px;"></select>
+        <label>Expiration</label>
+        <select id="shareExpiry">
+          <option value="7">7 jours</option>
+          <option value="30">30 jours</option>
+          <option value="1">24 heures</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeSharePanel()">Fermer</button>
+        <button class="btn btn-primary" onclick="createShare()">Generer un lien</button>
+      </div>
+    </div>
+
+    <!-- Tab: Partage famille -->
+    <div id="shareTabFamilyContent" style="display:none;">
+      <p style="color:var(--muted);font-size:0.85em;margin-bottom:14px;">Invitez un membre de votre famille a acceder a votre garage. Il pourra lire et modifier toutes les donnees.</p>
+      <div id="familyMembersList" style="margin-bottom:12px;"></div>
+      <div id="familyInvitationsList" style="margin-bottom:12px;"></div>
+      <div style="display:flex;gap:8px;align-items:end;">
+        <div style="flex:1;">
+          <label>Email du membre</label>
+          <input type="email" id="familyInviteEmail" placeholder="exemple@gmail.com">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="sendFamilyInvitation()" style="white-space:nowrap;">Inviter</button>
+      </div>
+      <div id="pendingInvitesReceived" style="margin-top:14px;"></div>
+      <div class="modal-actions" style="margin-top:14px;">
+        <button class="btn btn-secondary" onclick="closeSharePanel()">Fermer</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1354,6 +1496,14 @@ async function clearFirebaseConfig() {
       <div style="display:flex;align-items:flex-end"><button type="button" class="btn btn-primary btn-sm" id="plateLookupBtn" onclick="lookupPlate()">Rechercher</button></div>
     </div>
     <div id="plateLookupStatus" style="display:none; padding: 6px 0; font-size: 0.85em;"></div>
+    <div class="form-row" id="cgScanRow" style="grid-template-columns: 1fr auto;">
+      <div style="font-size:0.85em;color:var(--muted);display:flex;align-items:center;">Scanner une carte grise pour pre-remplir</div>
+      <div style="display:flex;align-items:flex-end;gap:6px;">
+        <button type="button" class="btn btn-secondary btn-sm" id="cgScanBtn" onclick="startCarteGriseScan()">Scanner CG</button>
+        <input type="file" id="cgFileInput" accept="image/*" capture="environment" style="display:none" onchange="processCarteGriseScan(this)">
+      </div>
+    </div>
+    <div id="cgScanStatus" style="display:none; padding: 6px 0; font-size: 0.85em;"></div>
     <div class="form-row">
       <div><label>Nom court</label><input type="text" id="vName" placeholder="ex: Clio, 308, Captur..."></div>
       <div><label>Marque / Modele</label><input type="text" id="vModel" placeholder="ex: Renault Clio V"></div>
@@ -1415,11 +1565,13 @@ let isShareView = false;
 let googleAccessToken = null;
 let driveFolderId = null;
 let firestoreReady = false;
-let ignoreNextSnapshot = false;
+let _pendingWrites = 0;
 let unsubSnapshot = null;
 let PLATE_API_TOKEN = '';
 let GROQ_API_KEY = '';
 let GARAGE_DOC = null; // set to garages/{uid} after auth
+let _sharedGarages = []; // [{uid, email, doc}] garages shared with current user
+let _viewingSharedGarage = null; // null = own garage, or {uid, email}
 
 function initFirebase(cfg) {
   try {
@@ -1548,6 +1700,7 @@ async function onAuthReady(user) {
     document.getElementById('userEmail').textContent = user.email;
     await loadApiKeys();
     startFirestoreSync();
+    loadSharedGarages();
     renderAllSections();
   } else {
     document.getElementById('loginScreen').style.display = 'flex';
@@ -1564,6 +1717,8 @@ async function startFirestoreSync() {
       const store = loadStore();
       await db.doc(GARAGE_DOC).set({
         data: JSON.stringify(store),
+        ownerEmail: currentUser.email,
+        sharedWith: [],
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       console.log('Document ' + GARAGE_DOC + ' cree');
@@ -1572,7 +1727,7 @@ async function startFirestoreSync() {
   // Listen for remote changes
   if (unsubSnapshot) unsubSnapshot();
   unsubSnapshot = db.doc(GARAGE_DOC).onSnapshot(snap => {
-    if (ignoreNextSnapshot) { ignoreNextSnapshot = false; return; }
+    if (_pendingWrites > 0) return;
     if (!snap.exists) return;
     try {
       const remoteData = snap.data().data;
@@ -1581,7 +1736,7 @@ async function startFirestoreSync() {
       const remote = JSON.parse(remoteData);
       invalidateStoreCache();
       localStorage.setItem(STORAGE_KEY, remoteData);
-      renderAllSections();
+      renderAll();
       console.log('Sync depuis Firestore');
     } catch (e) { console.warn('Snapshot parse error:', e); }
   }, err => console.warn('Snapshot error:', err));
@@ -1682,9 +1837,9 @@ async function uploadEntryPhoto(base64Data) {
 
 // ── Share links ──
 function generateToken() {
-  const arr = new Uint8Array(16);
+  const arr = new Uint8Array(24);
   crypto.getRandomValues(arr);
-  return Array.from(arr).map(b => b.toString(36).padStart(2, '0')).join('').slice(0, 24);
+  return Array.from(arr).map(b => b.toString(36).padStart(2, '0')).join('').slice(0, 32);
 }
 
 function openSharePanel() {
@@ -1763,6 +1918,266 @@ async function revokeShare(token) {
   loadShares();
 }
 
+// ── Family sharing ──
+
+function switchShareTab(tab) {
+  const linkContent = document.getElementById('shareTabLinkContent');
+  const familyContent = document.getElementById('shareTabFamilyContent');
+  const linkBtn = document.getElementById('shareTabLink');
+  const familyBtn = document.getElementById('shareTabFamily');
+  if (tab === 'link') {
+    linkContent.style.display = '';
+    familyContent.style.display = 'none';
+    linkBtn.className = 'btn btn-sm'; linkBtn.style.borderBottom = '2px solid var(--accent)';
+    familyBtn.className = 'btn btn-secondary btn-sm'; familyBtn.style.borderBottom = '2px solid transparent';
+  } else {
+    linkContent.style.display = 'none';
+    familyContent.style.display = '';
+    familyBtn.className = 'btn btn-sm'; familyBtn.style.borderBottom = '2px solid var(--accent)';
+    linkBtn.className = 'btn btn-secondary btn-sm'; linkBtn.style.borderBottom = '2px solid transparent';
+    loadFamilySharing();
+  }
+}
+
+async function loadFamilySharing() {
+  if (!db || !currentUser) return;
+  // Load current members (from garage doc sharedWith)
+  const membersEl = document.getElementById('familyMembersList');
+  const invitesEl = document.getElementById('familyInvitationsList');
+  const receivedEl = document.getElementById('pendingInvitesReceived');
+
+  try {
+    // Current garage shared members
+    const snap = await db.doc('garages/' + currentUser.uid).get();
+    const sharedWith = snap.exists ? (snap.data().sharedWith || []) : [];
+    const ownerEmail = snap.exists ? (snap.data().ownerEmail || '') : '';
+
+    if (sharedWith.length > 0) {
+      membersEl.innerHTML = '<div style="font-size:0.85em;color:var(--muted);margin-bottom:6px;">Membres actifs</div>' +
+        sharedWith.map(uid =>
+          `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--surface);border-radius:8px;margin-bottom:4px;font-size:0.85em;">
+            <span>${escHtml(uid)}</span>
+            <button class="btn btn-danger btn-sm" style="font-size:0.7em;padding:2px 8px;" data-uid="${escHtml(uid)}" onclick="removeFamilyMember(this.dataset.uid)">Retirer</button>
+          </div>`
+        ).join('');
+    } else {
+      membersEl.innerHTML = '<p style="color:var(--muted);font-size:0.85em;">Aucun membre partage</p>';
+    }
+
+    // Pending invitations sent by me
+    const sentSnap = await db.collection('invitations').where('fromUid', '==', currentUser.uid).where('status', '==', 'pending').get();
+    if (!sentSnap.empty) {
+      let html = '<div style="font-size:0.85em;color:var(--muted);margin-bottom:6px;">Invitations envoyees</div>';
+      sentSnap.forEach(doc => {
+        const d = doc.data();
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--surface);border-radius:8px;margin-bottom:4px;font-size:0.85em;">
+          <span>${escHtml(d.toEmail)} <span style="color:var(--orange)">en attente</span></span>
+          <button class="btn btn-danger btn-sm" style="font-size:0.7em;padding:2px 8px;" data-id="${escHtml(doc.id)}" onclick="cancelFamilyInvitation(this.dataset.id)">Annuler</button>
+        </div>`;
+      });
+      invitesEl.innerHTML = html;
+    } else {
+      invitesEl.innerHTML = '';
+    }
+
+    // Invitations received by me
+    const recvSnap = await db.collection('invitations').where('toEmail', '==', currentUser.email).where('status', '==', 'pending').get();
+    if (!recvSnap.empty) {
+      let html = '<div style="font-size:0.85em;font-weight:600;margin-bottom:6px;color:var(--green);">Invitations recues</div>';
+      recvSnap.forEach(doc => {
+        const d = doc.data();
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--card);border-radius:8px;margin-bottom:4px;font-size:0.85em;border:1px solid var(--green);">
+          <span>${escHtml(d.fromEmail)} vous invite</span>
+          <div style="display:flex;gap:4px;">
+            <button class="btn btn-sm" style="font-size:0.7em;padding:2px 8px;background:var(--green);" data-id="${escHtml(doc.id)}" onclick="acceptFamilyInvitation(this.dataset.id)">Accepter</button>
+            <button class="btn btn-danger btn-sm" style="font-size:0.7em;padding:2px 8px;" data-id="${escHtml(doc.id)}" onclick="rejectFamilyInvitation(this.dataset.id)">Refuser</button>
+          </div>
+        </div>`;
+      });
+      receivedEl.innerHTML = html;
+    } else {
+      receivedEl.innerHTML = '';
+    }
+  } catch (e) {
+    console.warn('loadFamilySharing error:', e);
+    membersEl.innerHTML = '<p style="color:var(--red);font-size:0.85em;">Erreur chargement</p>';
+  }
+}
+
+async function sendFamilyInvitation() {
+  if (!db || !currentUser) { toast('Non connecte', 'error'); return; }
+  const emailInput = document.getElementById('familyInviteEmail');
+  const email = emailInput.value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { toast('Email invalide', 'warning'); return; }
+  if (email === currentUser.email.toLowerCase()) { toast('Vous ne pouvez pas vous inviter vous-meme', 'warning'); return; }
+
+  try {
+    // Check if invitation already exists
+    const existing = await db.collection('invitations')
+      .where('fromUid', '==', currentUser.uid)
+      .where('toEmail', '==', email)
+      .where('status', '==', 'pending')
+      .get();
+    if (!existing.empty) { toast('Invitation deja envoyee a cet email', 'warning'); return; }
+
+    await db.collection('invitations').add({
+      fromUid: currentUser.uid,
+      fromEmail: currentUser.email,
+      toEmail: email,
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Ensure ownerEmail is set on garage doc
+    await db.doc('garages/' + currentUser.uid).update({
+      ownerEmail: currentUser.email
+    }).catch(() => {});
+
+    emailInput.value = '';
+    haptic();
+    toast('Invitation envoyee !', 'success');
+    loadFamilySharing();
+  } catch (e) {
+    console.error('sendFamilyInvitation error:', e);
+    toast('Erreur : ' + e.message, 'error');
+  }
+}
+
+async function acceptFamilyInvitation(inviteId) {
+  if (!db || !currentUser) return;
+  try {
+    // Update invitation status + record who accepted
+    // Cloud Function onInvitationAccepted handles adding to sharedWith[]
+    await db.collection('invitations').doc(inviteId).update({
+      status: 'accepted',
+      acceptedByUid: currentUser.uid
+    });
+
+    haptic();
+    toast('Invitation acceptee ! Le garage sera accessible sous peu.', 'success');
+    // Delay to let Cloud Function process the sharedWith update
+    setTimeout(() => {
+      loadFamilySharing();
+      loadSharedGarages();
+    }, 2000);
+  } catch (e) {
+    console.error('acceptFamilyInvitation error:', e);
+    toast('Erreur : ' + e.message, 'error');
+  }
+}
+
+async function rejectFamilyInvitation(inviteId) {
+  if (!db || !currentUser) return;
+  try {
+    await db.collection('invitations').doc(inviteId).delete();
+    toast('Invitation refusee');
+    loadFamilySharing();
+  } catch (e) { toast('Erreur', 'error'); }
+}
+
+async function cancelFamilyInvitation(inviteId) {
+  if (!db || !currentUser) return;
+  try {
+    await db.collection('invitations').doc(inviteId).delete();
+    toast('Invitation annulee');
+    loadFamilySharing();
+  } catch (e) { toast('Erreur', 'error'); }
+}
+
+async function removeFamilyMember(uid) {
+  if (!db || !currentUser) return;
+  if (!confirm('Retirer cet acces ?')) return;
+  try {
+    const garageRef = db.doc('garages/' + currentUser.uid);
+    const snap = await garageRef.get();
+    const currentShared = snap.exists ? (snap.data().sharedWith || []) : [];
+    const updated = currentShared.filter(u => u !== uid);
+    await garageRef.update({ sharedWith: updated });
+    haptic();
+    toast('Acces retire');
+    loadFamilySharing();
+  } catch (e) { toast('Erreur', 'error'); }
+}
+
+async function loadSharedGarages() {
+  if (!db || !currentUser) return;
+  _sharedGarages = [];
+  try {
+    // Find garages where current user is in sharedWith
+    // Firestore limitation: can't query array-contains across collections easily
+    // Instead, look at accepted invitations where toEmail = my email
+    const invSnap = await db.collection('invitations')
+      .where('toEmail', '==', currentUser.email)
+      .where('status', '==', 'accepted')
+      .get();
+
+    for (const doc of invSnap.docs) {
+      const inv = doc.data();
+      _sharedGarages.push({
+        uid: inv.fromUid,
+        email: inv.fromEmail,
+        doc: 'garages/' + inv.fromUid
+      });
+    }
+  } catch (e) { console.warn('loadSharedGarages error:', e); }
+  renderGarageSwitcher();
+}
+
+function renderGarageSwitcher() {
+  const el = document.getElementById('garageSwitcher');
+  if (!el) return;
+  if (_sharedGarages.length === 0 && !_viewingSharedGarage) {
+    el.style.display = 'none';
+    el.innerHTML = '';
+    return;
+  }
+  el.style.display = 'block';
+  let html = '<div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;margin-top:4px;margin-bottom:4px;">';
+  html += '<div style="font-size:0.75em;color:var(--muted);margin-bottom:4px;">Garages</div>';
+
+  // Own garage
+  const ownActive = !_viewingSharedGarage;
+  html += `<button class="profile-menu-item" style="font-size:0.8em;${ownActive ? 'color:var(--green);font-weight:600;' : ''}" onclick="switchToOwnGarage(); toggleProfileMenu();">
+    ${ownActive ? '● ' : ''}Mon garage
+  </button>`;
+
+  // Shared garages
+  for (const g of _sharedGarages) {
+    const active = _viewingSharedGarage && _viewingSharedGarage.uid === g.uid;
+    html += `<button class="profile-menu-item" style="font-size:0.8em;${active ? 'color:var(--green);font-weight:600;' : ''}" data-uid="${escHtml(g.uid)}" data-email="${escHtml(g.email)}" onclick="switchToSharedGarage(this.dataset.uid, this.dataset.email); toggleProfileMenu();">
+      ${active ? '● ' : ''}Garage de ${escHtml(g.email.split('@')[0])}
+    </button>`;
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function switchToOwnGarage() {
+  if (!_viewingSharedGarage) return;
+  _viewingSharedGarage = null;
+  GARAGE_DOC = 'garages/' + currentUser.uid;
+  // Reload from own Firestore doc
+  if (unsubSnapshot) unsubSnapshot();
+  invalidateStoreCache();
+  startFirestoreSync();
+  document.getElementById('appSubtitle').textContent = 'Mes vehicules';
+  renderAllSections();
+  haptic();
+}
+
+function switchToSharedGarage(uid, email) {
+  if (_viewingSharedGarage && _viewingSharedGarage.uid === uid) return;
+  _viewingSharedGarage = { uid, email };
+  GARAGE_DOC = 'garages/' + uid;
+  // Reload from shared Firestore doc
+  if (unsubSnapshot) unsubSnapshot();
+  invalidateStoreCache();
+  startFirestoreSync();
+  document.getElementById('appSubtitle').textContent = 'Garage de ' + email.split('@')[0];
+  renderAllSections();
+  haptic();
+}
+
 // ── Storage ──
 const STORAGE_KEY = 'vehicules_entretien_v3';
 
@@ -1836,7 +2251,9 @@ const DEFAULT_STORE = {
       batteryCapacity: null,
       batterySoh: null,
       deadlines: [],
-      notebook: []
+      notebook: [],
+      tires: [],
+      pendingEntries: []
     }
   }
 };
@@ -1875,6 +2292,8 @@ function loadStore() {
     if (v.batterySoh === undefined) { v.batterySoh = null; migrated = true; }
     if (!v.washes) { v.washes = []; migrated = true; }
     if (!v.washCredits) { v.washCredits = []; migrated = true; }
+    if (!v.tires) { v.tires = []; migrated = true; }
+    if (!v.pendingEntries) { v.pendingEntries = []; migrated = true; }
   }
   if (migrated) saveStore(store);
   _storeCache = store;
@@ -1888,11 +2307,13 @@ function saveStore(store) {
   const json = JSON.stringify(store);
   localStorage.setItem(STORAGE_KEY, json);
   if (firestoreReady && db && currentUser) {
-    ignoreNextSnapshot = true;
+    _pendingWrites++;
     db.doc(GARAGE_DOC).set({
       data: json,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(e => console.warn('Firestore write failed:', e));
+    }, { merge: true })
+      .then(() => { _pendingWrites--; })
+      .catch(e => { _pendingWrites--; console.warn('Firestore write failed:', e); });
   }
 }
 
@@ -2756,6 +3177,7 @@ async function addEntry() {
   document.getElementById('entryPhotoPreview').style.display = 'none';
   document.getElementById('formTitle').textContent = 'Nouvel entretien';
   document.getElementById('entryFormWrapper').classList.remove('open');
+  if (window._pendingEntryId) clearPendingEntry(window._pendingEntryId);
   haptic();
   toast('Entretien enregistre');
   renderAll();
@@ -2909,6 +3331,12 @@ function renderAlerts() {
     }
   }
 
+  // Tire alerts
+  const tireAlerts = getTireAlerts(v);
+  for (const ta of tireAlerts) {
+    alerts.push(ta);
+  }
+
   const banner = document.getElementById('alertsBanner');
   // Filter out dismissed alerts (session only) and absurd ones (> 3 ans = pas de donnees)
   const dismissed = window._dismissedAlerts || new Set();
@@ -2950,6 +3378,9 @@ function alertAction(index) {
   } else if (a.action === 'km') {
     switchSection('stats');
     switchSubTab('stats', 'km');
+  } else if (a.action === 'tires') {
+    switchSection('entretien');
+    switchSubTab('entretien', 'tires');
   }
 }
 
@@ -2996,19 +3427,26 @@ function checkAndNotify() {
     if (s.status === 'overdue') alerts.push({ key: 'maint-' + item.name, title: (item.name + ' en retard').slice(0, 80), body: (s.statusText || '').slice(0, 120) });
   }
 
-  // Deadlines
+  // Deadlines - tiered urgency
   for (const d of (v.deadlines || [])) {
     const target = new Date(d.date);
     const daysLeft = Math.floor((target - now) / 86400000);
     const label = d.label || d.type;
-    if (daysLeft <= 0) alerts.push({ key: 'dl-' + label, title: ((label || '') + ' expire !').slice(0, 80), body: ('Echeance le ' + target.toLocaleDateString('fr-FR')).slice(0, 120) });
+    if (daysLeft <= 0) alerts.push({ key: 'dl-' + label, title: ((label || '') + ' expire !').slice(0, 80), body: ('Echeance le ' + target.toLocaleDateString('fr-FR')).slice(0, 120), urgent: true });
+    else if (daysLeft <= 7) alerts.push({ key: 'dl7-' + label, title: ((label || '') + ' dans ' + daysLeft + ' jours !').slice(0, 80), body: ('Echeance le ' + target.toLocaleDateString('fr-FR')).slice(0, 120), urgent: true });
     else if (daysLeft <= 30) alerts.push({ key: 'dl-' + label, title: ((label || '') + ' dans ' + daysLeft + ' jours').slice(0, 80), body: ('Echeance le ' + target.toLocaleDateString('fr-FR')).slice(0, 120) });
+  }
+
+  // Maintenance approaching (< 2000 km or < 30 days)
+  for (const item of v.schedule) {
+    const s = getStatus(item, v);
+    if (s.status === 'warning') alerts.push({ key: 'maint-warn-' + item.name, title: (item.name + ' bientot').slice(0, 80), body: (s.statusText || '').slice(0, 120) });
   }
 
   for (const a of alerts) {
     if (_notifiedAlerts.has(a.key)) continue;
     _notifiedAlerts.add(a.key);
-    new Notification(a.title, { body: a.body, icon: 'icon-180.png', tag: a.key });
+    new Notification(a.title, { body: a.body, icon: 'icon-180.png', tag: a.key, requireInteraction: !!a.urgent });
   }
 }
 
@@ -3026,6 +3464,140 @@ function renderDashboard() {
     html += `<div class="maint-card ${item.status}" onclick="dashboardCardClick('${escAttr(item.name)}')"><div class="info"><h3>${escHtml(item.name)}</h3><p>${escHtml(item.statusText)}</p></div><span class="badge ${badgeClass}">${badgeText}</span></div>`;
   }
   list.innerHTML = html || '<div class="empty-state">Aucune operation dans le programme</div>';
+}
+
+// ── Dashboard consumption trend chart ──
+function renderDashConsoTrend() {
+  const v = getActiveVehicle();
+  if (!v) return;
+  const container = document.getElementById('dashConsoTrend');
+  if (!container) return;
+
+  // Get consumption data based on vehicle type
+  let points = [];
+  let unit = 'L/100km';
+  if (isElectric(v)) {
+    points = computeChargeConsumption(v.chargeEntries || []).realPoints;
+    unit = 'kWh/100km';
+  } else if (isHybrid(v)) {
+    const fuelPts = computeConsumption(v.fuelEntries || []).realPoints;
+    const chargePts = computeChargeConsumption(v.chargeEntries || []).realPoints;
+    points = [...fuelPts.map(p => ({ ...p, label: 'L' })), ...chargePts.map(p => ({ ...p, label: 'kWh' }))];
+    points.sort((a, b) => a.date.localeCompare(b.date));
+    unit = 'L ou kWh/100km';
+  } else {
+    points = computeConsumption(v.fuelEntries || []).realPoints;
+  }
+
+  if (points.length < 2) { container.innerHTML = ''; return; }
+
+  const W = Math.min(container.parentElement?.offsetWidth || 400, 600);
+  const H = 130;
+  const pad = { t: 20, r: 20, b: 30, l: 40 };
+  const vals = points.map(p => p.value);
+  const minVal = Math.floor(Math.min(...vals) * 10 - 2) / 10;
+  const maxVal = Math.ceil(Math.max(...vals) * 10 + 2) / 10;
+  const rangeY = maxVal - minVal || 1;
+
+  const coords = points.map((p, i) => ({
+    x: pad.l + (i / (points.length - 1)) * (W - pad.l - pad.r),
+    y: pad.t + (H - pad.t - pad.b) * (1 - (p.value - minVal) / rangeY),
+    label: p.label
+  }));
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;display:block;margin:0 auto;">`;
+  svg += `<defs><linearGradient id="consoTrendGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e94560"/><stop offset="100%" stop-color="transparent"/></linearGradient></defs>`;
+
+  // Grid
+  for (let i = 0; i < 4; i++) {
+    const y = pad.t + (H - pad.t - pad.b) * i / 3;
+    const val = maxVal - (rangeY * i / 3);
+    svg += `<line x1="${pad.l}" y1="${y}" x2="${W - pad.r}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+    svg += `<text x="${pad.l - 5}" y="${y + 3}" fill="#999" font-size="9" text-anchor="end">${val.toFixed(1)}</text>`;
+  }
+
+  // Area + line
+  const polyPts = coords.map(c => `${c.x},${c.y}`).join(' ');
+  svg += `<polygon points="${coords[0].x},${H - pad.b} ${polyPts} ${coords[coords.length - 1].x},${H - pad.b}" fill="url(#consoTrendGrad)" opacity="0.2"/>`;
+  svg += `<polyline points="${polyPts}" fill="none" stroke="#e94560" stroke-width="2" stroke-linejoin="round"/>`;
+
+  // Points
+  for (const c of coords) {
+    const color = c.label === 'kWh' ? '#00b4d8' : '#e94560';
+    svg += `<circle cx="${c.x}" cy="${c.y}" r="3" fill="${color}"/>`;
+  }
+
+  // X-axis labels
+  const step = Math.max(1, Math.floor(coords.length / 5));
+  for (let i = 0; i < coords.length; i += step) {
+    const d = new Date(points[i].date);
+    svg += `<text x="${coords[i].x}" y="${H - 5}" fill="#666" font-size="8" text-anchor="middle">${d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })}</text>`;
+  }
+
+  // Title
+  svg += `<text x="${W / 2}" y="${H - pad.b + 22}" fill="#666" font-size="9" text-anchor="middle">Evolution conso (${unit})</text>`;
+  svg += `</svg>`;
+
+  container.innerHTML = `<div style="background:var(--surface);border-radius:var(--radius);padding:12px;margin-top:12px;">${svg}</div>`;
+}
+
+// ── Dashboard cost donut ──
+function renderCostDonut() {
+  const v = getActiveVehicle();
+  if (!v) return;
+  const container = document.getElementById('dashCostDonut');
+  if (!container) return;
+
+  const purchaseDateStr = v.purchaseDate ? v.purchaseDate + '-01' : null;
+  const entries = v.entries || [];
+  const maintEntries = purchaseDateStr ? entries.filter(e => e.date >= purchaseDateStr) : entries;
+  const totalMaint = maintEntries.reduce((s, e) => s + (e.cost || 0), 0);
+  const totalFuel = (v.fuelEntries || []).reduce((s, e) => s + (e.cost || 0), 0);
+  const totalCharge = (v.chargeEntries || []).reduce((s, e) => s + (e.cost || 0), 0);
+  const washes = v.washes || [];
+  const washCredits = v.washCredits || [];
+  const totalWash = washes.filter(w => w.payment === 'direct').reduce((s, w) => s + (w.cost || 0), 0) + washCredits.reduce((s, c) => s + (c.cost || 0), 0);
+  const totalDeadline = (v.deadlines || []).reduce((s, d) => s + (d.cost || 0), 0);
+
+  const cats = [
+    { label: 'Entretien', value: totalMaint, color: '#e94560' },
+    { label: isElectric(v) ? 'Electricite' : isHybrid(v) ? 'Carb.+Elec.' : 'Carburant', value: totalFuel + totalCharge, color: '#f0a500' },
+    { label: 'Frais fixes', value: totalDeadline, color: '#9b59b6' },
+    { label: 'Lavage', value: totalWash, color: '#4ecca3' }
+  ].filter(c => c.value > 0);
+
+  const total = cats.reduce((s, c) => s + c.value, 0);
+  if (total === 0) { container.innerHTML = ''; return; }
+
+  const size = 180;
+  const cx = size / 2, cy = size / 2, r = 60, strokeW = 24;
+  const circ = 2 * Math.PI * r;
+
+  let svg = `<svg viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px;display:block;margin:0 auto;">`;
+  let offset = 0;
+  for (const cat of cats) {
+    const pct = cat.value / total;
+    const dash = pct * circ;
+    const gap = circ - dash;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${cat.color}" stroke-width="${strokeW}" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})" opacity="0.85"/>`;
+    offset += dash;
+  }
+  svg += `<text x="${cx}" y="${cy - 6}" fill="#fff" font-size="16" font-weight="bold" text-anchor="middle">${total.toFixed(0)}</text>`;
+  svg += `<text x="${cx}" y="${cy + 10}" fill="#999" font-size="10" text-anchor="middle">EUR total</text>`;
+  svg += `</svg>`;
+
+  let legend = '<div style="display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;margin-top:8px;">';
+  for (const cat of cats) {
+    const pct = (cat.value / total * 100).toFixed(0);
+    legend += `<div style="display:flex;align-items:center;gap:4px;font-size:0.82em;">`;
+    legend += `<span style="width:10px;height:10px;border-radius:50%;background:${cat.color};display:inline-block;"></span>`;
+    legend += `<span style="color:#ccc;">${escHtml(cat.label)} ${cat.value.toFixed(0)} EUR (${pct}%)</span></div>`;
+  }
+  legend += '</div>';
+
+  container.innerHTML = `<div style="background:var(--surface);border-radius:var(--radius);padding:16px;margin-top:12px;">
+    <div style="text-align:center;color:#999;font-size:0.85em;margin-bottom:8px;">Repartition des couts</div>
+    ${svg}${legend}</div>`;
 }
 
 // ── History ──
@@ -3048,7 +3620,7 @@ function renderHistory() {
     const entryThumbSrc = getPhotoSrc(e.photo);
     const entryFullSrc = getPhotoFullSrc(e.photo);
     const entryPhotoHtml = entryThumbSrc ? `<div style="margin-top:8px"><img src="${escHtml(entryThumbSrc)}" class="fuel-photo-thumb photo-clickable" data-fullsrc="${escHtml(entryFullSrc || entryThumbSrc)}" onerror="this.style.display='none'" style="max-height:60px"> <span style="font-size:0.75em;color:var(--muted)">Facture</span></div>` : '';
-    html += `<div class="history-entry">
+    html += `<div class="history-entry" data-date="${e.date}" data-km="${e.km || 0}" data-cost="${e.cost || 0}" data-ops="${escHtml(e.ops.join(' ').toLowerCase())}">
       <div class="entry-data"><div class="header"><span class="date">${dateStr}</span><span class="km">${e.km ? e.km.toLocaleString() + ' km' : 'km inconnu'}${costStr}</span></div>
       <div class="ops">${e.ops.map(o => '&bull; ' + escHtml(o)).join('<br>')}</div>
       ${e.notes ? `<div class="notes">${escHtml(e.notes)}</div>` : ''}
@@ -3058,6 +3630,15 @@ function renderHistory() {
     </div>`;
   }
   list.innerHTML = html;
+  // Populate operation filter
+  const opSel = document.getElementById('histOpFilter');
+  if (opSel) {
+    const cur = opSel.value;
+    const ops = new Set();
+    for (const e of v.entries) for (const o of (e.ops || [])) ops.add(o);
+    opSel.innerHTML = '<option value="">Toutes</option>' + [...ops].sort().map(o => `<option value="${escHtml(o.toLowerCase())}">${escHtml(o)}</option>`).join('');
+    opSel.value = cur;
+  }
 }
 
 // ── Schedule ──
@@ -3605,6 +4186,150 @@ function applyOcrResults(parsed, rawText) {
   }
 }
 
+// --- Scan Carte Grise OCR (100% local - Tesseract.js WASM) ---
+
+function cgScanStatus(msg, color) {
+  const el = document.getElementById('cgScanStatus');
+  if (!el) return;
+  el.style.display = msg ? 'block' : 'none';
+  el.style.color = color || 'var(--muted)';
+  el.innerHTML = msg;
+}
+
+function startCarteGriseScan() {
+  document.getElementById('cgFileInput').click();
+}
+
+async function processCarteGriseScan(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const btn = document.getElementById('cgScanBtn');
+  btn.disabled = true;
+  try {
+    cgScanStatus('Lecture de l\'image...', 'var(--orange)');
+    const worker = await getTesseractWorker();
+    cgScanStatus('Analyse en cours (OCR local)...', 'var(--orange)');
+    const { data: { text } } = await worker.recognize(file);
+    scheduleTesseractCleanup();
+    const parsed = parseCarteGriseText(text);
+    applyCarteGriseResults(parsed, text);
+  } catch (e) {
+    cgScanStatus('Erreur OCR : ' + escHtml(e.message), 'var(--accent)');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function parseCarteGriseText(text) {
+  const result = {};
+  const clean = text.replace(/\r/g, '').replace(/\n+/g, '\n');
+  const lines = clean.split('\n').map(l => l.trim()).filter(Boolean);
+  const full = lines.join(' ');
+
+  // A: date immatriculation (DD/MM/YYYY or DD.MM.YYYY)
+  const mA = full.match(/\bA[:\s.]+(\d{2}[\/.]\d{2}[\/.]\d{4})\b/);
+  if (mA) result.dateImmat = mA[1].replace(/\./g, '/');
+
+  // B: date MEC (DD/MM/YYYY or DD.MM.YYYY)
+  const mB = full.match(/\bB[:\s.]+(\d{2}[\/.]\d{2}[\/.]\d{4})\b/);
+  if (mB) result.dateMEC = mB[1].replace(/\./g, '/');
+
+  // D.1: marque
+  const mD1 = full.match(/D[\s.]?1[:\s.]+([A-Z][A-Z\s\-]+?)(?=\s+[A-Z][\s.]?\d|$)/i);
+  if (mD1) result.marque = mD1[1].trim();
+
+  // D.2: type/variante/version (modele complet)
+  const mD2 = full.match(/D[\s.]?2[:\s.]+(.+?)(?=\s+D[\s.]?3|\s+[EFG][\s.:]+|$)/i);
+  if (mD2) result.modele = mD2[1].trim().substring(0, 80);
+
+  // D.3: denomination commerciale
+  const mD3 = full.match(/D[\s.]?3[:\s.]+(.+?)(?=\s+[EFG][\s.:]+|$)/i);
+  if (mD3) result.denomination = mD3[1].trim().substring(0, 80);
+
+  // E: VIN (17 chars alphanum, no I/O/Q)
+  const mE = full.match(/\bE[:\s.]+([A-HJ-NPR-Z0-9]{17})\b/i);
+  if (mE) result.vin = mE[1].toUpperCase();
+  // Fallback: any 17-char VIN pattern in text
+  if (!result.vin) {
+    const mVin = full.match(/\b([A-HJ-NPR-Z0-9]{17})\b/i);
+    if (mVin) result.vin = mVin[1].toUpperCase();
+  }
+
+  // P.1: cylindree (cm3)
+  const mP1 = full.match(/P[\s.]?1[:\s.]+(\d{3,5})\s*(?:cm|cc)?/i);
+  if (mP1) result.cylindree = mP1[1];
+
+  // P.3: carburant (GO, ES, EL, EH, FE, GH, GL, etc.)
+  const mP3 = full.match(/P[\s.]?3[:\s.]+([A-Z]{2})\b/i);
+  if (mP3) {
+    const code = mP3[1].toUpperCase();
+    const fuelMap = { GO: 'diesel', GA: 'diesel', ES: 'essence', EE: 'essence', EL: 'electrique', EH: 'hybride', GH: 'hybride', FE: 'e85', GL: 'hybride', FN: 'essence', GN: 'essence' };
+    result.carburant = fuelMap[code] || null;
+    result.carburantCode = code;
+  }
+
+  // J.1: categorie (VP = vehicule particulier)
+  const mJ1 = full.match(/J[\s.]?1[:\s.]+([A-Z]{2,5})\b/i);
+  if (mJ1) result.categorie = mJ1[1].toUpperCase();
+
+  return result;
+}
+
+function applyCarteGriseResults(parsed, rawText) {
+  let filled = [];
+
+  // Date MEC → vCircDate (format YYYY-MM)
+  const dateMEC = parsed.dateMEC || parsed.dateImmat;
+  if (dateMEC) {
+    const parts = dateMEC.split('/');
+    if (parts.length === 3) {
+      const month = parts[1].padStart(2, '0');
+      const year = parts[2];
+      const circEl = document.getElementById('vCircDate');
+      if (circEl && !circEl.value) {
+        circEl.value = year + '-' + month;
+        filled.push('MEC: ' + month + '/' + year);
+      }
+    }
+  }
+
+  // D.1 marque + D.3 denomination → vModel
+  const modelParts = [parsed.marque, parsed.denomination || parsed.modele].filter(Boolean);
+  if (modelParts.length > 0) {
+    const modelEl = document.getElementById('vModel');
+    if (modelEl && !modelEl.value) {
+      modelEl.value = modelParts.join(' ');
+      filled.push('Modele: ' + modelParts.join(' '));
+    }
+  }
+
+  // P.1 cylindree → vEngine
+  if (parsed.cylindree) {
+    const engEl = document.getElementById('vEngine');
+    if (engEl && !engEl.value) {
+      engEl.value = parsed.cylindree + ' cm3';
+      filled.push('Moteur: ' + parsed.cylindree + ' cm3');
+    }
+  }
+
+  // P.3 carburant → vFuelType
+  if (parsed.carburant) {
+    const fuelEl = document.getElementById('vFuelType');
+    if (fuelEl && !fuelEl.value) {
+      fuelEl.value = parsed.carburant;
+      onFuelTypeChange();
+      filled.push('Carburant: ' + parsed.carburant);
+    }
+  }
+
+  if (filled.length > 0) {
+    cgScanStatus('Detecte : ' + escHtml(filled.join(', ')) + '<br><small style="color:var(--muted)">Verifiez et completez les valeurs</small>', 'var(--green)');
+  } else {
+    cgScanStatus('Aucun champ reconnu. Texte brut : ' + escHtml(rawText.substring(0, 150).replace(/\n/g, ' ')), 'var(--orange)');
+  }
+}
+
 async function addFuel() {
   const date = document.getElementById('fuelDate').value;
   const km = parseInt(document.getElementById('fuelKm').value);
@@ -3652,6 +4377,7 @@ async function addFuel() {
   document.getElementById('fuelPhotoPreview').style.display = 'none';
   document.getElementById('fuelFormTitle').textContent = 'Nouveau plein';
   document.getElementById('fuelFormWrapper').classList.remove('open');
+  if (window._pendingEntryId) clearPendingEntry(window._pendingEntryId);
   haptic();
   toast('Plein enregistre');
   renderAll();
@@ -3809,7 +4535,7 @@ function renderFuel() {
       }
       if (parts.length) metaHtml = `<div style="margin-top:3px;">${parts.join(' ')}</div>`;
     }
-    listHtml += `<div class="fuel-entry">
+    listHtml += `<div class="fuel-entry" data-date="${e.date}" data-km="${e.km || 0}" data-cost="${e.cost || 0}" data-station="${escHtml((e.station || '').toLowerCase())}">
       <div class="fuel-info">
         <div class="entry-data"><div class="header"><span class="date">${dateStr}</span><span class="km">${e.km ? e.km.toLocaleString() + ' km' : ''}</span></div>
         <div class="fuel-details">
@@ -3830,6 +4556,14 @@ function renderFuel() {
     </div>`;
   }
   document.getElementById('fuelList').innerHTML = listHtml || '<div class="empty-state">Aucun plein enregistre</div>';
+  // Populate station filter
+  const stSel = document.getElementById('fuelStationFilter');
+  if (stSel) {
+    const cur = stSel.value;
+    const stations = new Set(entries.filter(e => e.station).map(e => e.station));
+    stSel.innerHTML = '<option value="">Toutes</option>' + [...stations].sort().map(s => `<option value="${escHtml(s.toLowerCase())}">${escHtml(s)}</option>`).join('');
+    stSel.value = cur;
+  }
 }
 
 function renderStationPrices() {
@@ -4139,6 +4873,150 @@ function renderWash() {
     }
   }
   listEl.innerHTML = html;
+}
+
+// ── Tires ──
+let _editingTireId = null;
+
+function renderTires() {
+  const v = getActiveVehicle();
+  if (!v) return;
+  const tires = v.tires || [];
+  const listEl = document.getElementById('tiresList');
+  if (!listEl) return;
+
+  const typeLabels = { ete: 'Ete', hiver: 'Hiver', '4s': '4 saisons' };
+  const posLabels = { all: 'Tous', av: 'Avant', ar: 'Arriere' };
+
+  if (tires.length === 0) { listEl.innerHTML = '<div class="empty-state">Aucun pneu enregistre</div>'; return; }
+
+  const sorted = [...tires].sort((a, b) => (b.active ? 1 : 0) - (a.active ? 1 : 0) || b.installDate.localeCompare(a.installDate));
+  let html = '';
+  for (const t of sorted) {
+    const dateStr = t.installDate ? new Date(t.installDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+    const kmDone = (t.installKm && v.currentKm) ? v.currentKm - t.installKm : null;
+    const wearPct = ((t.wear || 1) / 10 * 100).toFixed(0);
+    const wearColor = t.wear >= 8 ? 'var(--accent)' : t.wear >= 6 ? 'var(--orange)' : 'var(--green)';
+    const activeTag = t.active ? '<span style="background:var(--green);color:#000;padding:1px 6px;border-radius:4px;font-size:0.75em;margin-left:6px;">Monte</span>' : '<span style="color:var(--muted);font-size:0.75em;margin-left:6px;">Stocke</span>';
+
+    html += `<div class="history-entry" style="${t.active ? '' : 'opacity:0.6;'}">
+      <div class="entry-data">
+        <div class="header"><span class="date">${escHtml(t.brand || '')} ${escHtml(t.model || '')}${activeTag}</span><span class="km">${escHtml(typeLabels[t.type] || t.type)} - ${escHtml(posLabels[t.position] || t.position)}</span></div>
+        <div class="ops">${escHtml(t.size || '')} - Pose : ${dateStr}${t.installKm ? ' a ' + t.installKm.toLocaleString() + ' km' : ''}${kmDone ? ' (+' + kmDone.toLocaleString() + ' km)' : ''}${t.cost ? ' - ' + t.cost.toFixed(0) + ' EUR' : ''}</div>
+        <div style="margin-top:4px;display:flex;align-items:center;gap:6px;">
+          <span style="font-size:0.78em;color:var(--muted);">Usure</span>
+          <div style="flex:1;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;max-width:120px;"><div style="width:${wearPct}%;height:100%;background:${wearColor};border-radius:3px;"></div></div>
+          <span style="font-size:0.78em;color:${wearColor};">${t.wear}/10</span>
+        </div>
+        ${t.notes ? `<div class="notes">${escHtml(t.notes)}</div>` : ''}
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary btn-sm" onclick="editTire(${t.id})">Mod.</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTire(${t.id})">Sup.</button>
+      </div>
+    </div>`;
+  }
+  listEl.innerHTML = html;
+}
+
+function addTire() {
+  const brand = document.getElementById('tireBrand').value.trim();
+  const model = document.getElementById('tireModel').value.trim();
+  if (!brand) { toast('Marque requise', 'error'); return; }
+  const tire = {
+    id: _editingTireId || genId(),
+    brand,
+    model,
+    type: document.getElementById('tireType').value,
+    size: document.getElementById('tireSize').value.trim(),
+    installDate: document.getElementById('tireInstallDate').value,
+    installKm: parseInt(document.getElementById('tireInstallKm').value) || null,
+    wear: parseInt(document.getElementById('tireWear').value) || 1,
+    position: document.getElementById('tirePosition').value,
+    notes: document.getElementById('tireNotes').value.trim(),
+    cost: parseFloat(document.getElementById('tireCost').value) || null,
+    active: document.getElementById('tireActive').checked
+  };
+  updateActiveVehicle(v => {
+    if (!v.tires) v.tires = [];
+    if (_editingTireId) {
+      const idx = v.tires.findIndex(t => t.id === _editingTireId);
+      if (idx >= 0) v.tires[idx] = tire;
+    } else {
+      v.tires.push(tire);
+    }
+  });
+  _editingTireId = null;
+  document.getElementById('cancelTireBtn').style.display = 'none';
+  document.getElementById('tireFormTitle').textContent = 'Nouveau jeu de pneus';
+  ['tireBrand', 'tireModel', 'tireSize', 'tireInstallDate', 'tireInstallKm', 'tireNotes', 'tireCost'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('tireWear').value = '1';
+  document.getElementById('tireWearVal').textContent = '1';
+  document.getElementById('tireActive').checked = true;
+  document.getElementById('tireType').value = 'ete';
+  document.getElementById('tirePosition').value = 'all';
+  toast(_editingTireId ? 'Pneu modifie' : 'Pneu ajoute');
+  renderAll('entretien');
+}
+
+function editTire(id) {
+  const v = getActiveVehicle();
+  const t = (v.tires || []).find(t => t.id === id);
+  if (!t) return;
+  _editingTireId = id;
+  document.getElementById('tireBrand').value = t.brand || '';
+  document.getElementById('tireModel').value = t.model || '';
+  document.getElementById('tireType').value = t.type || 'ete';
+  document.getElementById('tireSize').value = t.size || '';
+  document.getElementById('tireInstallDate').value = t.installDate || '';
+  document.getElementById('tireInstallKm').value = t.installKm || '';
+  document.getElementById('tireWear').value = t.wear || 1;
+  document.getElementById('tireWearVal').textContent = t.wear || 1;
+  document.getElementById('tirePosition').value = t.position || 'all';
+  document.getElementById('tireNotes').value = t.notes || '';
+  document.getElementById('tireCost').value = t.cost || '';
+  document.getElementById('tireActive').checked = !!t.active;
+  document.getElementById('tireFormTitle').textContent = 'Modifier pneu';
+  document.getElementById('cancelTireBtn').style.display = '';
+  switchSubTab('entretien', 'tires');
+}
+
+function cancelTireEdit() {
+  _editingTireId = null;
+  document.getElementById('cancelTireBtn').style.display = 'none';
+  document.getElementById('tireFormTitle').textContent = 'Nouveau jeu de pneus';
+  ['tireBrand', 'tireModel', 'tireSize', 'tireInstallDate', 'tireInstallKm', 'tireNotes', 'tireCost'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('tireWear').value = '1';
+  document.getElementById('tireWearVal').textContent = '1';
+  document.getElementById('tireActive').checked = true;
+}
+
+function deleteTire(id) {
+  if (!confirm('Supprimer ce pneu ?')) return;
+  updateActiveVehicle(v => { v.tires = (v.tires || []).filter(t => t.id !== id); });
+  toast('Pneu supprime');
+  renderAll('entretien');
+}
+
+function getTireAlerts(v) {
+  const alerts = [];
+  for (const t of (v.tires || [])) {
+    if (!t.active) continue;
+    if (t.wear >= 8) {
+      alerts.push({ level: 'danger', text: `Pneus ${escHtml(t.brand)} ${escHtml(t.model)} uses`, detail: `Usure ${t.wear}/10 - remplacement recommande`, action: 'tires' });
+    } else if (t.wear >= 6) {
+      alerts.push({ level: 'warning', text: `Pneus ${escHtml(t.brand)} ${escHtml(t.model)} a surveiller`, detail: `Usure ${t.wear}/10`, action: 'tires' });
+    }
+    if (t.installKm && v.currentKm) {
+      const kmDone = v.currentKm - t.installKm;
+      if (kmDone > 50000) {
+        alerts.push({ level: 'danger', text: `Pneus ${escHtml(t.brand)} : ${kmDone.toLocaleString()} km`, detail: 'Plus de 50 000 km - remplacement recommande', action: 'tires' });
+      } else if (kmDone > 40000) {
+        alerts.push({ level: 'warning', text: `Pneus ${escHtml(t.brand)} : ${kmDone.toLocaleString()} km`, detail: 'Plus de 40 000 km - verifier usure', action: 'tires' });
+      }
+    }
+  }
+  return alerts;
 }
 
 // ── Deadlines ──
@@ -4470,6 +5348,109 @@ function renderStats() {
   document.getElementById('ownershipStats').innerHTML = ownerHtml;
 }
 
+// ── Depreciation / valeur revente ──
+function computeDepreciation(purchasePrice, circDate, currentKm) {
+  if (!purchasePrice || !circDate) return null;
+  const circ = new Date(circDate + '-01');
+  const now = new Date();
+  const ageYears = (now - circ) / (365.25 * 86400000);
+  if (ageYears < 0) return null;
+
+  // Argus simplified curve
+  let value = purchasePrice;
+  const curve = [];
+  for (let y = 0; y <= Math.ceil(ageYears) + 2 && y <= 20; y++) {
+    let rate;
+    if (y === 0) rate = 0;
+    else if (y === 1) rate = 0.25;
+    else if (y === 2) rate = 0.15;
+    else if (y === 3) rate = 0.12;
+    else if (y <= 10) rate = 0.08;
+    else rate = 0.05;
+    if (y > 0) value *= (1 - rate);
+    curve.push({ year: y, value: Math.round(value) });
+  }
+
+  // Interpolate current value
+  const floorY = Math.floor(ageYears);
+  const frac = ageYears - floorY;
+  const v0 = curve[Math.min(floorY, curve.length - 1)]?.value || 0;
+  const v1 = curve[Math.min(floorY + 1, curve.length - 1)]?.value || v0;
+  let currentValue = Math.round(v0 + (v1 - v0) * frac);
+
+  // Km adjustment: penalty if > 15000 km/an, bonus if less
+  if (currentKm && ageYears > 0.5) {
+    const kmPerYear = currentKm / ageYears;
+    const kmDelta = (kmPerYear - 15000) / 15000; // deviation from avg
+    currentValue = Math.round(currentValue * (1 - kmDelta * 0.1)); // +/-10% per 15k deviation
+    currentValue = Math.max(0, currentValue);
+  }
+
+  return { currentValue, curve, ageYears };
+}
+
+function renderDepreciation() {
+  const container = document.getElementById('depreciationCard');
+  if (!container) return;
+  const v = getActiveVehicle();
+  if (!v || !v.purchasePrice || !v.circDate) { container.innerHTML = ''; return; }
+
+  const result = computeDepreciation(v.purchasePrice, v.circDate, v.currentKm);
+  if (!result) { container.innerHTML = ''; return; }
+
+  const { currentValue, curve, ageYears } = result;
+  const lostValue = v.purchasePrice - currentValue;
+  const lostPct = ((lostValue / v.purchasePrice) * 100).toFixed(0);
+
+  // SVG chart
+  const W = 340, H = 160;
+  const pad = { t: 20, r: 20, b: 30, l: 50 };
+  const maxY = v.purchasePrice;
+  const minY = 0;
+  const maxX = Math.min(curve.length - 1, 20);
+
+  const toX = i => pad.l + (i / maxX) * (W - pad.l - pad.r);
+  const toY = val => pad.t + (1 - val / maxY) * (H - pad.t - pad.b);
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;display:block;margin:8px auto 0;">`;
+  // Grid
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + (H - pad.t - pad.b) * (1 - i / 4);
+    const val = Math.round(maxY * i / 4);
+    svg += `<line x1="${pad.l}" y1="${y}" x2="${W - pad.r}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+    svg += `<text x="${pad.l - 5}" y="${y + 4}" fill="#999" font-size="8" text-anchor="end">${(val / 1000).toFixed(0)}k</text>`;
+  }
+
+  // Curve points
+  const pts = curve.slice(0, maxX + 1).map((c, i) => `${toX(i)},${toY(c.value)}`);
+  svg += `<polygon points="${toX(0)},${H - pad.b} ${pts.join(' ')} ${toX(maxX)},${H - pad.b}" fill="url(#depGrad)" opacity="0.15"/>`;
+  svg += `<defs><linearGradient id="depGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e94560"/><stop offset="100%" stop-color="transparent"/></linearGradient></defs>`;
+  svg += `<polyline points="${pts.join(' ')}" fill="none" stroke="#e94560" stroke-width="2" stroke-linejoin="round"/>`;
+
+  // Current age marker
+  const curX = toX(Math.min(ageYears, maxX));
+  const curY = toY(currentValue);
+  svg += `<line x1="${curX}" y1="${pad.t}" x2="${curX}" y2="${H - pad.b}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;
+  svg += `<circle cx="${curX}" cy="${curY}" r="4" fill="#e94560" stroke="#fff" stroke-width="1.5"/>`;
+  svg += `<text x="${curX}" y="${curY - 8}" fill="#e94560" font-size="9" text-anchor="middle" font-weight="600">${(currentValue / 1000).toFixed(1)}k</text>`;
+
+  // X labels
+  const step = maxX <= 10 ? 2 : 5;
+  for (let i = 0; i <= maxX; i += step) {
+    svg += `<text x="${toX(i)}" y="${H - 10}" fill="#999" font-size="8" text-anchor="middle">${i} an${i > 1 ? 's' : ''}</text>`;
+  }
+  svg += '</svg>';
+
+  container.innerHTML = `<div class="section-title" style="margin-top:16px;">Estimation valeur revente</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value" style="color:var(--accent)">~${currentValue.toLocaleString('fr-FR')} EUR</div><div class="stat-label">Valeur estimee</div></div>
+      <div class="stat-card"><div class="stat-value">${lostPct}%</div><div class="stat-label">Depreciation</div></div>
+      <div class="stat-card"><div class="stat-value">${Math.round(ageYears * 10) / 10} ans</div><div class="stat-label">Age vehicule</div></div>
+    </div>
+    ${svg}
+    <p style="font-size:0.75em;color:var(--muted);margin-top:4px;text-align:center;">Estimation basee sur une courbe argus simplifiee, ajustee au km</p>`;
+}
+
 function renderCompare() {
   const el = document.getElementById('compareContent');
   if (!el) return;
@@ -4715,7 +5696,7 @@ function exportData() {
   const exportPayload = {
     _meta: {
       exportDate: new Date().toISOString(),
-      appVersion: '2.0',
+      appVersion: '3.3',
       vehicleCount: Object.keys(store.vehicles).length
     },
     ...store
@@ -4826,6 +5807,14 @@ ${(v.fuelEntries || []).length === 0 ? '<p>Aucun plein enregistre.</p>' :
     `<tr><td>${e.date}</td><td>${e.km ? e.km.toLocaleString('fr-FR') : '-'}</td><td>${e.liters.toFixed(2)}</td><td>${e.cost.toFixed(2)} EUR</td><td>${(e.cost/e.liters).toFixed(3)}</td><td>${e.full ? 'Plein' : 'Appoint'}</td><td>${escHtml(e.station || '-')}</td></tr>`
   ).join('') + '</table>'}
 
+<h2>Pneus</h2>
+${(v.tires || []).length === 0 ? '<p>Aucun pneu enregistre.</p>' :
+  `<table><tr><th>Marque/Modele</th><th>Dimension</th><th>Type</th><th>Date pose</th><th>Usure</th><th>Position</th><th>Etat</th></tr>` +
+  (v.tires || []).map(t => {
+    const typeLabels = { ete: 'Ete', hiver: 'Hiver', '4s': '4 Saisons' };
+    return `<tr><td>${escHtml((t.brand || '') + ' ' + (t.model || ''))}</td><td>${escHtml(t.size || '-')}</td><td>${typeLabels[t.type] || '-'}</td><td>${t.installDate || '-'}</td><td>${t.wear || '-'}/10</td><td>${escHtml(t.position || '-')}</td><td>${t.active !== false ? 'Montes' : 'Stockes'}</td></tr>`;
+  }).join('') + '</table>'}
+
 <h2>Echeances</h2>
 ${(v.deadlines || []).length === 0 ? '<p>Aucune echeance.</p>' :
   `<table><tr><th>Type</th><th>Date</th><th>Notes</th></tr>` +
@@ -4873,6 +5862,14 @@ function exportCSV() {
     csv += '\nType;Date;Categorie;Description\n';
     for (const n of [...(v.notebook || [])].sort((a, b) => a.date.localeCompare(b.date))) {
       csv += `Note;${n.date};${sanitizeCsvCell(n.type)};${sanitizeCsvCell(n.text.replace(/;/g, ',').replace(/\n/g, ' '))}\n`;
+    }
+  }
+  // Pneus
+  if ((v.tires || []).length > 0) {
+    csv += '\nType;Marque;Modele;Dimension;Type pneu;Date pose;Km pose;Usure;Position;Actif;Cout;Notes\n';
+    for (const t of [...(v.tires || [])].sort((a, b) => (a.installDate || '').localeCompare(b.installDate || ''))) {
+      const typeLabels = { ete: 'Ete', hiver: 'Hiver', '4s': '4 Saisons' };
+      csv += `Pneu;${sanitizeCsvCell(t.brand || '')};${sanitizeCsvCell(t.model || '')};${sanitizeCsvCell(t.size || '')};${typeLabels[t.type] || t.type || ''};${t.installDate || ''};${t.installKm || ''};${t.wear || ''}/10;${sanitizeCsvCell(t.position || '')};${t.active !== false ? 'Oui' : 'Non'};${t.cost || ''};${sanitizeCsvCell((t.notes || '').replace(/;/g, ',').replace(/\n/g, ' '))}\n`;
     }
   }
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -5021,6 +6018,17 @@ ${fuelEntries.length > 0 ? `
 </p>
 ` : ''}
 
+${(v.tires || []).filter(t => t.active !== false).length > 0 ? `
+<h2>Pneumatiques montes</h2>
+<table>
+<tr><th>Marque/Modele</th><th>Dimension</th><th>Type</th><th>Date pose</th><th>Usure</th><th>Position</th></tr>
+${(v.tires || []).filter(t => t.active !== false).map(t => {
+  const typeLabels = { ete: 'Ete', hiver: 'Hiver', '4s': '4 Saisons' };
+  return `<tr><td>${escHtml((t.brand || '') + ' ' + (t.model || ''))}</td><td>${escHtml(t.size || '-')}</td><td>${typeLabels[t.type] || '-'}</td><td>${t.installDate || '-'}</td><td>${t.wear || '-'}/10</td><td>${escHtml(t.position || '-')}</td></tr>`;
+}).join('')}
+</table>
+` : ''}
+
 ${(v.deadlines || []).length > 0 ? `
 <h2>Echeances en cours</h2>
 <table>
@@ -5028,6 +6036,16 @@ ${(v.deadlines || []).length > 0 ? `
 ${(v.deadlines || []).map(d => `<tr><td>${escHtml(d.label || d.type)}</td><td>${d.date}</td><td>${escHtml(d.notes || '-')}</td></tr>`).join('')}
 </table>
 ` : ''}
+
+${(() => {
+  const dep = computeDepreciation(v.purchasePrice, v.circDate, v.currentKm);
+  if (!dep) return '';
+  return `<h2>Estimation valeur</h2>
+<p style="color:#666;font-size:0.85em;">
+  Valeur estimee : <strong>~${dep.currentValue.toLocaleString('fr-FR')} EUR</strong> (depreciation ${((v.purchasePrice - dep.currentValue) / v.purchasePrice * 100).toFixed(0)}%, age ${Math.round(dep.ageYears * 10) / 10} ans)
+  <br><span style="font-size:0.85em;">Estimation basee sur courbe argus simplifiee, ajustee au kilometrage</span>
+</p>`;
+})()}
 
 <div class="footer">
   Dossier genere le ${dateStr} - Mon Garage<br>
@@ -5087,8 +6105,7 @@ function handleImport(event) {
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function escAttr(s) { return escHtml(s).replace(/'/g, '&#39;').replace(/"/g, '&quot;'); }
 function sanitizeCsvCell(val) { const s = String(val); return /^[=+\-@\t\r]/.test(s) ? "'" + s : s; }
-let _idCounter = 0;
-function genId() { return Date.now() * 1000 + (++_idCounter % 1000); }
+function genId() { return crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2, 10); }
 
 function copyToClipboard(text) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -5110,11 +6127,11 @@ function copyFallback(text) {
 }
 
 const _sectionRenderers = {
-  dashboard: [renderAlerts, renderVehicleCard, renderOnboarding, renderQuickActions, renderLastFill, renderDashboard],
-  entretien: [renderKmTab, renderHistory, renderSchedule, renderDeadlines, renderWash, renderNotebook],
+  dashboard: [renderAlerts, renderVehicleCard, renderOnboarding, renderPendingEntries, renderQuickActions, renderLastFill, renderDashboard, renderDashConsoTrend, renderCostDonut],
+  entretien: [renderKmTab, renderHistory, renderSchedule, renderDeadlines, renderWash, renderTires, renderNotebook],
   carburant: [renderFuel, renderStationPrices, renderNextFillEstimate],
   energie: [renderBatterySoh, renderCharge, renderNextChargeEstimate, renderSohChart, renderSohReadings],
-  stats: [renderStats, renderCompare, renderCharts, renderKmChart]
+  stats: [renderStats, renderDepreciation, renderCompare, renderCharts, renderKmChart, renderCalendar]
 };
 const _commonRenderers = [renderVehicleMini, renderNavBadges, populateDataLists, updateNavForVehicleType];
 
@@ -5280,7 +6297,124 @@ function renderQuickActions() {
     <button class="quick-action-btn" onclick="switchSection('entretien'); switchSubTab('entretien','history'); setTimeout(() => { document.getElementById('entryFormWrapper')?.classList.add('open'); }, 100);">
       <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35"/><circle cx="12" cy="12" r="3"/></svg>
       + Entretien
+    </button>
+    <button class="quick-action-btn" onclick="document.getElementById('quickCaptureInput').click()">
+      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Photo rapide
     </button>`;
+}
+
+// ── Quick Entry (photo rapide) ──
+
+function processQuickCapture(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const reader = new FileReader();
+  reader.onload = () => {
+    const photoData = reader.result;
+    const now = new Date();
+    const date = now.toISOString().split('T')[0];
+    const time = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    updateActiveVehicle(v => {
+      v.pendingEntries.push({
+        id: genId(),
+        date,
+        time,
+        photo: photoData,
+        notes: '',
+        type: null,
+        createdAt: now.toISOString()
+      });
+    });
+    haptic();
+    toast('Photo enregistree - a completer plus tard');
+    renderAll();
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderPendingEntries() {
+  const el = document.getElementById('pendingEntriesBanner');
+  if (!el) return;
+  const v = getActiveVehicle();
+  const pending = v ? (v.pendingEntries || []) : [];
+  if (pending.length === 0) { el.innerHTML = ''; return; }
+
+  const sorted = [...pending].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const items = sorted.map(p => {
+    const dateStr = new Date(p.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const thumb = p.photo ? `<img src="${escHtml(p.photo)}" style="width:40px;height:40px;border-radius:6px;object-fit:cover;">` : '<div style="width:40px;height:40px;border-radius:6px;background:var(--surface);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+      ${thumb}
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.85em;">${dateStr} ${escHtml(p.time || '')}</div>
+        <div style="font-size:0.75em;color:var(--muted);">${p.notes ? escHtml(p.notes.substring(0, 40)) : 'A completer'}</div>
+      </div>
+      <div style="display:flex;gap:4px;">
+        <button class="btn btn-sm" style="font-size:0.7em;padding:4px 8px;" onclick="completePendingEntry('${p.id}', 'entretien')">Entretien</button>
+        <button class="btn btn-sm" style="font-size:0.7em;padding:4px 8px;" onclick="completePendingEntry('${p.id}', 'carburant')">Plein</button>
+        <button class="btn btn-sm btn-secondary" style="font-size:0.7em;padding:4px 8px;" onclick="deletePendingEntry('${p.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<div class="card" style="margin-bottom:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <h3 style="margin:0;font-size:0.95em;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" style="vertical-align:-2px;margin-right:4px;"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>${pending.length} saisie${pending.length > 1 ? 's' : ''} en attente</h3>
+    </div>
+    ${items}
+  </div>`;
+}
+
+function completePendingEntry(id, type) {
+  const v = getActiveVehicle();
+  if (!v) return;
+  const entry = (v.pendingEntries || []).find(p => p.id === id);
+  if (!entry) return;
+
+  if (type === 'entretien') {
+    switchSection('entretien');
+    switchSubTab('entretien', 'history');
+    setTimeout(() => {
+      document.getElementById('entryFormWrapper')?.classList.add('open');
+      if (entry.date) document.getElementById('entryDate').value = entry.date;
+      // Store photo for attachment
+      if (entry.photo) {
+        window._pendingEntryPhoto = entry.photo;
+        window._pendingEntryId = id;
+      }
+    }, 150);
+  } else if (type === 'carburant') {
+    switchSection('carburant');
+    setTimeout(() => {
+      document.getElementById('fuelFormWrapper')?.classList.add('open');
+      if (entry.date) document.getElementById('fuelDate').value = entry.date;
+      if (entry.photo) {
+        window._pendingEntryPhoto = entry.photo;
+        window._pendingEntryId = id;
+      }
+    }, 150);
+  }
+}
+
+function deletePendingEntry(id) {
+  if (!confirm('Supprimer cette saisie en attente ?')) return;
+  updateActiveVehicle(v => {
+    v.pendingEntries = (v.pendingEntries || []).filter(p => p.id !== id);
+  });
+  haptic();
+  toast('Saisie supprimee');
+  renderAll();
+}
+
+function clearPendingEntry(id) {
+  if (!id) return;
+  updateActiveVehicle(v => {
+    v.pendingEntries = (v.pendingEntries || []).filter(p => p.id !== id);
+  });
+  window._pendingEntryPhoto = null;
+  window._pendingEntryId = null;
 }
 
 // ── Last fill/charge summary on dashboard ──
@@ -5341,7 +6475,7 @@ function renderLastFill() {
   if (entries.length === 0) { el.innerHTML = ''; return; }
   const last = [...entries].sort((a, b) => b.date.localeCompare(a.date))[0];
   const dateStr = new Date(last.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-  const pricePerL = (last.cost / last.liters).toFixed(3);
+  const pricePerL = last.liters > 0 ? (last.cost / last.liters).toFixed(3) : '-';
 
   // Compute consumption if possible
   const sorted = entries.filter(e => e.full && e.km).sort((a, b) => a.date.localeCompare(b.date));
@@ -5403,6 +6537,189 @@ function renderNextFillEstimate() {
   </div>`;
 }
 
+// ── Station map (Leaflet + prix-carburant open data) ──
+
+let _leafletLoaded = false;
+let _stationMap = null;
+let _stationMarkers = [];
+
+async function loadLeaflet() {
+  if (_leafletLoaded) return;
+  // Load Leaflet CSS
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+  link.crossOrigin = 'anonymous';
+  document.head.appendChild(link);
+  // Load Leaflet JS
+  await new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+    s.crossOrigin = 'anonymous';
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('Impossible de charger Leaflet'));
+    document.head.appendChild(s);
+  });
+  _leafletLoaded = true;
+}
+
+function toggleStationMap() {
+  const container = document.getElementById('stationMapContainer');
+  const btn = document.getElementById('stationMapToggle');
+  if (container.style.display === 'none') {
+    container.style.display = '';
+    btn.textContent = 'Masquer la carte';
+    initStationMap();
+  } else {
+    container.style.display = 'none';
+    btn.textContent = 'Afficher la carte';
+  }
+}
+
+function stationMapStatus(msg, color) {
+  const el = document.getElementById('stationMapStatus');
+  if (el) { el.textContent = msg; el.style.color = color || 'var(--muted)'; }
+}
+
+async function initStationMap() {
+  try {
+    stationMapStatus('Chargement de la carte...', 'var(--orange)');
+    await loadLeaflet();
+
+    if (!_stationMap) {
+      _stationMap = L.map('stationMap').setView([46.6, 2.3], 6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap',
+        maxZoom: 18
+      }).addTo(_stationMap);
+    }
+
+    // Fix Leaflet rendering issue when map is in a hidden container
+    setTimeout(() => _stationMap.invalidateSize(), 200);
+
+    stationMapStatus('Localisation en cours...', 'var(--orange)');
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude, longitude } = pos.coords;
+        _stationMap.setView([latitude, longitude], 13);
+        // Add user marker
+        L.circleMarker([latitude, longitude], { radius: 8, color: '#e94560', fillColor: '#e94560', fillOpacity: 0.8 })
+          .addTo(_stationMap)
+          .bindPopup('Vous etes ici');
+        fetchNearbyStations(latitude, longitude);
+      },
+      err => {
+        stationMapStatus('Geolocalisation refusee. Centrage sur la France.', 'var(--orange)');
+        _stationMap.setView([46.6, 2.3], 6);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  } catch (e) {
+    stationMapStatus('Erreur : ' + e.message, 'var(--accent)');
+  }
+}
+
+async function fetchNearbyStations(lat, lon) {
+  stationMapStatus('Recherche des stations...', 'var(--orange)');
+  const v = getActiveVehicle();
+  const fuelType = v ? (v.fuelType || '') : '';
+
+  // Clear old markers first (before fetch, avoids stale markers on error)
+  _stationMarkers.forEach(m => _stationMap.removeLayer(m));
+  _stationMarkers = [];
+
+  try {
+    let stations = [];
+    // Direct API (data.economie.gouv.fr has CORS support)
+    const apiUrl = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?select=id,adresse,ville,cp,latitude,longitude,prix_nom,prix_valeur,prix_maj&where=within_distance(geom,geom'POINT(${lon} ${lat})',10km)&order_by=distance(geom,geom'POINT(${lon} ${lat})')&limit=30`;
+
+    const resp = await fetch(apiUrl);
+    if (resp.ok) {
+      const data = await resp.json();
+      // Group by station id
+      const stationsMap = {};
+      for (const rec of (data.results || [])) {
+        const sid = rec.id;
+        if (!stationsMap[sid]) {
+          stationsMap[sid] = {
+            id: sid, address: rec.adresse || '', city: rec.ville || '',
+            cp: rec.cp || '', lat: rec.latitude, lon: rec.longitude, prices: {}
+          };
+        }
+        if (rec.prix_nom && rec.prix_valeur) {
+          stationsMap[sid].prices[rec.prix_nom.toLowerCase()] = {
+            value: rec.prix_valeur, updated: rec.prix_maj || ''
+          };
+        }
+      }
+      stations = Object.values(stationsMap);
+    }
+
+    if (stations.length === 0) {
+      stationMapStatus('Aucune station trouvee dans un rayon de 10 km', 'var(--muted)');
+      document.getElementById('nearbyStationsList').innerHTML = '';
+      return;
+    }
+
+    // Determine which fuel price to highlight
+    const fuelKey = fuelType === 'diesel' ? 'gazole' : fuelType === 'e85' ? 'e85' : 'sp95';
+
+    // Add markers
+    for (const s of stations) {
+      if (!s.lat || !s.lon) continue;
+      const price = s.prices[fuelKey]?.value ? (s.prices[fuelKey].value / 1000).toFixed(3) : null;
+      const label = price ? price + ' EUR' : '?';
+      const color = price ? (parseFloat(price) < 1.6 ? '#4ecca3' : parseFloat(price) < 1.8 ? '#f0a500' : '#e94560') : '#888';
+
+      const marker = L.circleMarker([s.lat / 100000, s.lon / 100000], {
+        radius: 10, color, fillColor: color, fillOpacity: 0.7, weight: 2
+      }).addTo(_stationMap);
+
+      const popupHtml = `<div style="font-size:12px;min-width:140px;">
+        <strong>${escHtml(s.address)}</strong><br>
+        ${escHtml(s.cp)} ${escHtml(s.city)}<br>
+        ${Object.entries(s.prices).map(([k, p]) =>
+          `<div style="display:flex;justify-content:space-between;"><span>${escHtml(k)}</span><strong>${(p.value / 1000).toFixed(3)} EUR</strong></div>`
+        ).join('')}
+      </div>`;
+      marker.bindPopup(popupHtml);
+      _stationMarkers.push(marker);
+    }
+
+    stationMapStatus(stations.length + ' stations trouvees', 'var(--green)');
+    renderNearbyStationsList(stations, fuelKey);
+  } catch (e) {
+    stationMapStatus('Erreur chargement prix : ' + e.message, 'var(--accent)');
+  }
+}
+
+function renderNearbyStationsList(stations, fuelKey) {
+  const el = document.getElementById('nearbyStationsList');
+  if (!el) return;
+  const sorted = stations
+    .filter(s => s.prices[fuelKey]?.value)
+    .sort((a, b) => (a.prices[fuelKey]?.value || 99999) - (b.prices[fuelKey]?.value || 99999));
+
+  if (sorted.length === 0) { el.innerHTML = ''; return; }
+
+  const fuelLabel = fuelKey.charAt(0).toUpperCase() + fuelKey.slice(1);
+  el.innerHTML = `<div style="font-size:0.85em;color:var(--muted);margin-bottom:6px;">Meilleurs prix ${escHtml(fuelLabel)} a proximite</div>` +
+    sorted.slice(0, 8).map((s, i) => {
+      const price = (s.prices[fuelKey].value / 1000).toFixed(3);
+      const updated = s.prices[fuelKey].updated ? new Date(s.prices[fuelKey].updated).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '';
+      const barColor = parseFloat(price) < 1.6 ? 'var(--green)' : parseFloat(price) < 1.8 ? 'var(--orange)' : 'var(--accent)';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface);border-radius:8px;margin-bottom:4px;border-left:3px solid ${barColor};">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.85em;font-weight:500;">${escHtml(s.address)}</div>
+          <div style="font-size:0.75em;color:var(--muted);">${escHtml(s.cp)} ${escHtml(s.city)} ${updated ? '- MAJ ' + updated : ''}</div>
+        </div>
+        <div style="font-size:1em;font-weight:700;color:${barColor};white-space:nowrap;">${price} EUR</div>
+      </div>`;
+    }).join('');
+}
+
 // ── Cumulative km chart ──
 function renderKmChart() {
   const container = document.getElementById('kmChartSection');
@@ -5449,6 +6766,129 @@ function renderKmChart() {
   svg += `</svg>`;
 
   container.innerHTML = `<div class="section-title">Kilometrage cumule</div>${svg}`;
+}
+
+// ── Calendar view ──
+let _calMonth = new Date().getMonth();
+let _calYear = new Date().getFullYear();
+let _calSelectedDate = null;
+
+function navigateCalendar(delta) {
+  _calMonth += delta;
+  if (_calMonth > 11) { _calMonth = 0; _calYear++; }
+  else if (_calMonth < 0) { _calMonth = 11; _calYear--; }
+  _calSelectedDate = null;
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const container = document.getElementById('calendarView');
+  if (!container) return;
+  const v = getActiveVehicle();
+  if (!v) { container.innerHTML = ''; return; }
+
+  // Collect all events by date
+  const events = {};
+  function addEvent(dateStr, type, label, color) {
+    if (!dateStr) return;
+    const d = dateStr.slice(0, 10);
+    if (!events[d]) events[d] = [];
+    events[d].push({ type, label, color });
+  }
+
+  // Entries (green)
+  for (const e of (v.entries || [])) addEvent(e.date, 'entretien', e.ops.join(', '), '#4ecca3');
+  // Fuel (orange)
+  for (const e of (v.fuelEntries || [])) addEvent(e.date, 'carburant', `${e.liters.toFixed(1)} L - ${e.cost.toFixed(2)} EUR`, '#f0a500');
+  // Charges (blue)
+  for (const e of (v.chargeEntries || [])) addEvent(e.date, 'charge', `${e.kwh} kWh`, '#00b4d8');
+  // Washes (teal)
+  for (const w of (v.washes || [])) addEvent(w.date, 'lavage', w.type || 'Lavage', '#4ecca3');
+  // Deadlines (red/orange)
+  for (const d of (v.deadlines || [])) {
+    const now = new Date();
+    const dDate = new Date(d.date);
+    const color = dDate < now ? '#e94560' : (dDate - now < 30 * 86400000) ? '#f0a500' : '#9b59b6';
+    addEvent(d.date, 'echeance', escHtml(d.label || d.type), color);
+  }
+  // Schedule overdue/warning
+  const now = new Date();
+  for (const item of (v.schedule || [])) {
+    const s = getStatus(item, v);
+    if (s.status === 'overdue') {
+      const todayStr = now.toISOString().slice(0, 10);
+      addEvent(todayStr, 'programme', escHtml(item.name) + ' (en retard)', '#e94560');
+    }
+  }
+  // Notebook entries (gray)
+  for (const n of (v.notebook || [])) addEvent(n.date, 'note', escHtml(n.text.slice(0, 50)), '#888');
+  // Tires (pink)
+  for (const t of (v.tires || [])) if (t.installDate) addEvent(t.installDate, 'pneu', escHtml((t.brand || '') + ' ' + (t.model || '')), '#e94560');
+
+  // Build calendar grid
+  const firstDay = new Date(_calYear, _calMonth, 1);
+  const lastDay = new Date(_calYear, _calMonth + 1, 0);
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Convert to Mon=0
+  const daysInMonth = lastDay.getDate();
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  const monthLabel = firstDay.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  let html = `<div class="cal-nav">
+    <button onclick="navigateCalendar(-1)">&larr;</button>
+    <span class="cal-title">${monthLabel}</span>
+    <button onclick="navigateCalendar(1)">&rarr;</button>
+  </div>`;
+  html += '<div class="cal-grid">';
+  const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  for (const dn of dayNames) html += `<div class="cal-header">${dn}</div>`;
+
+  // Previous month padding
+  const prevMonth = new Date(_calYear, _calMonth, 0);
+  for (let i = startDow - 1; i >= 0; i--) {
+    const d = prevMonth.getDate() - i;
+    html += `<div class="cal-day other-month"><span class="day-num">${d}</span></div>`;
+  }
+
+  // Current month days
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${_calYear}-${String(_calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const isToday = dateStr === todayStr;
+    const isSelected = dateStr === _calSelectedDate;
+    const dayEvents = events[dateStr] || [];
+    const classes = ['cal-day', isToday ? 'today' : '', isSelected ? 'selected' : ''].filter(Boolean).join(' ');
+    html += `<div class="${classes}" onclick="_calSelectedDate='${dateStr}';renderCalendar()">`;
+    html += `<span class="day-num">${d}</span>`;
+    if (dayEvents.length > 0) {
+      html += '<div class="cal-dots">';
+      const shown = dayEvents.slice(0, 4);
+      for (const ev of shown) html += `<span class="cal-dot" style="background:${ev.color}"></span>`;
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  // Next month padding
+  const totalCells = startDow + daysInMonth;
+  const remaining = (7 - (totalCells % 7)) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    html += `<div class="cal-day other-month"><span class="day-num">${i}</span></div>`;
+  }
+  html += '</div>';
+
+  // Day detail
+  if (_calSelectedDate && events[_calSelectedDate]) {
+    html += '<div class="cal-detail">';
+    html += `<div class="section-title" style="margin-top:12px">${new Date(_calSelectedDate + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>`;
+    for (const ev of events[_calSelectedDate]) {
+      html += `<div class="cal-detail-item"><span class="cal-detail-dot" style="background:${ev.color}"></span><div><strong>${ev.type}</strong><br>${ev.label}</div></div>`;
+    }
+    html += '</div>';
+  } else if (_calSelectedDate) {
+    html += `<div class="cal-detail"><div class="section-title" style="margin-top:12px">${new Date(_calSelectedDate + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div><p style="color:var(--muted);padding:8px 0;">Aucun evenement ce jour.</p></div>`;
+  }
+
+  container.innerHTML = html;
 }
 
 // ── Populate datalists (autocompletion) ──
@@ -5506,34 +6946,101 @@ function toggleFuelForm() {
 }
 
 // ── Search / Filter ──
-function filterHistory() {
-  const q = document.getElementById('historySearch').value.toLowerCase();
-  const clear = document.getElementById('historySearchClear');
-  clear.classList.toggle('visible', q.length > 0);
-  const items = document.querySelectorAll('#historyList .history-entry');
-  items.forEach(item => {
+function toggleHistoryFilters() {
+  const p = document.getElementById('historyFilterPanel');
+  p.style.display = p.style.display === 'none' ? '' : 'none';
+}
+function toggleFuelFilters() {
+  const p = document.getElementById('fuelFilterPanel');
+  p.style.display = p.style.display === 'none' ? '' : 'none';
+}
+
+function _sortAndFilterEntries(listId, entryClass, q, sortBy, dateFrom, dateTo, costMin, costMax, extraFilter) {
+  const list = document.getElementById(listId);
+  const items = [...list.querySelectorAll('.' + entryClass)];
+  // Filter
+  for (const item of items) {
     const data = item.querySelector('.entry-data') || item;
-    item.style.display = data.textContent.toLowerCase().includes(q) ? '' : 'none';
-  });
+    const text = data.textContent.toLowerCase();
+    const d = item.dataset.date || '';
+    const cost = parseFloat(item.dataset.cost) || 0;
+    const dMonth = d.slice(0, 7); // YYYY-MM
+    let show = true;
+    if (q && !text.includes(q)) show = false;
+    if (dateFrom && dMonth < dateFrom) show = false;
+    if (dateTo && dMonth > dateTo) show = false;
+    if (costMin !== '' && cost < parseFloat(costMin)) show = false;
+    if (costMax !== '' && cost > parseFloat(costMax)) show = false;
+    if (extraFilter && !extraFilter(item)) show = false;
+    item.style.display = show ? '' : 'none';
+  }
+  // Sort
+  if (sortBy && sortBy !== 'date-desc') {
+    const [field, dir] = sortBy.split('-');
+    items.sort((a, b) => {
+      let va, vb;
+      if (field === 'date') { va = a.dataset.date || ''; vb = b.dataset.date || ''; return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va); }
+      va = parseFloat(a.dataset[field]) || 0; vb = parseFloat(b.dataset[field]) || 0;
+      return dir === 'asc' ? va - vb : vb - va;
+    });
+    for (const item of items) list.appendChild(item);
+  }
+}
+
+function applyHistoryFilters() {
+  const q = (document.getElementById('historySearch')?.value || '').toLowerCase();
+  const clear = document.getElementById('historySearchClear');
+  if (clear) clear.classList.toggle('visible', q.length > 0);
+  const sortBy = document.getElementById('histSortBy')?.value || 'date-desc';
+  const dateFrom = document.getElementById('histDateFrom')?.value || '';
+  const dateTo = document.getElementById('histDateTo')?.value || '';
+  const costMin = document.getElementById('histCostMin')?.value || '';
+  const costMax = document.getElementById('histCostMax')?.value || '';
+  const opFilter = (document.getElementById('histOpFilter')?.value || '').toLowerCase();
+  _sortAndFilterEntries('historyList', 'history-entry', q, sortBy, dateFrom, dateTo, costMin, costMax,
+    opFilter ? item => (item.dataset.ops || '').includes(opFilter) : null);
 }
 function clearHistorySearch() {
   document.getElementById('historySearch').value = '';
-  filterHistory();
+  applyHistoryFilters();
+}
+function resetHistoryFilters() {
+  document.getElementById('historySearch').value = '';
+  document.getElementById('histSortBy').value = 'date-desc';
+  document.getElementById('histDateFrom').value = '';
+  document.getElementById('histDateTo').value = '';
+  document.getElementById('histCostMin').value = '';
+  document.getElementById('histCostMax').value = '';
+  document.getElementById('histOpFilter').value = '';
+  applyHistoryFilters();
 }
 
-function filterFuel() {
-  const q = document.getElementById('fuelSearch').value.toLowerCase();
+function applyFuelFilters() {
+  const q = (document.getElementById('fuelSearch')?.value || '').toLowerCase();
   const clear = document.getElementById('fuelSearchClear');
-  clear.classList.toggle('visible', q.length > 0);
-  const items = document.querySelectorAll('#fuelList .fuel-entry');
-  items.forEach(item => {
-    const data = item.querySelector('.entry-data') || item;
-    item.style.display = data.textContent.toLowerCase().includes(q) ? '' : 'none';
-  });
+  if (clear) clear.classList.toggle('visible', q.length > 0);
+  const sortBy = document.getElementById('fuelSortBy')?.value || 'date-desc';
+  const dateFrom = document.getElementById('fuelDateFrom')?.value || '';
+  const dateTo = document.getElementById('fuelDateTo')?.value || '';
+  const costMin = document.getElementById('fuelCostMin')?.value || '';
+  const costMax = document.getElementById('fuelCostMax')?.value || '';
+  const stFilter = (document.getElementById('fuelStationFilter')?.value || '').toLowerCase();
+  _sortAndFilterEntries('fuelList', 'fuel-entry', q, sortBy, dateFrom, dateTo, costMin, costMax,
+    stFilter ? item => (item.dataset.station || '') === stFilter : null);
 }
 function clearFuelSearch() {
   document.getElementById('fuelSearch').value = '';
-  filterFuel();
+  applyFuelFilters();
+}
+function resetFuelFilters() {
+  document.getElementById('fuelSearch').value = '';
+  document.getElementById('fuelSortBy').value = 'date-desc';
+  document.getElementById('fuelDateFrom').value = '';
+  document.getElementById('fuelDateTo').value = '';
+  document.getElementById('fuelCostMin').value = '';
+  document.getElementById('fuelCostMax').value = '';
+  document.getElementById('fuelStationFilter').value = '';
+  applyFuelFilters();
 }
 
 // ── Onboarding ──
@@ -5827,11 +7334,9 @@ async function verifyScheduleWithAI() {
 
 // ── Import Schedule (carnet d'entretien) ──
 let importScheduleMode = 'text';
-let importPhotoText = null;
 
 function openImportSchedule() {
   importScheduleMode = 'text';
-  importPhotoText = null;
   document.getElementById('importScheduleText').value = '';
   document.getElementById('importPhotoName').textContent = '';
   document.getElementById('importScheduleStatus').style.display = 'none';
@@ -5857,7 +7362,6 @@ function onImportPhotoSelected(input) {
   const file = input.files[0];
   if (!file) return;
   document.getElementById('importPhotoName').textContent = file.name;
-  importPhotoText = null; // will OCR on process
 }
 
 function importScheduleStatus(msg, color) {
@@ -6311,6 +7815,9 @@ if ('serviceWorker' in navigator) {
 renderAllSections();
 updateNotifButton();
 checkAndNotify();
+// Re-check notifications every 30 min + on tab focus
+setInterval(checkAndNotify, 30 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkAndNotify(); });
 document.getElementById('addDate').valueAsDate = new Date();
 document.getElementById('kmReadDate').valueAsDate = new Date();
 document.getElementById('fuelDate').valueAsDate = new Date();

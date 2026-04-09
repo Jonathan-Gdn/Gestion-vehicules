@@ -2,18 +2,49 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /garages/{userId} {
+      // Owner: full access
       allow read, write: if request.auth != null
         && request.auth.uid == userId;
+      // Shared users: read + update only (no create/delete)
+      // Cannot modify sharedWith or ownerEmail (privilege escalation prevention)
+      allow read: if request.auth != null
+        && request.auth.uid in resource.data.sharedWith;
+      allow update: if request.auth != null
+        && request.auth.uid in resource.data.sharedWith
+        && request.resource.data.sharedWith == resource.data.sharedWith
+        && request.resource.data.ownerEmail == resource.data.ownerEmail;
+    }
+    match /invitations/{inviteId} {
+      allow read: if request.auth != null
+        && (resource.data.fromUid == request.auth.uid
+            || resource.data.toEmail == request.auth.token.email);
+      allow create: if request.auth != null
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.status == 'pending';
+      // Accept: only status pending->accepted + set acceptedByUid, lock other fields
+      allow update: if request.auth != null
+        && resource.data.toEmail == request.auth.token.email
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'accepted'
+        && request.resource.data.fromUid == resource.data.fromUid
+        && request.resource.data.toEmail == resource.data.toEmail
+        && request.resource.data.fromEmail == resource.data.fromEmail;
+      allow delete: if request.auth != null
+        && (resource.data.fromUid == request.auth.uid
+            || resource.data.toEmail == request.auth.token.email);
     }
     match /shares/{token} {
-      allow read: if true;
+      // Read only if not expired (expiresAt is always set on creation)
+      allow read: if resource.data.expiresAt > request.time;
       allow create: if request.auth != null
         && request.resource.data.createdBy == request.auth.uid;
       allow delete: if request.auth != null
         && resource.data.createdBy == request.auth.uid;
     }
     match /config/{doc} {
-      allow read: if request.auth != null;
+      // Only users with their own garage can read API keys
+      allow read: if request.auth != null
+        && exists(/databases/$(database)/documents/garages/$(request.auth.uid));
       allow write: if false;
     }
   }
