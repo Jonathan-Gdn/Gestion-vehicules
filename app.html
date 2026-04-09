@@ -931,23 +931,23 @@ async function clearFirebaseConfig() {
         <div class="form-section">
           <h3 id="formTitle" style="margin-bottom:14px; font-size:1em;">Nouvel entretien</h3>
           <div class="form-row">
-            <div><label>Date</label><input type="date" id="addDate"></div>
-            <div><label>Kilometrage</label><input type="number" id="addKm" placeholder="ex: 82000"></div>
+            <div><label for="addDate">Date</label><input type="date" id="addDate"></div>
+            <div><label for="addKm">Kilometrage</label><input type="number" id="addKm" placeholder="ex: 82000"></div>
           </div>
           <div class="form-row">
-            <div style="grid-column:1/-1;"><label>Operations (une par ligne)</label>
+            <div style="grid-column:1/-1;"><label for="addOps">Operations (une par ligne)</label>
             <textarea id="addOps" placeholder="Vidange moteur + filtre huile&#10;Filtre a air&#10;..."></textarea></div>
           </div>
           <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
-            <div><label>Pieces (EUR)</label><input type="number" id="addCostParts" step="0.01" placeholder="ex: 95.00" oninput="updateEntryTotal()"></div>
-            <div><label>Main d'oeuvre (EUR)</label><input type="number" id="addCostLabor" step="0.01" placeholder="ex: 90.50" oninput="updateEntryTotal()"></div>
-            <div><label>Total (EUR)</label><input type="number" id="addCost" step="0.01" placeholder="auto" readonly style="opacity:0.7;"></div>
+            <div><label for="addCostParts">Pieces (EUR)</label><input type="number" id="addCostParts" step="0.01" placeholder="ex: 95.00" oninput="updateEntryTotal()"></div>
+            <div><label for="addCostLabor">Main d'oeuvre (EUR)</label><input type="number" id="addCostLabor" step="0.01" placeholder="ex: 90.50" oninput="updateEntryTotal()"></div>
+            <div><label for="addCost">Total (EUR)</label><input type="number" id="addCost" step="0.01" placeholder="auto" readonly style="opacity:0.7;"></div>
           </div>
           <div class="form-row">
-            <div><label>Prestataire</label><input type="text" id="addProvider" placeholder="ex: Speedy Toulouse" list="providerList"><datalist id="providerList"></datalist></div>
+            <div><label for="addProvider">Prestataire</label><input type="text" id="addProvider" placeholder="ex: Speedy Toulouse" list="providerList"><datalist id="providerList"></datalist></div>
           </div>
           <div class="form-row">
-            <div style="grid-column:1/-1;"><label>Notes</label>
+            <div style="grid-column:1/-1;"><label for="addNotes">Notes</label>
             <textarea id="addNotes" placeholder="Remarques, references pieces..."></textarea></div>
           </div>
           <div class="form-row">
@@ -992,12 +992,12 @@ async function clearFirebaseConfig() {
       <div class="form-section">
         <h3 style="margin-bottom:14px; font-size:1em;">Ajouter une echeance</h3>
         <div class="form-row">
-          <div><label>Type</label><select id="dlType"><option value="CT">Controle technique</option><option value="assurance">Assurance</option><option value="vignette">Vignette Crit'Air</option><option value="autre">Autre</option></select></div>
-          <div><label>Date d'echeance</label><input type="date" id="dlDate"></div>
-          <div><label>Cout (EUR)</label><input type="number" id="dlCost" step="0.01" placeholder="ex: 650"></div>
+          <div><label for="dlType">Type</label><select id="dlType"><option value="CT">Controle technique</option><option value="assurance">Assurance</option><option value="vignette">Vignette Crit'Air</option><option value="autre">Autre</option></select></div>
+          <div><label for="dlDate">Date d'echeance</label><input type="date" id="dlDate"></div>
+          <div><label for="dlCost">Cout (EUR)</label><input type="number" id="dlCost" step="0.01" placeholder="ex: 650"></div>
         </div>
         <div class="form-row">
-          <div style="grid-column:1/-1;"><label>Notes</label><input type="text" id="dlNotes" placeholder="ex: MAIF contrat 123456"></div>
+          <div style="grid-column:1/-1;"><label for="dlNotes">Notes</label><input type="text" id="dlNotes" placeholder="ex: MAIF contrat 123456"></div>
         </div>
         <button class="btn btn-primary" onclick="addDeadline()">Ajouter</button>
       </div>
@@ -1009,11 +1009,11 @@ async function clearFirebaseConfig() {
       <div class="form-section">
         <h3 style="margin-bottom:14px; font-size:1em;">Nouvelle note</h3>
         <div class="form-row">
-          <div><label>Date</label><input type="date" id="nbDate"></div>
-          <div><label>Type</label><select id="nbType"><option value="note">Note</option><option value="incident">Incident</option><option value="voyant">Voyant</option><option value="bruit">Bruit anormal</option><option value="sinistre">Sinistre</option><option value="autre">Autre</option></select></div>
+          <div><label for="nbDate">Date</label><input type="date" id="nbDate"></div>
+          <div><label for="nbType">Type</label><select id="nbType"><option value="note">Note</option><option value="incident">Incident</option><option value="voyant">Voyant</option><option value="bruit">Bruit anormal</option><option value="sinistre">Sinistre</option><option value="autre">Autre</option></select></div>
         </div>
         <div class="form-row">
-          <div style="grid-column:1/-1;"><label>Description</label>
+          <div style="grid-column:1/-1;"><label for="nbText">Description</label>
           <textarea id="nbText" placeholder="ex: Voyant moteur allume apres demarrage a froid..."></textarea></div>
         </div>
         <button class="btn btn-primary" onclick="addNotebookEntry()">Ajouter</button>
@@ -1026,16 +1026,16 @@ async function clearFirebaseConfig() {
       <div class="form-section">
         <h3 style="margin-bottom:14px; font-size:1em;">Nouveau lavage</h3>
         <div class="form-row">
-          <div><label>Date</label><input type="date" id="washDate"></div>
-          <div><label>Type</label><select id="washType"><option value="exterieur">Exterieur</option><option value="interieur">Interieur</option><option value="complet">Complet</option><option value="moteur">Moteur</option><option value="autre">Autre</option></select></div>
+          <div><label for="washDate">Date</label><input type="date" id="washDate"></div>
+          <div><label for="washType">Type</label><select id="washType"><option value="exterieur">Exterieur</option><option value="interieur">Interieur</option><option value="complet">Complet</option><option value="moteur">Moteur</option><option value="autre">Autre</option></select></div>
         </div>
         <div class="form-row">
-          <div><label>Paiement</label><select id="washPayment" onchange="toggleWashPaymentFields()"><option value="direct">Especes / CB</option><option value="badge">Badge</option><option value="jetons">Jetons</option></select></div>
-          <div id="washCostGroup"><label>Cout (EUR)</label><input type="number" id="washCost" step="0.01" placeholder="ex: 8.00"></div>
-          <div id="washTokensGroup" style="display:none"><label>Nombre de jetons</label><input type="number" id="washTokens" min="1" placeholder="ex: 3"></div>
+          <div><label for="washPayment">Paiement</label><select id="washPayment" onchange="toggleWashPaymentFields()"><option value="direct">Especes / CB</option><option value="badge">Badge</option><option value="jetons">Jetons</option></select></div>
+          <div id="washCostGroup"><label for="washCost">Cout (EUR)</label><input type="number" id="washCost" step="0.01" placeholder="ex: 8.00"></div>
+          <div id="washTokensGroup" style="display:none"><label for="washTokens">Nombre de jetons</label><input type="number" id="washTokens" min="1" placeholder="ex: 3"></div>
         </div>
         <div class="form-row">
-          <div style="grid-column:1/-1;"><label>Description</label>
+          <div style="grid-column:1/-1;"><label for="washDesc">Description</label>
           <textarea id="washDesc" placeholder="ex: Programme 3 + option cire + aspirateur..."></textarea></div>
         </div>
         <button class="btn btn-primary" onclick="addWash()">Enregistrer</button>
@@ -1043,16 +1043,16 @@ async function clearFirebaseConfig() {
       <div class="form-section" style="margin-top:16px;">
         <h3 style="margin-bottom:14px; font-size:1em;">Recharge badge / Achat jetons</h3>
         <div class="form-row">
-          <div><label>Date</label><input type="date" id="wcDate"></div>
-          <div><label>Type</label><select id="wcType" onchange="toggleWcFields()"><option value="badge">Recharge badge</option><option value="jetons">Achat jetons</option></select></div>
+          <div><label for="wcDate">Date</label><input type="date" id="wcDate"></div>
+          <div><label for="wcType">Type</label><select id="wcType" onchange="toggleWcFields()"><option value="badge">Recharge badge</option><option value="jetons">Achat jetons</option></select></div>
         </div>
         <div class="form-row" id="wcBadgeRow">
-          <div><label>Montant paye (EUR)</label><input type="number" id="wcCost" step="0.01" placeholder="ex: 30.00"></div>
-          <div><label>Montant credite (EUR)</label><input type="number" id="wcCredit" step="0.01" placeholder="ex: 45.00"></div>
+          <div><label for="wcCost">Montant paye (EUR)</label><input type="number" id="wcCost" step="0.01" placeholder="ex: 30.00"></div>
+          <div><label for="wcCredit">Montant credite (EUR)</label><input type="number" id="wcCredit" step="0.01" placeholder="ex: 45.00"></div>
         </div>
         <div class="form-row" id="wcJetonsRow" style="display:none">
-          <div><label>Montant paye (EUR)</label><input type="number" id="wcJetonsCost" step="0.01" placeholder="ex: 20.00"></div>
-          <div><label>Nombre de jetons</label><input type="number" id="wcQty" placeholder="ex: 10" min="1"></div>
+          <div><label for="wcJetonsCost">Montant paye (EUR)</label><input type="number" id="wcJetonsCost" step="0.01" placeholder="ex: 20.00"></div>
+          <div><label for="wcQty">Nombre de jetons</label><input type="number" id="wcQty" placeholder="ex: 10" min="1"></div>
         </div>
         <button class="btn btn-primary" onclick="addWashCredit()">Ajouter</button>
       </div>
@@ -1071,16 +1071,16 @@ async function clearFirebaseConfig() {
     <div class="form-section">
       <h3 style="margin-bottom:14px; font-size:1em;" id="fuelFormTitle">Nouveau plein</h3>
       <div class="form-row">
-        <div><label>Date</label><input type="date" id="fuelDate"></div>
-        <div><label>Kilometrage</label><input type="number" id="fuelKm" placeholder="ex: 81200"></div>
+        <div><label for="fuelDate">Date</label><input type="date" id="fuelDate"></div>
+        <div><label for="fuelKm">Kilometrage</label><input type="number" id="fuelKm" placeholder="ex: 81200"></div>
       </div>
       <div class="form-row">
-        <div><label>Litres</label><input type="number" id="fuelLiters" step="0.01" placeholder="ex: 42.5"></div>
-        <div><label>Prix total (EUR)</label><input type="number" id="fuelCost" step="0.01" placeholder="ex: 68.30"></div>
+        <div><label for="fuelLiters">Litres</label><input type="number" id="fuelLiters" step="0.01" placeholder="ex: 42.5"></div>
+        <div><label for="fuelCost">Prix total (EUR)</label><input type="number" id="fuelCost" step="0.01" placeholder="ex: 68.30"></div>
       </div>
       <div class="form-row">
-        <div><label>Plein complet ?</label><select id="fuelFull"><option value="1">Oui</option><option value="0">Non (appoint)</option></select></div>
-        <div><label>Station</label><input type="text" id="fuelStation" placeholder="ex: TotalEnergies Toulouse" list="stationList"><datalist id="stationList"></datalist></div>
+        <div><label for="fuelFull">Plein complet ?</label><select id="fuelFull"><option value="1">Oui</option><option value="0">Non (appoint)</option></select></div>
+        <div><label for="fuelStation">Station</label><input type="text" id="fuelStation" placeholder="ex: TotalEnergies Toulouse" list="stationList"><datalist id="stationList"></datalist></div>
       </div>
       <div class="form-row">
         <div style="grid-column:1/-1;">
@@ -1140,24 +1140,24 @@ async function clearFirebaseConfig() {
     <div class="form-section">
       <h3 style="margin-bottom:14px; font-size:1em;" id="chargeFormTitle">Nouvelle charge</h3>
       <div class="form-row">
-        <div><label>Date</label><input type="date" id="chargeDate"></div>
-        <div><label>Kilometrage</label><input type="number" id="chargeKm" placeholder="ex: 45200"></div>
+        <div><label for="chargeDate">Date</label><input type="date" id="chargeDate"></div>
+        <div><label for="chargeKm">Kilometrage</label><input type="number" id="chargeKm" placeholder="ex: 45200"></div>
       </div>
       <div class="form-row">
-        <div><label>kWh charges</label><input type="number" id="chargeKwh" step="0.1" placeholder="ex: 42.5"></div>
-        <div><label>Prix total (EUR)</label><input type="number" id="chargeCost" step="0.01" placeholder="ex: 12.30"></div>
+        <div><label for="chargeKwh">kWh charges</label><input type="number" id="chargeKwh" step="0.1" placeholder="ex: 42.5"></div>
+        <div><label for="chargeCost">Prix total (EUR)</label><input type="number" id="chargeCost" step="0.01" placeholder="ex: 12.30"></div>
       </div>
       <div class="form-row">
-        <div><label>% depart</label><input type="number" id="chargeSocStart" min="0" max="100" placeholder="ex: 15"></div>
-        <div><label>% arrivee</label><input type="number" id="chargeSocEnd" min="0" max="100" placeholder="ex: 80"></div>
+        <div><label for="chargeSocStart">% depart</label><input type="number" id="chargeSocStart" min="0" max="100" placeholder="ex: 15"></div>
+        <div><label for="chargeSocEnd">% arrivee</label><input type="number" id="chargeSocEnd" min="0" max="100" placeholder="ex: 80"></div>
       </div>
       <div class="form-row">
-        <div><label>Type de charge</label><select id="chargeType"><option value="ac-slow">AC lent (domicile/travail)</option><option value="ac-fast">AC rapide (borne publique)</option><option value="dc">DC rapide (autoroute)</option></select></div>
-        <div><label>Charge complete ?</label><select id="chargeFull"><option value="1">Oui (100%)</option><option value="0">Non (partielle)</option></select></div>
+        <div><label for="chargeType">Type de charge</label><select id="chargeType"><option value="ac-slow">AC lent (domicile/travail)</option><option value="ac-fast">AC rapide (borne publique)</option><option value="dc">DC rapide (autoroute)</option></select></div>
+        <div><label for="chargeFull">Charge complete ?</label><select id="chargeFull"><option value="1">Oui (100%)</option><option value="0">Non (partielle)</option></select></div>
       </div>
       <div class="form-row">
-        <div><label>Lieu / Station</label><input type="text" id="chargeStation" placeholder="ex: Ionity A61 Toulouse" list="chargeStationList"><datalist id="chargeStationList"></datalist></div>
-        <div><label>Lieu type</label><select id="chargeLocation"><option value="domicile">Domicile</option><option value="travail">Travail</option><option value="public">Borne publique</option></select></div>
+        <div><label for="chargeStation">Lieu / Station</label><input type="text" id="chargeStation" placeholder="ex: Ionity A61 Toulouse" list="chargeStationList"><datalist id="chargeStationList"></datalist></div>
+        <div><label for="chargeLocation">Lieu type</label><select id="chargeLocation"><option value="domicile">Domicile</option><option value="travail">Travail</option><option value="public">Borne publique</option></select></div>
       </div>
       <button class="btn btn-primary" onclick="addCharge()">Enregistrer</button>
       <button class="btn btn-secondary" id="cancelChargeBtn" onclick="cancelChargeEdit()" style="margin-left:8px;">Annuler</button>
@@ -1448,6 +1448,18 @@ async function submitSetup(e) {
   };
   if (!cfg.apiKey || !cfg.authDomain || !cfg.projectId || !cfg.appId) {
     document.getElementById('setupError').textContent = 'Champs obligatoires manquants';
+    return;
+  }
+  if (!/^AIza/.test(cfg.apiKey)) {
+    document.getElementById('setupError').textContent = 'API Key invalide (doit commencer par AIza)';
+    return;
+  }
+  if (!/\.(firebaseapp\.com|web\.app)$/.test(cfg.authDomain)) {
+    document.getElementById('setupError').textContent = 'Auth Domain invalide (ex: mon-projet.firebaseapp.com)';
+    return;
+  }
+  if (!/^[a-z0-9-]+$/.test(cfg.projectId)) {
+    document.getElementById('setupError').textContent = 'Project ID invalide (lettres minuscules, chiffres, tirets)';
     return;
   }
   // Clean empty optional fields
@@ -4308,18 +4320,11 @@ function renderStats() {
       if (totalKwh > 0 && totalActualChargeCost > 0) {
         chtml += `<div class="stat-card orange"><div class="stat-value">${(totalActualChargeCost / totalKwh).toFixed(3)} EUR</div><div class="stat-label">Prix moyen / kWh</div></div>`;
       }
-      // Consumption kWh/100km
-      const fullCharges = chargeEntries.filter(e => e.full && e.km).sort((a, b) => a.date.localeCompare(b.date));
-      if (fullCharges.length >= 2) {
-        let tKm = 0, tKwh = 0;
-        for (let i = 1; i < fullCharges.length; i++) {
-          const d = fullCharges[i].km - fullCharges[i - 1].km;
-          if (d > 0) { tKm += d; tKwh += fullCharges[i].kwh || 0; }
-        }
-        if (tKm > 0) {
-          const conso = (tKwh / tKm) * 100;
-          chtml += `<div class="stat-card green"><div class="stat-value">${conso.toFixed(1)} kWh</div><div class="stat-label">/ 100 km</div></div>`;
-        }
+      // Consumption kWh/100km (reuse computeChargeConsumption)
+      const { realPoints: chargeConsoPoints } = computeChargeConsumption(chargeEntries);
+      if (chargeConsoPoints.length > 0) {
+        const avgConso = chargeConsoPoints.reduce((s, p) => s + p.value, 0) / chargeConsoPoints.length;
+        chtml += `<div class="stat-card green"><div class="stat-value">${avgConso.toFixed(1)} kWh</div><div class="stat-label">/ 100 km</div></div>`;
       }
       chtml += '</div>';
       chargeStatsSynthese.innerHTML = chtml;
