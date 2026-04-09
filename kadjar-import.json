@@ -1,0 +1,111 @@
+{
+  "_meta": {
+    "exportDate": "2026-04-09T12:00:00.000Z",
+    "appVersion": "1.0",
+    "vehicleCount": 1
+  },
+  "activeVehicleId": "kadjar",
+  "vehicles": {
+    "kadjar": {
+      "id": "kadjar",
+      "name": "Kadjar",
+      "model": "Renault Kadjar Phase 2",
+      "engine": "1.5 Blue dCi 115",
+      "engineCode": "K9K 636",
+      "gearbox": "EDC7 (DW5)",
+      "distrib": "Chaine (a confirmer)",
+      "circDate": "2020-10",
+      "purchaseDate": "2025-02",
+      "purchaseKm": 57400,
+      "purchasePrice": 15000,
+      "estConsumption": 4.6,
+      "estFuelPrice": 1.60,
+      "currentKm": 80458,
+      "schedule": [
+        { "name": "Vidange moteur + filtre huile", "kmInterval": 30000, "yearInterval": 2 },
+        { "name": "Filtre a air", "kmInterval": 60000, "yearInterval": 4 },
+        { "name": "Filtre a carburant (gasoil)", "kmInterval": 60000, "yearInterval": 4 },
+        { "name": "Filtre habitacle", "kmInterval": 30000, "yearInterval": 2 },
+        { "name": "Liquide de frein", "kmInterval": 120000, "yearInterval": 3 },
+        { "name": "Liquide de refroidissement", "kmInterval": 150000, "yearInterval": 5 },
+        { "name": "Courroie accessoires + galets", "kmInterval": 150000, "yearInterval": 6 },
+        { "name": "Vidange boite EDC7 (DW5)", "kmInterval": 120000, "yearInterval": 6 }
+      ],
+      "kmReadings": [
+        { "id": 1, "date": "2020-10-01", "km": 0, "source": "Mise en circulation" },
+        { "id": 10, "date": "2022-10-01", "km": 27000, "source": "Revision A LOA (estime)" },
+        { "id": 11, "date": "2024-10-01", "km": 54000, "source": "Revision B LOA (estime)" },
+        { "id": 2, "date": "2024-11-04", "km": 55000, "source": "Controle technique" },
+        { "id": 3, "date": "2025-02-15", "km": 57400, "source": "Achat" },
+        { "id": 4, "date": "2025-11-22", "km": 72637, "source": "Vidange + filtres" },
+        { "id": 5, "date": "2026-03-13", "km": 79064, "source": "Pneus neufs" },
+        { "id": 6, "date": "2026-04-08", "km": 80458, "source": "Releve compteur" }
+      ],
+      "entries": [
+        {
+          "id": 10,
+          "date": "2022-10-01",
+          "km": 27000,
+          "ops": ["Vidange moteur + filtre huile", "Filtre habitacle"],
+          "cost": null,
+          "provider": "Renault (LOA)",
+          "notes": "Revision A estimee (~13 500 km/an). Km et date estimes, couvert par contrat LOA"
+        },
+        {
+          "id": 11,
+          "date": "2024-10-01",
+          "km": 54000,
+          "ops": ["Vidange moteur + filtre huile", "Filtre habitacle", "Filtre a air", "Filtre a carburant (gasoil)", "Liquide de frein"],
+          "cost": null,
+          "provider": "Renault (LOA)",
+          "notes": "Revision B estimee (~13 500 km/an). Km et date estimes, couvert par contrat LOA. Liquide de frein inclus (du a 3 ans = 10/2023, fait lors de cette revision)"
+        },
+        {
+          "id": 1,
+          "date": "2024-11-04",
+          "km": 55000,
+          "ops": ["Controle technique"],
+          "cost": null,
+          "provider": "",
+          "notes": "Defaillances mineures : reglage feux brouillard avant (G,D), usure anormale pneus (AVG, AVD). Km a confirmer (~55 000)"
+        },
+        {
+          "id": 2,
+          "date": "2025-02-15",
+          "km": 57400,
+          "ops": ["Achat du vehicule"],
+          "cost": null,
+          "provider": "",
+          "notes": "Fin LOA 11/2024. Entretien standard Renault couvert par LOA (10/2020 - 11/2024)"
+        },
+        {
+          "id": 3,
+          "date": "2025-11-22",
+          "km": 72637,
+          "ops": ["Vidange moteur + filtre huile", "Filtre habitacle"],
+          "cost": null,
+          "provider": "",
+          "notes": "Huile FUCHS Titan GT1 Flex 34 5W30 (5L + 1L). Ref facture MEYLMOF0251"
+        },
+        {
+          "id": 4,
+          "date": "2026-03-13",
+          "km": 79064,
+          "ops": ["Remplacement 4 pneus"],
+          "cost": 416.20,
+          "provider": "",
+          "notes": "Hankook Ventus Prime 4X K135A 215/60 R17 96V. Montage inclus."
+        }
+      ],
+      "fuelEntries": [],
+      "deadlines": [
+        {
+          "id": 100,
+          "type": "CT",
+          "date": "2026-11-04",
+          "notes": "CT a repasser (2 ans apres le 04/11/2024)"
+        }
+      ]
+    }
+  }
+}

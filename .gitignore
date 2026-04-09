@@ -1,0 +1,7 @@
+.firebase/
+.firebaserc
+CLAUDE.md
+entretien.md
+firebase-rules.md
+node_modules/
+.DS_Store
