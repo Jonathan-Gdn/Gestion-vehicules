@@ -11,10 +11,6 @@ const FIREBASE_CONFIG = {
   appId: "VOTRE_APP_ID"
 };
 
-// ALLOWED_UIDS n'est plus utilise en v3 (chaque user a son propre document Firestore).
-// Conserve pour retrocompatibilite si config.js existant.
-const ALLOWED_UIDS = [];
-
 // Les cles API tierces sont stockees dans Firestore (document config/api_keys)
 // Elles sont chargees automatiquement apres authentification
 // Pour les configurer, creer le document config/api_keys dans Firestore avec :

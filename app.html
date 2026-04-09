@@ -17,7 +17,7 @@
 <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore-compat.js"></script>
 <script>
 // ── Config loader: IndexedDB > config.js > setup screen ──
-var FIREBASE_CONFIG, ALLOWED_UIDS;
+var FIREBASE_CONFIG;
 const _cfgDB = 'MonGarageConfig';
 const _cfgStore = 'config';
 function _openCfgDb() {
@@ -37,7 +37,7 @@ async function loadFirebaseConfig() {
       req.onsuccess = () => resolve(req.result || null);
       req.onerror = () => reject(req.error);
     });
-  } catch { return null; }
+  } catch (e) { console.warn('IndexedDB load failed:', e); return null; }
 }
 async function saveFirebaseConfig(cfg) {
   const idb = await _openCfgDb();
@@ -1419,9 +1419,7 @@ let ignoreNextSnapshot = false;
 let unsubSnapshot = null;
 let PLATE_API_TOKEN = '';
 let GROQ_API_KEY = '';
-let GARAGE_DOC = 'garages/main'; // updated to garages/{uid} after auth
-
-function getGarageDoc() { return GARAGE_DOC; }
+let GARAGE_DOC = null; // set to garages/{uid} after auth
 
 function initFirebase(cfg) {
   try {

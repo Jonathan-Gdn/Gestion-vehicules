@@ -1,7 +1,6 @@
 const CACHE_NAME = 'mongarage-v3.0';
 const ASSETS = [
   './app.html',
-  './config.js',
   './manifest.json',
   './icon-180.png',
   './icon-512.png'
