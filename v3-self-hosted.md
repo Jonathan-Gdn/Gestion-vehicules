@@ -1,31 +1,26 @@
 # MonGarage v3 - Self-hosted / Multi-utilisateur
 
-**Statut : A FAIRE**
+**Statut : TERMINE - deploye 2026-04-09**
 
-## Contexte
-Rendre l'app facilement deployable par n'importe qui avec sa propre instance Firebase, sans toucher au code.
-
-## Architecture retenue
+## Architecture
 Option A : chaque user deploie sa propre instance Firebase (pas de multi-user sur une meme instance).
 
-## Fonctionnalites
+## Implemente
 - Ecran de setup au premier lancement si aucune config Firebase detectee
 - Formulaire : API key, Auth domain, Project ID, Storage bucket, Messaging sender ID, App ID
-- Stockage de la config dans IndexedDB (plus robuste que localStorage)
-- Initialisation Firebase dynamique a partir du cache
-- Bouton "Reinitialiser config" dans les parametres
-- Option QR code / lien de partage de la config
-- Guide pas-a-pas pour creer un projet Firebase (dans l'app ou README)
-- Rules Firestore par uid dynamique (plus de ALLOWED_UIDS en dur)
+- Guide pas-a-pas integre (details/summary) pour creer un projet Firebase
+- Stockage config dans IndexedDB (persistent, plus robuste que localStorage)
+- Boot sequence : IndexedDB > config.js (legacy) > ecran setup
+- Initialisation Firebase dynamique a partir de la config sauvegardee
+- Document Firestore par user : `garages/{uid}` (plus de `garages/main` en dur)
+- Plus de `ALLOWED_UIDS` : chaque user authentifie accede a son propre doc
+- Firestore rules dynamiques (`request.auth.uid == userId`)
+- Migration automatique `garages/main` -> `garages/{uid}` au premier login
+- Bouton "Reinitialiser config" dans le menu profil
+- Retrocompatibilite config.js (charge et sauvegarde en IndexedDB au premier boot)
+- config.example.js mis a jour avec notes v3
 
-## Refactor associe (optionnel, a evaluer)
-- Migration SDK modulaire Firebase (compat → modular) - uniquement si build system (Vite)
-- Sans bundler : zero gain de perf, gros refactor (~30+ appels Firebase + scope modules)
-
-## Prerequis
-- v1 stabilisee (config.js externalisee - fait)
-- v2 vehicules electriques - fait (2026-04-09)
-- v2.5 features (echeances, graphes, alertes km) - fait (2026-04-09)
-
-## Estimation
-~150-180 lignes de code. Pas de changement d'architecture profond.
+## Prerequis (tous faits)
+- v1 stabilisee (config.js externalisee)
+- v2 vehicules electriques (2026-04-09)
+- v2.5 features (echeances, graphes, alertes km) (2026-04-09)

@@ -15,7 +15,50 @@
 <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore-compat.js"></script>
-<script src="config.js"></script>
+<script>
+// ── Config loader: IndexedDB > config.js > setup screen ──
+var FIREBASE_CONFIG, ALLOWED_UIDS;
+const _cfgDB = 'MonGarageConfig';
+const _cfgStore = 'config';
+function _openCfgDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(_cfgDB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(_cfgStore);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function loadFirebaseConfig() {
+  try {
+    const idb = await _openCfgDb();
+    return new Promise((resolve, reject) => {
+      const tx = idb.transaction(_cfgStore, 'readonly');
+      const req = tx.objectStore(_cfgStore).get('firebase');
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  } catch { return null; }
+}
+async function saveFirebaseConfig(cfg) {
+  const idb = await _openCfgDb();
+  return new Promise((resolve, reject) => {
+    const tx = idb.transaction(_cfgStore, 'readwrite');
+    tx.objectStore(_cfgStore).put(cfg, 'firebase');
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function clearFirebaseConfig() {
+  const idb = await _openCfgDb();
+  return new Promise((resolve, reject) => {
+    const tx = idb.transaction(_cfgStore, 'readwrite');
+    tx.objectStore(_cfgStore).delete('firebase');
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+</script>
+<script src="config.js" onerror=""></script>
 <style>
   :root {
     --bg: #1a1a2e;
@@ -481,6 +524,13 @@
   .login-btn:hover { background: #e8e8e8; }
   .login-btn svg { width: 20px; height: 20px; }
   #loginError { color: var(--red); margin-top: 16px; font-size: 0.9em; }
+  /* Setup screen */
+  #setupScreen { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; }
+  #setupScreen h1 { font-size: 2em; margin-bottom: 8px; }
+  #setupScreen p { color: var(--muted); margin-bottom: 16px; }
+  .setup-label { display: block; text-align: left; color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+  .setup-input { display: block; width: 100%; margin-top: 3px; padding: 9px 12px; background: var(--card); color: var(--text); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-size: 0.95em; box-sizing: border-box; }
+  .setup-input:focus { border-color: var(--accent); outline: none; }
   .user-bar {
     display: flex; align-items: center; justify-content: flex-end;
     gap: 10px; margin-bottom: 10px; font-size: 0.85em; color: var(--muted);
@@ -762,6 +812,38 @@
 <!-- Offline indicator -->
 <div class="offline-bar" id="offlineBar">Hors ligne</div>
 
+<!-- Setup screen (first launch, no config) -->
+<div id="setupScreen" style="display:none;">
+  <h1>Mon Garage</h1>
+  <p>Premiere utilisation - configurez votre projet Firebase</p>
+  <div style="max-width: 420px; text-align: left; margin: 20px auto 0;">
+    <div style="background: var(--surface); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.06);">
+      <p style="color: var(--muted); font-size: 0.85em; line-height: 1.6; margin-bottom: 12px;">Creez un projet Firebase gratuit puis copiez les valeurs depuis <strong style="color:var(--text);">Parametres du projet > Configuration du SDK</strong>.</p>
+      <details style="color: var(--muted); font-size: 0.82em; cursor: pointer;">
+        <summary style="color: var(--accent); margin-bottom: 8px;">Guide pas-a-pas</summary>
+        <ol style="line-height: 1.8; padding-left: 20px; margin-top: 4px;">
+          <li>Aller sur <strong>console.firebase.google.com</strong></li>
+          <li>Creer un projet (nom libre, Analytics optionnel)</li>
+          <li>Ajouter une <strong>application Web</strong></li>
+          <li>Copier les valeurs de <code style="background:var(--card);padding:2px 4px;border-radius:4px;">firebaseConfig</code></li>
+          <li>Activer <strong>Authentication > Google</strong></li>
+          <li>Creer une base <strong>Firestore Database</strong></li>
+        </ol>
+      </details>
+    </div>
+    <form id="setupForm" onsubmit="submitSetup(event)">
+      <label class="setup-label">API Key<input class="setup-input" id="setupApiKey" required placeholder="AIzaSy..."></label>
+      <label class="setup-label">Auth Domain<input class="setup-input" id="setupAuthDomain" required placeholder="mon-projet.firebaseapp.com"></label>
+      <label class="setup-label">Project ID<input class="setup-input" id="setupProjectId" required placeholder="mon-projet"></label>
+      <label class="setup-label">Storage Bucket<input class="setup-input" id="setupBucket" placeholder="mon-projet.firebasestorage.app"></label>
+      <label class="setup-label">Messaging Sender ID<input class="setup-input" id="setupSenderId" placeholder="123456789"></label>
+      <label class="setup-label">App ID<input class="setup-input" id="setupAppId" required placeholder="1:123:web:abc"></label>
+      <button type="submit" class="login-btn" style="margin-top: 16px; width: 100%;">Enregistrer et continuer</button>
+      <p id="setupError" style="color: var(--accent); font-size: 0.85em; margin-top: 8px;"></p>
+    </form>
+  </div>
+</div>
+
 <!-- Login screen -->
 <div id="loginScreen">
   <h1>Mon Garage</h1>
@@ -770,15 +852,6 @@
     <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
     Connexion Google
   </button>
-  <div id="configMissing" style="display:none; margin-top: 20px; padding: 16px; background: var(--surface); border-radius: 12px; border: 1px solid var(--accent); max-width: 400px; text-align: left;">
-    <p style="color: var(--accent); font-weight: 600; margin-bottom: 8px;">Configuration manquante</p>
-    <p style="color: var(--muted); font-size: 0.9em; line-height: 1.5;">Le fichier <code style="background:var(--card);padding:2px 6px;border-radius:4px;">config.js</code> est absent. Pour utiliser l'app :</p>
-    <ol style="color: var(--muted); font-size: 0.85em; line-height: 1.8; padding-left: 20px; margin-top: 8px;">
-      <li>Copier <code style="background:var(--card);padding:2px 6px;border-radius:4px;">config.example.js</code> en <code style="background:var(--card);padding:2px 6px;border-radius:4px;">config.js</code></li>
-      <li>Renseigner votre configuration Firebase</li>
-      <li>Voir le <a href="https://github.com/Jonathan-Gdn/Gestion-vehicules#readme" style="color:var(--accent)">README</a> pour le guide complet</li>
-    </ol>
-  </div>
   <p id="loginError"></p>
 </div>
 
@@ -796,6 +869,7 @@
       <div class="profile-menu-email" id="userEmail"></div>
       <button class="profile-menu-item" onclick="openSharePanel(); toggleProfileMenu();">Partager</button>
       <button class="profile-menu-item" id="notifToggleBtn" onclick="toggleNotifications(); toggleProfileMenu();">Activer notifications</button>
+      <button class="profile-menu-item" onclick="resetFirebaseConfig()">Reinitialiser config</button>
       <button class="profile-menu-item" onclick="signOut()">Deconnexion</button>
     </div>
   </div>
@@ -1345,26 +1419,82 @@ let ignoreNextSnapshot = false;
 let unsubSnapshot = null;
 let PLATE_API_TOKEN = '';
 let GROQ_API_KEY = '';
-const GARAGE_DOC = 'garages/main';
-// Config chargee depuis config.js (gitignored)
-if (typeof FIREBASE_CONFIG === 'undefined') {
-  console.warn('config.js manquant - copier config.example.js vers config.js et renseigner les valeurs');
-  document.getElementById('loginBtn').style.display = 'none';
-  document.getElementById('configMissing').style.display = 'block';
-}
+let GARAGE_DOC = 'garages/main'; // updated to garages/{uid} after auth
 
-if (typeof firebase !== 'undefined' && typeof FIREBASE_CONFIG !== 'undefined') {
+function getGarageDoc() { return GARAGE_DOC; }
+
+function initFirebase(cfg) {
   try {
-    firebase.initializeApp(FIREBASE_CONFIG);
+    firebase.initializeApp(cfg);
     db = firebase.firestore();
     auth = firebase.auth();
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
     firestoreReady = true;
     console.log('Firebase OK');
+    return true;
   } catch (e) {
     console.warn('Firebase init failed:', e);
+    return false;
   }
 }
+
+async function submitSetup(e) {
+  e.preventDefault();
+  const cfg = {
+    apiKey: document.getElementById('setupApiKey').value.trim(),
+    authDomain: document.getElementById('setupAuthDomain').value.trim(),
+    projectId: document.getElementById('setupProjectId').value.trim(),
+    storageBucket: document.getElementById('setupBucket').value.trim(),
+    messagingSenderId: document.getElementById('setupSenderId').value.trim(),
+    appId: document.getElementById('setupAppId').value.trim()
+  };
+  if (!cfg.apiKey || !cfg.authDomain || !cfg.projectId || !cfg.appId) {
+    document.getElementById('setupError').textContent = 'Champs obligatoires manquants';
+    return;
+  }
+  // Clean empty optional fields
+  Object.keys(cfg).forEach(k => { if (!cfg[k]) delete cfg[k]; });
+  if (!initFirebase(cfg)) {
+    document.getElementById('setupError').textContent = 'Erreur d\'initialisation Firebase - verifiez vos valeurs';
+    return;
+  }
+  await saveFirebaseConfig(cfg);
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  auth.onAuthStateChanged(onAuthReady);
+}
+
+async function resetFirebaseConfig() {
+  if (!confirm('Reinitialiser la configuration Firebase ? L\'app reviendra a l\'ecran de setup.')) return;
+  await clearFirebaseConfig();
+  location.reload();
+}
+
+// ── Boot: IndexedDB config > config.js > setup screen ──
+(async function boot() {
+  // 1. Try IndexedDB
+  const savedCfg = await loadFirebaseConfig();
+  if (savedCfg) {
+    if (initFirebase(savedCfg)) {
+      document.getElementById('loginScreen').style.display = 'flex';
+      auth.onAuthStateChanged(onAuthReady);
+      return;
+    }
+  }
+  // 2. Try config.js (legacy / self-hosted with file)
+  if (typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG) {
+    if (initFirebase(FIREBASE_CONFIG)) {
+      // Save to IndexedDB for next time
+      saveFirebaseConfig(FIREBASE_CONFIG).catch(() => {});
+      document.getElementById('loginScreen').style.display = 'flex';
+      auth.onAuthStateChanged(onAuthReady);
+      return;
+    }
+  }
+  // 3. Show setup screen
+  document.getElementById('setupScreen').style.display = 'flex';
+  document.getElementById('loginScreen').style.display = 'none';
+})();
 
 function signIn() {
   if (!auth) return;
@@ -1401,11 +1531,8 @@ async function onAuthReady(user) {
   if (isShareView) return;
   currentUser = user;
   if (user) {
-    if (!ALLOWED_UIDS.includes(user.uid)) {
-      document.getElementById('loginError').textContent = 'Acces refuse pour ' + user.email;
-      auth.signOut();
-      return;
-    }
+    // v3: doc path = garages/{uid}, no ALLOWED_UIDS check
+    GARAGE_DOC = 'garages/' + user.uid;
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('appContent').style.display = 'block';
     document.getElementById('userEmail').textContent = user.email;
@@ -1421,17 +1548,33 @@ async function onAuthReady(user) {
 
 async function startFirestoreSync() {
   if (!firestoreReady || !db || !currentUser) return;
-  // Init garages/main if it doesn't exist
   try {
     const snap = await db.doc(GARAGE_DOC).get();
     if (!snap.exists) {
-      const store = loadStore();
-      await db.doc(GARAGE_DOC).set({
-        data: JSON.stringify(store),
-        admins: ALLOWED_UIDS,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      console.log('Document garages/main cree');
+      // Migration: try to import from legacy garages/main
+      let migrated = false;
+      try {
+        const legacy = await db.doc('garages/main').get();
+        if (legacy.exists && legacy.data().data) {
+          await db.doc(GARAGE_DOC).set({
+            data: legacy.data().data,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          // Update localStorage too
+          invalidateStoreCache();
+          localStorage.setItem(STORAGE_KEY, legacy.data().data);
+          console.log('Migration garages/main -> ' + GARAGE_DOC);
+          migrated = true;
+        }
+      } catch (e) { /* legacy doc not accessible, skip */ }
+      if (!migrated) {
+        const store = loadStore();
+        await db.doc(GARAGE_DOC).set({
+          data: JSON.stringify(store),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log('Document ' + GARAGE_DOC + ' cree');
+      }
     }
   } catch (e) { console.warn('Init check:', e); }
   // Listen for remote changes
@@ -1442,7 +1585,7 @@ async function startFirestoreSync() {
     try {
       const remoteData = snap.data().data;
       const localData = localStorage.getItem(STORAGE_KEY);
-      if (remoteData === localData) return; // Same data, skip re-render
+      if (remoteData === localData) return;
       const remote = JSON.parse(remoteData);
       invalidateStoreCache();
       localStorage.setItem(STORAGE_KEY, remoteData);
@@ -1450,10 +1593,6 @@ async function startFirestoreSync() {
       console.log('Sync depuis Firestore');
     } catch (e) { console.warn('Snapshot parse error:', e); }
   }, err => console.warn('Snapshot error:', err));
-}
-
-if (auth) {
-  auth.onAuthStateChanged(onAuthReady);
 }
 
 // ── Firebase Storage (photos) ──
@@ -1760,7 +1899,6 @@ function saveStore(store) {
     ignoreNextSnapshot = true;
     db.doc(GARAGE_DOC).set({
       data: json,
-      admins: ALLOWED_UIDS,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }).catch(e => console.warn('Firestore write failed:', e));
   }

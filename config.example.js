@@ -1,6 +1,7 @@
-// Configuration Firebase et controle d'acces
-// Copier ce fichier vers config.js et renseigner vos valeurs
-// config.js est dans .gitignore et ne sera pas committe
+// Configuration Firebase (optionnel en v3)
+// En v3, la config peut etre saisie directement dans l'app (ecran de setup).
+// Ce fichier reste supporte comme alternative : copier vers config.js et renseigner vos valeurs.
+// config.js est dans .gitignore et ne sera pas committe.
 const FIREBASE_CONFIG = {
   apiKey: "VOTRE_API_KEY",
   authDomain: "VOTRE_PROJET.firebaseapp.com",
@@ -10,7 +11,9 @@ const FIREBASE_CONFIG = {
   appId: "VOTRE_APP_ID"
 };
 
-const ALLOWED_UIDS = ['VOTRE_UID_FIREBASE'];
+// ALLOWED_UIDS n'est plus utilise en v3 (chaque user a son propre document Firestore).
+// Conserve pour retrocompatibilite si config.js existant.
+const ALLOWED_UIDS = [];
 
 // Les cles API tierces sont stockees dans Firestore (document config/api_keys)
 // Elles sont chargees automatiquement apres authentification
