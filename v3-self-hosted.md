@@ -15,7 +15,6 @@ Option A : chaque user deploie sa propre instance Firebase (pas de multi-user su
 - Document Firestore par user : `garages/{uid}` (plus de `garages/main` en dur)
 - Plus de `ALLOWED_UIDS` : chaque user authentifie accede a son propre doc
 - Firestore rules dynamiques (`request.auth.uid == userId`)
-- Migration automatique `garages/main` -> `garages/{uid}` au premier login
 - Bouton "Reinitialiser config" dans le menu profil
 - Retrocompatibilite config.js (charge et sauvegarde en IndexedDB au premier boot)
 - config.example.js mis a jour avec notes v3

@@ -1551,30 +1551,12 @@ async function startFirestoreSync() {
   try {
     const snap = await db.doc(GARAGE_DOC).get();
     if (!snap.exists) {
-      // Migration: try to import from legacy garages/main
-      let migrated = false;
-      try {
-        const legacy = await db.doc('garages/main').get();
-        if (legacy.exists && legacy.data().data) {
-          await db.doc(GARAGE_DOC).set({
-            data: legacy.data().data,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          // Update localStorage too
-          invalidateStoreCache();
-          localStorage.setItem(STORAGE_KEY, legacy.data().data);
-          console.log('Migration garages/main -> ' + GARAGE_DOC);
-          migrated = true;
-        }
-      } catch (e) { /* legacy doc not accessible, skip */ }
-      if (!migrated) {
-        const store = loadStore();
-        await db.doc(GARAGE_DOC).set({
-          data: JSON.stringify(store),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        console.log('Document ' + GARAGE_DOC + ' cree');
-      }
+      const store = loadStore();
+      await db.doc(GARAGE_DOC).set({
+        data: JSON.stringify(store),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      console.log('Document ' + GARAGE_DOC + ' cree');
     }
   } catch (e) { console.warn('Init check:', e); }
   // Listen for remote changes
