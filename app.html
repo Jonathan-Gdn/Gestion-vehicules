@@ -3457,9 +3457,32 @@ function renderAlerts() {
   });
   window._alertActions = valid;
   const icons = { danger: '&#9888;', warning: '&#9432;', info: '&#128200;' };
-  banner.innerHTML = valid.map((a, i) =>
-    `<span class="alert-chip alert-${a.level}" title="${escAttr(a.detail)}" onclick="alertAction(${i})">${icons[a.level] || '&#9432;'} ${escHtml(a.text)}</span>`
-  ).join('');
+
+  // Group maintenance alerts (action=entry) into compact summary chips
+  const maintenance = valid.filter(a => a.action === 'entry');
+  const other = valid.filter(a => a.action !== 'entry');
+  const chips = [];
+
+  if (maintenance.length > 0) {
+    const overdueM = maintenance.filter(a => a.level === 'danger');
+    const warningM = maintenance.filter(a => a.level === 'warning');
+    if (overdueM.length > 0) {
+      const idx = valid.indexOf(overdueM[0]);
+      chips.push(`<span class="alert-chip alert-danger" title="${overdueM.map(a => a.text).join(', ')}" onclick="alertAction(${idx})">&#9888; ${overdueM.length} entretien${overdueM.length > 1 ? 's' : ''} en retard</span>`);
+    }
+    if (warningM.length > 0) {
+      const idx = valid.indexOf(warningM[0]);
+      chips.push(`<span class="alert-chip alert-warning" title="${warningM.map(a => a.text).join(', ')}" onclick="alertAction(${idx})">&#9432; ${warningM.length} entretien${warningM.length > 1 ? 's' : ''} bientot</span>`);
+    }
+  }
+
+  // Individual chips for non-maintenance alerts (deadlines, km, battery, tires)
+  for (const a of other) {
+    const i = valid.indexOf(a);
+    chips.push(`<span class="alert-chip alert-${a.level}" title="${escAttr(a.detail)}" onclick="alertAction(${i})">${icons[a.level] || '&#9432;'} ${escHtml(a.text)}</span>`);
+  }
+
+  banner.innerHTML = chips.join('');
 }
 
 function alertAction(index) {
