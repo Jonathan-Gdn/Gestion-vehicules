@@ -69,7 +69,7 @@ async function clearFirebaseConfig() {
     --orange: #f0a500;
     --red: #e94560;
     --text: #eee;
-    --muted: #aaa;
+    --muted: #bbb;
     --radius: 10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -138,10 +138,10 @@ async function clearFirebaseConfig() {
   .nav-item {
     position: relative;
     display: flex; flex-direction: column; align-items: center;
-    gap: 3px; padding: 6px 12px;
+    gap: 3px; padding: 8px 14px;
     background: none; border: none;
     color: var(--muted); cursor: pointer;
-    font-size: 0.65em; font-weight: 600;
+    font-size: 0.72em; font-weight: 600;
     transition: color 0.2s;
     -webkit-tap-highlight-color: transparent;
   }
@@ -411,7 +411,7 @@ async function clearFirebaseConfig() {
   .btn:hover { opacity: 0.85; }
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid rgba(255,255,255,0.15); }
-  .btn-sm { padding: 5px 12px; font-size: 0.8em; }
+  .btn-sm { padding: 8px 14px; font-size: 0.8em; min-height: 36px; }
   .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); }
   .btn-green { background: var(--green); color: #111; }
 
@@ -900,7 +900,7 @@ async function clearFirebaseConfig() {
   <div class="ptr-indicator" id="ptrIndicator">&#8635; Tirer pour rafraichir</div>
 
   <div style="display:flex;justify-content:flex-end;margin-bottom:6px;position:relative;">
-    <button class="profile-toggle" onclick="toggleProfileMenu()" id="profileToggle">
+    <button class="profile-toggle" onclick="toggleProfileMenu()" id="profileToggle" aria-label="Menu utilisateur">
       <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     </button>
     <div class="profile-menu" id="profileMenu">
@@ -1794,17 +1794,22 @@ async function onAuthReady(user) {
 
 async function startFirestoreSync() {
   if (!firestoreReady || !db || !currentUser) return;
+  let dataRestored = false;
   try {
-    const snap = await db.doc(GARAGE_DOC).get();
+    // Force server source to bypass empty/stale cache after clear site data
+    let snap;
+    try { snap = await db.doc(GARAGE_DOC).get({ source: 'server' }); }
+    catch (e) { console.warn('Server get failed, trying default:', e); snap = await db.doc(GARAGE_DOC).get(); }
     if (snap.exists) {
-      // Restore remote data to localStorage (critical after clear site data)
       const remoteData = snap.data().data;
       if (remoteData) {
         localStorage.setItem(STORAGE_KEY, remoteData);
         invalidateStoreCache();
+        dataRestored = true;
         console.log('Donnees restaurees depuis Firestore');
       }
     } else {
+      // First time: create doc only if no data exists anywhere
       const store = loadStore();
       await db.doc(GARAGE_DOC).set({
         data: JSON.stringify(store),
@@ -1812,6 +1817,7 @@ async function startFirestoreSync() {
         sharedWith: [],
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+      dataRestored = true;
       console.log('Document ' + GARAGE_DOC + ' cree');
     }
   } catch (e) { console.warn('Init check:', e); }
@@ -1824,14 +1830,16 @@ async function startFirestoreSync() {
       const remoteData = snap.data().data;
       const localData = localStorage.getItem(STORAGE_KEY);
       if (remoteData === localData) return;
-      const remote = JSON.parse(remoteData);
+      JSON.parse(remoteData); // validate before applying
       invalidateStoreCache();
       localStorage.setItem(STORAGE_KEY, remoteData);
+      if (!_syncReady) { _syncReady = true; console.log('Sync ready via snapshot'); }
       renderAll();
       console.log('Sync depuis Firestore');
     } catch (e) { console.warn('Snapshot parse error:', e); }
   }, err => console.warn('Snapshot error:', err));
-  _syncReady = true;
+  // Only allow Firestore writes once we've confirmed data source
+  if (dataRestored) _syncReady = true;
 }
 
 // ── Firebase Storage (photos) ──
@@ -2248,29 +2256,33 @@ function renderGarageSwitcher() {
   el.innerHTML = html;
 }
 
-function switchToOwnGarage() {
+async function switchToOwnGarage() {
   if (!_viewingSharedGarage) return;
   _viewingSharedGarage = null;
   _pendingWrites = 0;
+  _syncReady = false;
   GARAGE_DOC = 'garages/' + currentUser.uid;
   if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
   invalidateStoreCache();
   localStorage.removeItem(STORAGE_KEY);
-  startFirestoreSync();
+  await startFirestoreSync();
   document.getElementById('appSubtitle').textContent = 'Mes vehicules';
   renderAll();
   haptic();
 }
 
-function switchToSharedGarage(uid, email) {
+async function switchToSharedGarage(uid, email) {
+  // Validate uid is in shared garages list
+  if (!_sharedGarages.find(g => g.uid === uid)) { console.error('Unauthorized garage access'); return; }
   if (_viewingSharedGarage && _viewingSharedGarage.uid === uid) return;
   _viewingSharedGarage = { uid, email };
   _pendingWrites = 0;
+  _syncReady = false;
   GARAGE_DOC = 'garages/' + uid;
   if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
   invalidateStoreCache();
   localStorage.removeItem(STORAGE_KEY);
-  startFirestoreSync();
+  await startFirestoreSync();
   document.getElementById('appSubtitle').textContent = 'Garage de ' + email.split('@')[0];
   renderAll();
   haptic();
@@ -2363,7 +2375,7 @@ function loadStore() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) {
     const fresh = JSON.parse(JSON.stringify(DEFAULT_STORE));
-    saveStore(fresh);
+    saveStore(fresh, true); // local only — never overwrite Firestore with defaults
     return fresh;
   }
   let store;
@@ -2372,7 +2384,7 @@ function loadStore() {
   } catch (e) {
     console.warn('localStorage corrupted, resetting:', e);
     const fresh = JSON.parse(JSON.stringify(DEFAULT_STORE));
-    saveStore(fresh);
+    saveStore(fresh, true); // local only
     return fresh;
   }
   // Migrate: add fuelEntries/deadlines if missing
@@ -2410,10 +2422,13 @@ function saveStore(store, localOnly) {
   if (!localOnly && _syncReady && firestoreReady && db && currentUser) {
     clearTimeout(_saveDebounceTimer);
     _saveDebounceTimer = setTimeout(() => {
+      // Read current data at write time to avoid stale closure overwrites
+      const currentJson = localStorage.getItem(STORAGE_KEY);
+      if (!currentJson) return;
       _pendingWrites++;
       const writeTimer = setTimeout(() => { _pendingWrites = Math.max(0, _pendingWrites - 1); }, 10000);
       db.doc(GARAGE_DOC).set({
-        data: json,
+        data: currentJson,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true })
         .then(() => { clearTimeout(writeTimer); _pendingWrites--; })
@@ -6525,9 +6540,9 @@ function renderPendingEntries() {
         <div style="font-size:0.75em;color:var(--muted);">${p.notes ? escHtml(p.notes.substring(0, 40)) : 'A completer'}</div>
       </div>
       <div style="display:flex;gap:4px;">
-        <button class="btn btn-sm" style="font-size:0.7em;padding:4px 8px;" onclick="completePendingEntry('${p.id}', 'entretien')">Entretien</button>
-        <button class="btn btn-sm" style="font-size:0.7em;padding:4px 8px;" onclick="completePendingEntry('${p.id}', 'carburant')">Plein</button>
-        <button class="btn btn-sm btn-secondary" style="font-size:0.7em;padding:4px 8px;" onclick="deletePendingEntry('${p.id}')">✕</button>
+        <button class="btn btn-sm" style="font-size:0.7em;padding:4px 8px;" onclick="completePendingEntry('${escHtml(p.id)}', 'entretien')">Entretien</button>
+        <button class="btn btn-sm" style="font-size:0.7em;padding:4px 8px;" onclick="completePendingEntry('${escHtml(p.id)}', 'carburant')">Plein</button>
+        <button class="btn btn-sm btn-secondary" style="font-size:0.7em;padding:4px 8px;" onclick="deletePendingEntry('${escHtml(p.id)}')">✕</button>
       </div>
     </div>`;
   }).join('');
@@ -7185,7 +7200,9 @@ function _sortAndFilterEntries(listId, entryClass, q, sortBy, dateFrom, dateTo, 
       va = parseFloat(a.dataset[field]) || 0; vb = parseFloat(b.dataset[field]) || 0;
       return dir === 'asc' ? va - vb : vb - va;
     });
-    for (const item of items) list.appendChild(item);
+    const frag = document.createDocumentFragment();
+    for (const item of items) frag.appendChild(item);
+    list.appendChild(frag);
   }
 }
 
@@ -8106,6 +8123,11 @@ function renderCharts() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
+
+// Cleanup Firestore listener on page unload
+window.addEventListener('beforeunload', () => {
+  if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
+});
 
 // ── Init ──
 updateNotifButton();
