@@ -343,8 +343,6 @@ async function clearFirebaseConfig() {
   .schedule-summary .summary-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.85em; }
   .schedule-summary .summary-item:last-child { border-bottom: none; }
   .schedule-summary .summary-item .item-next { color: var(--muted); font-size: 0.8em; }
-  .schedule-toggle { display: block; margin: 10px auto 0; background: none; border: 1px solid var(--accent); color: var(--accent); padding: 8px 20px; border-radius: 20px; font-size: 0.82em; cursor: pointer; }
-  .schedule-toggle:hover { background: var(--accent); color: #fff; }
 
   /* Maintenance table */
   table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
@@ -3468,11 +3466,10 @@ function renderAlerts() {
     const warningM = maintenance.filter(a => a.level === 'warning');
     if (overdueM.length > 0) {
       const idx = valid.indexOf(overdueM[0]);
-      chips.push(`<span class="alert-chip alert-danger" title="${overdueM.map(a => a.text).join(', ')}" onclick="alertAction(${idx})">&#9888; ${overdueM.length} entretien${overdueM.length > 1 ? 's' : ''} en retard</span>`);
+      chips.push(`<span class="alert-chip alert-danger" title="${overdueM.map(a => a.text).join(', ')}" onclick="switchSection('entretien');switchSubTab('entretien','schedule')">&#9888; ${overdueM.length} entretien${overdueM.length > 1 ? 's' : ''} en retard</span>`);
     }
     if (warningM.length > 0) {
-      const idx = valid.indexOf(warningM[0]);
-      chips.push(`<span class="alert-chip alert-warning" title="${warningM.map(a => a.text).join(', ')}" onclick="alertAction(${idx})">&#9432; ${warningM.length} entretien${warningM.length > 1 ? 's' : ''} bientot</span>`);
+      chips.push(`<span class="alert-chip alert-warning" title="${warningM.map(a => a.text).join(', ')}" onclick="switchSection('entretien');switchSubTab('entretien','schedule')">&#9432; ${warningM.length} entretien${warningM.length > 1 ? 's' : ''} bientot</span>`);
     }
   }
 
@@ -3772,9 +3769,6 @@ function renderSchedule() {
   const summaryEl = document.getElementById('scheduleSummary');
   const detailWrap = document.getElementById('scheduleDetailWrap');
 
-  // Collapse detail on re-render (vehicle switch)
-  detailWrap.style.display = 'none';
-
   // Compute statuses
   const items = (v.schedule || []).map(item => {
     const s = getStatus(item, v);
@@ -3784,19 +3778,16 @@ function renderSchedule() {
   const warning = items.filter(i => i.s.status === 'warning');
   const ok = items.filter(i => i.s.status === 'ok');
 
-  // Summary banner: just pills + toggle button
+  // Summary banner: pills only
   let summaryHtml = '<div class="summary-counts">';
   if (overdue.length) summaryHtml += `<span class="summary-pill pill-overdue"><span class="pill-count">${overdue.length}</span> En retard</span>`;
   if (warning.length) summaryHtml += `<span class="summary-pill pill-warning"><span class="pill-count">${warning.length}</span> Bientot</span>`;
   if (ok.length) summaryHtml += `<span class="summary-pill pill-ok"><span class="pill-count">${ok.length}</span> OK</span>`;
   summaryHtml += '</div>';
-
-  if (items.length > 0) {
-    summaryHtml += `<button class="schedule-toggle" onclick="toggleScheduleDetail()">Voir le detail (${items.length})</button>`;
-  }
   summaryEl.innerHTML = summaryHtml;
 
-  // Detail table (unchanged)
+  // Detail table always visible
+  detailWrap.style.display = '';
   let html = '';
   for (const { item, s } of items) {
     const badgeClass = s.status === 'overdue' ? 'badge-overdue' : s.status === 'warning' ? 'badge-warning' : 'badge-ok';
@@ -3808,16 +3799,6 @@ function renderSchedule() {
   body.innerHTML = html;
 }
 
-function toggleScheduleDetail() {
-  const wrap = document.getElementById('scheduleDetailWrap');
-  const btn = document.querySelector('.schedule-toggle');
-  const isHidden = wrap.style.display === 'none';
-  wrap.style.display = isHidden ? '' : 'none';
-  if (btn) {
-    const total = document.getElementById('scheduleBody').rows.length;
-    btn.textContent = isHidden ? 'Masquer le detail' : 'Voir tout le programme (' + total + ')';
-  }
-}
 
 // ── Plate Lookup + AI Schedule ──
 async function lookupPlate() {
