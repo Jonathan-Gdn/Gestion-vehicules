@@ -165,11 +165,72 @@ Les photos sont stockees en base64 inline dans Firestore (gonfle le document).
 
 ## Suggestions roadmap
 
-1. **Rappels programmables** : choix du delai d'alerte (7j, 30j, 60j) par echeance
-2. **Mode sombre/clair** : toggle theme (actuellement dark only)
-3. **Graphe cout de possession cumule** : evolution dans le temps
-4. **Import OBD** : lecture donnees OBD-II Bluetooth (km, codes erreur)
-5. **Multi-langue** : i18n (FR, EN, ES) - structure deja en place (labels centralises)
-6. **Backup automatique** : export JSON periodique vers Google Drive
-7. **Widget dashboard configurable** : choix des cartes affichees
-8. **Scan facture OCR** : extraction automatique montant + operations depuis facture
+Roadmap complete deplacee dans `CLAUDE.md` section "Backlog features" (28 features categorizees avec complexite).
+
+---
+
+## Audit qualite code - Passe 3 (coherence, rendu, dead code, async, i18n, modals)
+
+### [x] CRITIQUE - Appel fonction inexistante migratePhotosToDriver() (app.html:938)
+Le bouton "Migrer photos Drive" appelle `migratePhotosToDriver()` (avec "r" final) alors que la fonction definie est `migratePhotosToDrive()` (ligne 8532). Clic = ReferenceError silencieux, migration impossible.
+**Fix** : renomme la fonction en `migratePhotosToDrive()` + mise a jour de l'appel HTML.
+
+### [x] IMPORTANT - shareModal pattern display obsolete, Escape inoperant (app.html:2157-2165)
+shareModal utilise `style="display:none"` et `modal.style.display = 'flex'/'none'` alors que le handler Escape teste `.classList.contains('show')`. Escape ne fermera jamais le shareModal.
+**Fix** : migre shareModal vers `.classList.add/remove('show')` (coherent avec les autres modals).
+
+### [x] IMPORTANT - 3 modals absents du handler Escape (app.html:10930-10942)
+`dashConfigModal`, `diagnosticModal` et `obdModal` ne sont pas testes dans le handler keydown Escape. Fermeture clavier impossible.
+**Fix** : ajoute les 3 modals au handler Escape.
+
+### [x] IMPORTANT - 3 modals sans trapFocus/releaseFocus (app.html:8629, 8703, 8901)
+`showDashboardConfig`, `showDiagnosticLights` et `showOBDModal` utilisent `.classList.add('show')` mais n'appellent pas `trapFocus(modal)`. Le focus peut s'echapper du modal (accessibilite clavier degradee).
+**Fix** : ajoute `trapFocus(modal)` a l'ouverture et `releaseFocus(modal)` a la fermeture des 3 modals.
+
+## Securite Batch 7 - Passe 4
+
+### [x] IMPORTANT - OBD innerHTML sans escHtml() sur donnees Bluetooth (app.html:8917-8923)
+Les valeurs `_obdReadings` inserees via innerHTML sans `escHtml()`. Fragile si evolution du code ajoute des chaines.
+**Fix** : ajout `escHtml(String(...))` + `isNaN()` checks sur toutes les valeurs OBD.
+
+### [x] IMPORTANT - showDashboardConfig() outerHTML casse le modal a la 2e ouverture (app.html:8628)
+`outerHTML` remplace l'element `.modal-content` lui-meme, querySelector echoue ensuite.
+**Fix** : change en `innerHTML` + suppression du wrapper `<div class="modal-content">` du html genere.
+
+### [x] IMPORTANT - migratePhotosToDrive() pas de confirmation + typo (app.html:8532)
+Migration massive sans `confirm()` + nom de fonction avec typo (`Driver` au lieu de `Drive`).
+**Fix** : ajout confirm() avant migration + rename function.
+
+### [x] RECOMMANDE - Permissions-Policy ne declare pas bluetooth (firebase.json:25)
+La Permissions-Policy ne mentionnait pas `bluetooth`.
+**Fix** : ajout `bluetooth=(self)`.
+
+### [x] RECOMMANDE - Pas de validation NaN sur parseInt OBD (app.html:8860-8891)
+ParseInt sur hex malformes retourne NaN, affiche "NaN km".
+**Fix** : ajout `isNaN()` checks (inclus dans le fix OBD innerHTML ci-dessus).
+
+---
+
+### [ ] IMPORTANT - i18n non fonctionnel malgre infrastructure en place (app.html:8952-9067)
+Dictionnaires `I18N` (FR/EN/ES, ~45 cles) et `t(key)` existent, mais `t()` n'est utilise que 2 fois dans le rendu (lignes 9058, 9063 dans `applyTranslations`). Les ~100+ templates innerHTML utilisent des chaines francaises en dur. Changer de langue ne traduit que nav labels, sub-tabs et header.
+**Correction** : soit supprimer l'infrastructure i18n (dead feature), soit planifier le remplacement progressif par `t()`.
+
+### [ ] RECOMMANDE - applyTranslations() couvre < 5% de l'interface (app.html:9043-9067)
+La fonction ne met a jour que nav/tabs/header. Tout le contenu genere par les render functions reste en francais.
+
+### [ ] RECOMMANDE - 6 .catch(() => {}) silencieux (app.html:1821, 1879, 2346, 8335, 9116, 10883)
+Catch vides avalent les erreurs sans log. Acceptable pour operations non critiques (clipboard, notifications) mais rend le debug difficile.
+**Correction** : `.catch(e => console.warn('...', e))` au minimum.
+
+### [ ] RECOMMANDE - Pas de removeEventListener (app.html, global)
+Les event listeners (touch, resize, visibilitychange) ne sont jamais retires. Acceptable pour SPA sans navigation de page.
+
+### Points positifs
+- **updateActiveVehicle** : pattern coherent (35+ occurrences), pas de mutation directe du store
+- **genId()** : utilise partout, aucun `Math.random()` seul pour les IDs
+- **escHtml()** : ~100+ occurrences dans les templates innerHTML, protection XSS coherente
+- **Async/await** : try/catch avec toast feedback sur toutes les fonctions async
+- **Pipeline de rendu** : tous les render functions enregistrees dans `_sectionRenderers`, fault isolation try/catch individuel
+- **SVG charts** : pattern coherent avec viewBox et responsive
+- **Navigation data-section** : pas d'onclick inline pour la navigation principale
+- **Aucun dead code significatif detecte** : toutes les fonctions verifiees sont appelees
