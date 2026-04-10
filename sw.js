@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mongarage-v3.3';
+const CACHE_NAME = 'mongarage-v3.3.4';
 const ASSETS = [
   './app.html',
   './manifest.json',
@@ -30,7 +30,7 @@ self.addEventListener('fetch', e => {
       url.includes('identitytoolkit') || url.includes('securetoken') ||
       url.includes('firebasestorage') || url.includes('accounts.google.com') ||
       url.includes('apis.google.com') || url.includes('www.gstatic.com') ||
-      url.includes('/__/auth/') || url.includes('cdn.jsdelivr.net') ||
+      url.includes('/__/auth/') || url.includes('/__/firebase/') || url.includes('cdn.jsdelivr.net') ||
       url.includes('tessdata.projectnaptha.com') || url.includes('rapidapi.com') ||
       url.includes('unpkg.com') || url.includes('tile.openstreetmap.org') ||
       url.includes('cloudfunctions.net') || url.includes('data.economie.gouv.fr')) {
@@ -48,8 +48,9 @@ self.addEventListener('fetch', e => {
             await c.put(e.request, clone);
             // Evict oldest entries if cache exceeds limit
             const keys = await c.keys();
-            if (keys.length > MAX_CACHE_ENTRIES) {
-              await c.delete(keys[0]);
+            const excess = keys.length - MAX_CACHE_ENTRIES;
+            if (excess > 0) {
+              await Promise.all(keys.slice(0, excess).map(k => c.delete(k)));
             }
           });
         }

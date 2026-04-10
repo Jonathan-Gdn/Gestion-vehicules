@@ -21,11 +21,12 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.fromUid == request.auth.uid
         && request.resource.data.status == 'pending';
-      // Accept: only status pending->accepted + set acceptedByUid, lock other fields
+      // Accept: only status pending->accepted + acceptedByUid must match auth, lock other fields
       allow update: if request.auth != null
         && resource.data.toEmail == request.auth.token.email
         && resource.data.status == 'pending'
         && request.resource.data.status == 'accepted'
+        && request.resource.data.acceptedByUid == request.auth.uid
         && request.resource.data.fromUid == resource.data.fromUid
         && request.resource.data.toEmail == resource.data.toEmail
         && request.resource.data.fromEmail == resource.data.fromEmail;
@@ -42,9 +43,7 @@ service cloud.firestore {
         && resource.data.createdBy == request.auth.uid;
     }
     match /config/{doc} {
-      // Only users with their own garage can read API keys
-      allow read: if request.auth != null
-        && exists(/databases/$(database)/documents/garages/$(request.auth.uid));
+      allow read: if request.auth != null;
       allow write: if false;
     }
   }

@@ -19,21 +19,17 @@ exports.onInvitationAccepted = onDocumentUpdated({ document: "invitations/{invit
   if (!acceptedByUid || !ownerUid) return;
 
   const garageRef = admin.firestore().doc(`garages/${ownerUid}`);
-  const garageSnap = await garageRef.get();
-  const currentShared = garageSnap.exists ? (garageSnap.data().sharedWith || []) : [];
-
-  if (!currentShared.includes(acceptedByUid)) {
-    currentShared.push(acceptedByUid);
-    await garageRef.update({ sharedWith: currentShared });
-    console.log(`Added ${acceptedByUid} to sharedWith of garages/${ownerUid}`);
-  }
+  await garageRef.update({
+    sharedWith: admin.firestore.FieldValue.arrayUnion(acceptedByUid)
+  });
+  console.log(`Added ${acceptedByUid} to sharedWith of garages/${ownerUid}`);
 });
 
 // ── Cloud Function: nearby stations proxy ──
 // Proxy for prix-carburant open data API (CORS bypass + geo filtering)
 const ALLOWED_ORIGINS = [
-  /^https:\/\/.*\.web\.app$/,
-  /^https:\/\/.*\.firebaseapp\.com$/,
+  "https://gestion-vehicules-1a58c.web.app",
+  "https://gestion-vehicules-1a58c.firebaseapp.com",
   "http://localhost:3000"
 ];
 
@@ -51,8 +47,11 @@ exports.nearbyStations = onRequest({
     return;
   }
 
+  const FUEL_FIELDS = ["gazole", "sp95", "sp98", "e10", "e85", "gplc"];
+
   try {
-    const apiUrl = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?select=id,adresse,ville,cp,latitude,longitude,prix_nom,prix_valeur,prix_maj&where=within_distance(geom,geom'POINT(${lon} ${lat})',${radius}km)&order_by=distance(geom,geom'POINT(${lon} ${lat})')&limit=30`;
+    const selectFields = "id,adresse,ville,cp,latitude,longitude," + FUEL_FIELDS.map(f => f + "_prix," + f + "_maj").join(",");
+    const apiUrl = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?select=${selectFields}&where=within_distance(geom,geom'POINT(${lon} ${lat})',${radius}km)&order_by=distance(geom,geom'POINT(${lon} ${lat})')&limit=30`;
 
     const data = await new Promise((resolve, reject) => {
       const request = https.get(apiUrl, { timeout: 10000 }, (resp) => {
@@ -67,23 +66,20 @@ exports.nearbyStations = onRequest({
       request.on("timeout", () => { request.destroy(); reject(new Error("API timeout")); });
     });
 
-    const stationsMap = {};
-    for (const rec of (data.results || [])) {
-      const sid = rec.id;
-      if (!stationsMap[sid]) {
-        stationsMap[sid] = {
-          id: sid, address: rec.adresse || "", city: rec.ville || "",
-          cp: rec.cp || "", lat: rec.latitude, lon: rec.longitude, prices: {}
-        };
+    const stations = (data.results || []).map(rec => {
+      const prices = {};
+      for (const f of FUEL_FIELDS) {
+        const prix = rec[f + "_prix"];
+        if (prix != null) {
+          prices[f] = { value: parseFloat(prix), updated: rec[f + "_maj"] || "" };
+        }
       }
-      if (rec.prix_nom && rec.prix_valeur) {
-        stationsMap[sid].prices[rec.prix_nom.toLowerCase()] = {
-          value: rec.prix_valeur, updated: rec.prix_maj || ""
-        };
-      }
-    }
+      return {
+        id: rec.id, address: rec.adresse || "", city: rec.ville || "",
+        cp: rec.cp || "", lat: parseFloat(rec.latitude), lon: parseFloat(rec.longitude), prices
+      };
+    });
 
-    const stations = Object.values(stationsMap);
     res.json({ stations, count: stations.length });
   } catch (e) {
     console.error("nearbyStations error:", e);

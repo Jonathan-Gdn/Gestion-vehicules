@@ -69,7 +69,7 @@ async function clearFirebaseConfig() {
     --orange: #f0a500;
     --red: #e94560;
     --text: #eee;
-    --muted: #999;
+    --muted: #aaa;
     --radius: 10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -331,6 +331,21 @@ async function clearFirebaseConfig() {
   .badge-warning { background: var(--orange); color: #111; }
   .badge-overdue { background: var(--red); color: #fff; }
 
+  /* Schedule summary */
+  .schedule-summary { background: var(--surface); border-radius: 12px; padding: 14px 16px; }
+  .schedule-summary .summary-counts { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .schedule-summary .summary-pill { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; }
+  .schedule-summary .pill-overdue { background: rgba(231,76,60,0.15); color: var(--red); }
+  .schedule-summary .pill-warning { background: rgba(240,165,0,0.15); color: var(--orange); }
+  .schedule-summary .pill-ok { background: rgba(78,204,163,0.15); color: var(--green); }
+  .schedule-summary .summary-pill .pill-count { font-size: 1.1em; }
+  .schedule-summary .summary-items { margin-top: 8px; }
+  .schedule-summary .summary-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.85em; }
+  .schedule-summary .summary-item:last-child { border-bottom: none; }
+  .schedule-summary .summary-item .item-next { color: var(--muted); font-size: 0.8em; }
+  .schedule-toggle { display: block; margin: 10px auto 0; background: none; border: 1px solid var(--accent); color: var(--accent); padding: 8px 20px; border-radius: 20px; font-size: 0.82em; cursor: pointer; }
+  .schedule-toggle:hover { background: var(--accent); color: #fff; }
+
   /* Maintenance table */
   table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
   th, td { text-align: left; padding: 10px 12px; font-size: 0.85em; }
@@ -512,6 +527,13 @@ async function clearFirebaseConfig() {
   .modal-overlay.show .modal { transform: scale(1) translateY(0); }
   .modal h2 { margin-bottom: 16px; font-size: 1.1em; }
   .modal-actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+
+  /* Custom confirm modal */
+  #confirmModal { z-index: 200; }
+  #confirmModal .modal { max-width: 400px; text-align: center; }
+  #confirmModal .confirm-message { margin: 16px 0 24px; font-size: 0.95em; line-height: 1.5; }
+  #confirmModal .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+  #confirmModal .confirm-actions .btn { min-width: 100px; }
 
   @media (max-width: 600px) {
     .form-row { grid-template-columns: 1fr; }
@@ -1022,15 +1044,18 @@ async function clearFirebaseConfig() {
           <div style="text-align:right;margin-top:6px;"><button class="btn btn-secondary btn-sm" onclick="resetHistoryFilters()" style="font-size:0.75em;">Reinitialiser</button></div>
         </div>
       </div>
-      <div id="historyList"></div>
+      <div id="historyList" style="margin-top:16px;"></div>
     </div>
 
     <!-- Sub: Programme -->
     <div id="subtab-entretien-schedule" class="subtab-content">
-      <table>
-        <thead><tr><th>Operation</th><th>Periodicite</th><th>Prochain</th><th>Statut</th></tr></thead>
-        <tbody id="scheduleBody"></tbody>
-      </table>
+      <div id="scheduleSummary" class="schedule-summary"></div>
+      <div id="scheduleDetailWrap" style="display:none;">
+        <table>
+          <thead><tr><th>Operation</th><th>Periodicite</th><th>Prochain</th><th>Statut</th></tr></thead>
+          <tbody id="scheduleBody"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Sub: Echeances -->
@@ -1047,7 +1072,7 @@ async function clearFirebaseConfig() {
         </div>
         <button class="btn btn-primary" onclick="addDeadline()">Ajouter</button>
       </div>
-      <div id="deadlinesList"></div>
+      <div id="deadlinesList" style="margin-top:16px;"></div>
     </div>
 
     <!-- Sub: Carnet de bord -->
@@ -1064,7 +1089,7 @@ async function clearFirebaseConfig() {
         </div>
         <button class="btn btn-primary" onclick="addNotebookEntry()">Ajouter</button>
       </div>
-      <div id="notebookList"></div>
+      <div id="notebookList" style="margin-top:16px;"></div>
     </div>
 
     <!-- Sub: Lavage -->
@@ -1221,7 +1246,7 @@ async function clearFirebaseConfig() {
         <div style="text-align:right;margin-top:6px;"><button class="btn btn-secondary btn-sm" onclick="resetFuelFilters()" style="font-size:0.75em;">Reinitialiser</button></div>
       </div>
     </div>
-    <div id="fuelList"></div>
+    <div id="fuelList" style="margin-top:16px;"></div>
     <div id="stationPriceHistory"></div>
     <div id="nextFillEstimate"></div>
     <!-- Station map -->
@@ -1276,7 +1301,7 @@ async function clearFirebaseConfig() {
       <input type="text" id="chargeSearch" placeholder="Rechercher une charge..." oninput="clearTimeout(this._dbt); this._dbt=setTimeout(filterCharge,250)">
       <button class="search-clear" id="chargeSearchClear" onclick="clearChargeSearch()">&times;</button>
     </div>
-    <div id="chargeList"></div>
+    <div id="chargeList" style="margin-top:16px;"></div>
     <div id="chargeStationPriceHistory"></div>
     <div id="nextChargeEstimate"></div>
     <div class="section-title" style="margin-top:16px;">Suivi batterie</div>
@@ -1298,7 +1323,7 @@ async function clearFirebaseConfig() {
       </div>
     </div>
     <div id="sohChartSection"></div>
-    <div id="sohReadingsList"></div>
+    <div id="sohReadingsList" style="margin-top:16px;"></div>
   </div>
 
   <!-- === Section: Stats (Kilometrage + Synthese) === -->
@@ -1486,6 +1511,18 @@ async function clearFirebaseConfig() {
   <img id="photoOverlayImg" src="">
 </div>
 
+<!-- Modal: custom confirm (replaces native confirm()) -->
+<div class="modal-overlay" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="modal">
+    <h2 id="confirmTitle">Confirmation</h2>
+    <div class="confirm-message" id="confirmMessage"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" id="confirmCancelBtn">Annuler</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Confirmer</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: add/edit vehicle -->
 <div class="modal-overlay" id="vehicleModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
@@ -1627,33 +1664,43 @@ async function submitSetup(e) {
 }
 
 async function resetFirebaseConfig() {
-  if (!confirm('Reinitialiser la configuration Firebase ? L\'app reviendra a l\'ecran de setup.')) return;
+  if (!await customConfirm('Reinitialiser la configuration Firebase ? L\'app reviendra a l\'ecran de setup.')) return;
   await clearFirebaseConfig();
   location.reload();
 }
 
-// ── Boot: IndexedDB config > config.js > setup screen ──
+// ── Boot: IndexedDB > Firebase Hosting auto > config.js > setup screen ──
 (async function boot() {
-  // 1. Try IndexedDB
+  function startApp(cfg, skipSave) {
+    if (initFirebase(cfg)) {
+      if (!skipSave) saveFirebaseConfig(cfg).catch(() => {});
+      document.getElementById('loginScreen').style.display = 'flex';
+      auth.onAuthStateChanged(onAuthReady);
+      return true;
+    }
+    return false;
+  }
+  // 1. Try IndexedDB (already configured on this device)
   const savedCfg = await loadFirebaseConfig();
-  if (savedCfg) {
-    if (initFirebase(savedCfg)) {
-      document.getElementById('loginScreen').style.display = 'flex';
-      auth.onAuthStateChanged(onAuthReady);
-      return;
+  if (savedCfg && startApp(savedCfg, true)) return;
+
+  // 2. Try Firebase Hosting auto-config (new device, same domain)
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 2000);
+    const resp = await fetch('/__/firebase/init.json', { cache: 'no-store', signal: ctrl.signal });
+    clearTimeout(timer);
+    if (resp.ok) {
+      const init = await resp.json();
+      if (init && init.projectId && init.apiKey && init.authDomain && startApp(init)) return;
     }
-  }
-  // 2. Try config.js (legacy / self-hosted with file)
+  } catch (e) { console.debug('[boot] init.json skipped:', e.message); }
+
+  // 3. Try config.js (legacy / self-hosted with file)
   if (typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG) {
-    if (initFirebase(FIREBASE_CONFIG)) {
-      // Save to IndexedDB for next time
-      saveFirebaseConfig(FIREBASE_CONFIG).catch(() => {});
-      document.getElementById('loginScreen').style.display = 'flex';
-      auth.onAuthStateChanged(onAuthReady);
-      return;
-    }
+    if (startApp(FIREBASE_CONFIG)) return;
   }
-  // 3. Show setup screen
+  // 4. Show setup screen (localhost without config.js)
   document.getElementById('setupScreen').style.display = 'flex';
   document.getElementById('loginScreen').style.display = 'none';
 })();
@@ -1672,8 +1719,34 @@ function signIn() {
 }
 
 function signOut() {
+  // Unsubscribe Firestore listener before anything else
+  if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
+  // Clear auth & drive state
   googleAccessToken = null;
   driveFolderId = null;
+  currentUser = null;
+  GARAGE_DOC = null;
+  PLATE_API_TOKEN = '';
+  GROQ_API_KEY = '';
+  // Clear sync state
+  _pendingWrites = 0;
+  _viewingSharedGarage = null;
+  _sharedGarages = [];
+  // Clear caches
+  invalidateStoreCache();
+  _estFuelCache = null;
+  _estFuelCacheKey = '';
+  _notifiedAlerts.clear();
+  // Clear editing state
+  editingEntryId = null;
+  editingFuelId = null;
+  editingChargeId = null;
+  editingKmId = null;
+  _editingTireId = null;
+  // Clear station map
+  if (_stationMap) { _stationMap.remove(); _stationMap = null; _stationMarkers = []; }
+  // Clear local data
+  localStorage.removeItem(STORAGE_KEY);
   if (auth) auth.signOut();
 }
 
@@ -1699,13 +1772,23 @@ async function onAuthReady(user) {
     document.getElementById('appContent').style.display = 'block';
     document.getElementById('userEmail').textContent = user.email;
     await loadApiKeys();
-    startFirestoreSync();
+    await startFirestoreSync();
     loadSharedGarages();
-    renderAllSections();
+    renderAll();
   } else {
     document.getElementById('loginScreen').style.display = 'flex';
     document.getElementById('appContent').style.display = 'none';
+    // Cleanup: mirror signOut() to clear sensitive state
     if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
+    GARAGE_DOC = null;
+    PLATE_API_TOKEN = '';
+    GROQ_API_KEY = '';
+    _pendingWrites = 0;
+    _viewingSharedGarage = null;
+    _sharedGarages = [];
+    invalidateStoreCache();
+    localStorage.removeItem(STORAGE_KEY);
+    if (_stationMap) { _stationMap.remove(); _stationMap = null; _stationMarkers = []; }
   }
 }
 
@@ -1849,11 +1932,15 @@ function openSharePanel() {
     `<option value="${v.id}">${escHtml(v.name)}</option>`
   ).join('');
   loadShares();
-  document.getElementById('shareModal').style.display = 'flex';
+  const modal = document.getElementById('shareModal');
+  modal.style.display = 'flex';
+  trapFocus(modal);
 }
 
 function closeSharePanel() {
-  document.getElementById('shareModal').style.display = 'none';
+  const modal = document.getElementById('shareModal');
+  modal.style.display = 'none';
+  releaseFocus(modal);
 }
 
 async function loadShares() {
@@ -2086,7 +2173,7 @@ async function cancelFamilyInvitation(inviteId) {
 
 async function removeFamilyMember(uid) {
   if (!db || !currentUser) return;
-  if (!confirm('Retirer cet acces ?')) return;
+  if (!await customConfirm('Retirer cet acces ?')) return;
   try {
     const garageRef = db.doc('garages/' + currentUser.uid);
     const snap = await garageRef.get();
@@ -2155,26 +2242,28 @@ function renderGarageSwitcher() {
 function switchToOwnGarage() {
   if (!_viewingSharedGarage) return;
   _viewingSharedGarage = null;
+  _pendingWrites = 0;
   GARAGE_DOC = 'garages/' + currentUser.uid;
-  // Reload from own Firestore doc
-  if (unsubSnapshot) unsubSnapshot();
+  if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
   invalidateStoreCache();
+  localStorage.removeItem(STORAGE_KEY);
   startFirestoreSync();
   document.getElementById('appSubtitle').textContent = 'Mes vehicules';
-  renderAllSections();
+  renderAll();
   haptic();
 }
 
 function switchToSharedGarage(uid, email) {
   if (_viewingSharedGarage && _viewingSharedGarage.uid === uid) return;
   _viewingSharedGarage = { uid, email };
+  _pendingWrites = 0;
   GARAGE_DOC = 'garages/' + uid;
-  // Reload from shared Firestore doc
-  if (unsubSnapshot) unsubSnapshot();
+  if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
   invalidateStoreCache();
+  localStorage.removeItem(STORAGE_KEY);
   startFirestoreSync();
   document.getElementById('appSubtitle').textContent = 'Garage de ' + email.split('@')[0];
-  renderAllSections();
+  renderAll();
   haptic();
 }
 
@@ -2300,20 +2389,25 @@ function loadStore() {
   return store;
 }
 
-function invalidateStoreCache() { _storeCache = null; }
+function invalidateStoreCache() { _storeCache = null; _statusCache = {}; }
 
+let _saveDebounceTimer = null;
 function saveStore(store) {
-  _storeCache = null;
+  _storeCache = store;
   const json = JSON.stringify(store);
   localStorage.setItem(STORAGE_KEY, json);
   if (firestoreReady && db && currentUser) {
-    _pendingWrites++;
-    db.doc(GARAGE_DOC).set({
-      data: json,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true })
-      .then(() => { _pendingWrites--; })
-      .catch(e => { _pendingWrites--; console.warn('Firestore write failed:', e); });
+    clearTimeout(_saveDebounceTimer);
+    _saveDebounceTimer = setTimeout(() => {
+      _pendingWrites++;
+      const writeTimer = setTimeout(() => { _pendingWrites = Math.max(0, _pendingWrites - 1); }, 10000);
+      db.doc(GARAGE_DOC).set({
+        data: json,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true })
+        .then(() => { clearTimeout(writeTimer); _pendingWrites--; })
+        .catch(e => { clearTimeout(writeTimer); _pendingWrites--; console.warn('Firestore write failed:', e); });
+    }, 2000);
   }
 }
 
@@ -2324,7 +2418,7 @@ function getActiveVehicle() {
 
 function updateActiveVehicle(updater) {
   const store = loadStore();
-  const v = store.vehicles[store.activeVehicleId];
+  const v = store.vehicles[store.activeVehicleId] || Object.values(store.vehicles)[0];
   if (v) updater(v);
   saveStore(store);
 }
@@ -2458,7 +2552,7 @@ async function addCharge() {
   const station = document.getElementById('chargeStation').value.trim();
   const location = document.getElementById('chargeLocation').value;
   if (!date || !kwh) { toast('Date et kWh sont obligatoires', 'warning'); return; }
-  if (km && !validateKm(km)) return;
+  if (km && !await validateKm(km)) return;
 
   updateActiveVehicle(v => {
     if (editingChargeId) {
@@ -2519,8 +2613,8 @@ function cancelChargeEdit() {
   document.getElementById('chargeFormWrapper').classList.remove('open');
 }
 
-function deleteCharge(id) {
-  if (!confirm('Supprimer cette charge ?')) return;
+async function deleteCharge(id) {
+  if (!await customConfirm('Supprimer cette charge ?')) return;
   updateActiveVehicle(v => { v.chargeEntries = v.chargeEntries.filter(e => e.id !== id); });
   renderAll();
 }
@@ -2555,8 +2649,8 @@ function addSohReading() {
   renderAll();
 }
 
-function deleteSohReading(id) {
-  if (!confirm('Supprimer ce releve SoH ?')) return;
+async function deleteSohReading(id) {
+  if (!await customConfirm('Supprimer ce releve SoH ?')) return;
   updateActiveVehicle(v => {
     v.batteryReadings = v.batteryReadings.filter(r => r.id !== id);
     const last = [...v.batteryReadings].sort((a, b) => b.date.localeCompare(a.date))[0];
@@ -2668,8 +2762,8 @@ function renderCharge() {
         <div class="charge-price">${e.cost ? e.cost.toFixed(2) + ' EUR' : '-'}</div>
       </div>
       <div class="actions" style="margin-top:6px;">
-        <button class="btn btn-secondary btn-sm" onclick="editCharge(${e.id})">Mod.</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteCharge(${e.id})">Sup.</button>
+        <button class="btn btn-secondary btn-sm" onclick="editCharge('${e.id}')">Mod.</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCharge('${e.id}')">Sup.</button>
       </div>
     </div>`;
   }
@@ -2801,7 +2895,7 @@ function renderSohReadings() {
     const dateStr = new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
     html += `<div style="background:var(--surface);border-radius:var(--radius);padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
       <div><strong>${r.soh.toFixed(1)}%</strong> <span style="color:var(--muted);font-size:0.85em;">- ${dateStr}${r.km ? ' - ' + r.km.toLocaleString() + ' km' : ''}${r.source ? ' (' + escHtml(r.source) + ')' : ''}</span></div>
-      <button class="btn btn-danger btn-sm" onclick="deleteSohReading(${r.id})">Sup.</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteSohReading('${r.id}')">Sup.</button>
     </div>`;
   }
   el.innerHTML = html;
@@ -2888,7 +2982,7 @@ function selectVehicle(id) {
       return;
     }
   }
-  renderAllSections();
+  renderAll();
 }
 
 // ── Vehicle Card ──
@@ -2954,8 +3048,8 @@ function addKmReading() {
   renderAll();
 }
 
-function deleteKmReading(id) {
-  if (!confirm('Supprimer ce releve ?')) return;
+async function deleteKmReading(id) {
+  if (!await customConfirm('Supprimer ce releve ?')) return;
   updateActiveVehicle(v => { v.kmReadings = v.kmReadings.filter(r => r.id !== id); });
   renderAll();
 }
@@ -3061,7 +3155,7 @@ function renderKmTab() {
       <span class="km-val">${r.km.toLocaleString()} km</span>
       ${deltaHtml}
       <span style="font-size:0.75em;color:var(--muted)">${escHtml(r.source)}</span>
-      <span style="display:flex;gap:4px;"><button class="btn btn-secondary btn-sm" onclick="editKmReading(${r.id})" style="padding:2px 6px;font-size:0.65em;">&#9998;</button><button class="btn btn-danger btn-sm" onclick="deleteKmReading(${r.id})" style="padding:2px 6px;font-size:0.65em;">X</button></span>
+      <span style="display:flex;gap:4px;"><button class="btn btn-secondary btn-sm" onclick="editKmReading('${r.id}')" style="padding:2px 6px;font-size:0.65em;">&#9998;</button><button class="btn btn-danger btn-sm" onclick="deleteKmReading('${r.id}')" style="padding:2px 6px;font-size:0.65em;">X</button></span>
     </div>`;
   }
   document.getElementById('kmReadingsList').innerHTML = listHtml || '<div class="empty-state">Aucun releve</div>';
@@ -3141,7 +3235,7 @@ async function addEntry() {
   const provider = document.getElementById('addProvider').value.trim();
   const notes = document.getElementById('addNotes').value.trim();
   if (!date || !opsRaw) { toast('Date et operations sont obligatoires', 'warning'); return; }
-  if (km && !validateKm(km)) return;
+  if (km && !await validateKm(km)) return;
   const ops = opsRaw.split('\n').map(s => s.trim()).filter(Boolean);
 
   // Upload facture to Google Drive
@@ -3165,7 +3259,7 @@ async function addEntry() {
       v.entries.push({ id, date, km: km || null, ops, cost, costParts: costParts || null, costLabor: costLabor || null, provider, notes, photo: photoRef });
       if (km) {
         if (km > v.currentKm) v.currentKm = km;
-        v.kmReadings.push({ id: id + 1, date, km, source: ops[0] || 'Entretien' });
+        v.kmReadings.push({ id: genId(), date, km, source: ops[0] || 'Entretien' });
         v.kmReadings.sort((a, b) => a.date.localeCompare(b.date));
       }
     }
@@ -3183,14 +3277,17 @@ async function addEntry() {
   renderAll();
 }
 
-function deleteEntry(id) {
-  if (!confirm('Supprimer cette entree ?')) return;
+async function deleteEntry(id) {
+  if (!await customConfirm('Supprimer cette entree ?')) return;
   updateActiveVehicle(v => { v.entries = v.entries.filter(e => e.id !== id); });
   renderAll();
 }
 
 // ── Dashboard ──
+let _statusCache = {};
 function getStatus(item, v) {
+  const cacheKey = item.name + '|' + v.id + '|' + v.currentKm;
+  if (_statusCache[cacheKey]) return _statusCache[cacheKey];
   const now = new Date();
   if (!v.circDate) return { status: 'ok', statusText: 'Date de circulation manquante', kmLeft: Infinity, nextKm: 0, nextDate: new Date(), daysLeft: Infinity };
   const circDate = new Date(v.circDate + '-01');
@@ -3220,7 +3317,9 @@ function getStatus(item, v) {
   } else {
     statusText = `OK - prochain a ${nextKm.toLocaleString()} km ou ${nextDate.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}`;
   }
-  return { status, statusText, nextKm, nextDate, kmLeft, daysLeft };
+  const result = { status, statusText, nextKm, nextDate, kmLeft, daysLeft };
+  _statusCache[cacheKey] = result;
+  return result;
 }
 
 function getCtStatus(v) {
@@ -3415,6 +3514,7 @@ async function toggleNotifications() {
 }
 
 function checkAndNotify() {
+  if (!currentUser) return;
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   const v = getActiveVehicle();
   if (!v) return;
@@ -3626,7 +3726,7 @@ function renderHistory() {
       ${e.notes ? `<div class="notes">${escHtml(e.notes)}</div>` : ''}
       ${e.provider ? `<div class="notes">Prestataire : ${escHtml(e.provider)}</div>` : ''}
       ${entryPhotoHtml}</div>
-      <div class="actions"><button class="btn btn-secondary btn-sm" onclick="redoEntry(${e.id})" title="Refaire cet entretien">Refaire</button> <button class="btn btn-secondary btn-sm" onclick="editEntry(${e.id})">Modifier</button> <button class="btn btn-danger btn-sm" onclick="deleteEntry(${e.id})">Supprimer</button></div>
+      <div class="actions"><button class="btn btn-secondary btn-sm" onclick="redoEntry('${e.id}')" title="Refaire cet entretien">Refaire</button> <button class="btn btn-secondary btn-sm" onclick="editEntry('${e.id}')">Modifier</button> <button class="btn btn-danger btn-sm" onclick="deleteEntry('${e.id}')">Supprimer</button></div>
     </div>`;
   }
   list.innerHTML = html;
@@ -3646,9 +3746,46 @@ function renderSchedule() {
   const v = getActiveVehicle();
   if (!v) return;
   const body = document.getElementById('scheduleBody');
-  let html = '';
-  for (const item of v.schedule) {
+  const summaryEl = document.getElementById('scheduleSummary');
+  const detailWrap = document.getElementById('scheduleDetailWrap');
+
+  // Compute statuses
+  const items = (v.schedule || []).map(item => {
     const s = getStatus(item, v);
+    return { item, s };
+  });
+  const overdue = items.filter(i => i.s.status === 'overdue');
+  const warning = items.filter(i => i.s.status === 'warning');
+  const ok = items.filter(i => i.s.status === 'ok');
+
+  // Summary card
+  let summaryHtml = '<div class="summary-counts">';
+  if (overdue.length) summaryHtml += `<span class="summary-pill pill-overdue"><span class="pill-count">${overdue.length}</span> En retard</span>`;
+  if (warning.length) summaryHtml += `<span class="summary-pill pill-warning"><span class="pill-count">${warning.length}</span> Bientot</span>`;
+  if (ok.length) summaryHtml += `<span class="summary-pill pill-ok"><span class="pill-count">${ok.length}</span> OK</span>`;
+  summaryHtml += '</div>';
+
+  // Show overdue + warning items in summary
+  const urgent = [...overdue, ...warning];
+  if (urgent.length) {
+    summaryHtml += '<div class="summary-items">';
+    for (const { item, s } of urgent) {
+      const badge = s.status === 'overdue' ? 'badge-overdue' : 'badge-warning';
+      const label = s.status === 'overdue' ? 'En retard' : 'Bientot';
+      summaryHtml += `<div class="summary-item"><span>${escHtml(item.name)} <span class="badge ${badge}" style="font-size:0.75em;padding:2px 8px;">${label}</span></span><span class="item-next">${s.nextKm.toLocaleString()} km - ${s.nextDate.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}</span></div>`;
+    }
+    summaryHtml += '</div>';
+  }
+
+  if (items.length > 0) {
+    const isExpanded = detailWrap.style.display !== 'none';
+    summaryHtml += `<button class="schedule-toggle" onclick="toggleScheduleDetail()">${isExpanded ? 'Masquer le detail' : 'Voir tout le programme (' + items.length + ')'}</button>`;
+  }
+  summaryEl.innerHTML = summaryHtml;
+
+  // Detail table (unchanged)
+  let html = '';
+  for (const { item, s } of items) {
     const badgeClass = s.status === 'overdue' ? 'badge-overdue' : s.status === 'warning' ? 'badge-warning' : 'badge-ok';
     const badgeText = s.status === 'overdue' ? 'En retard' : s.status === 'warning' ? 'Bientot' : 'OK';
     html += `<tr><td>${escHtml(item.name)}</td><td>${item.kmInterval.toLocaleString()} km / ${item.yearInterval} ans</td>
@@ -3656,6 +3793,17 @@ function renderSchedule() {
       <td><span class="badge ${badgeClass}">${badgeText}</span></td></tr>`;
   }
   body.innerHTML = html;
+}
+
+function toggleScheduleDetail() {
+  const wrap = document.getElementById('scheduleDetailWrap');
+  const btn = document.querySelector('.schedule-toggle');
+  const isHidden = wrap.style.display === 'none';
+  wrap.style.display = isHidden ? '' : 'none';
+  if (btn) {
+    const total = document.getElementById('scheduleBody').rows.length;
+    btn.textContent = isHidden ? 'Masquer le detail' : 'Voir tout le programme (' + total + ')';
+  }
 }
 
 // ── Plate Lookup + AI Schedule ──
@@ -3848,7 +3996,9 @@ function openAddVehicle() {
   document.getElementById('vSchedule').value = JSON.stringify(GENERIC_SCHEDULE, null, 2);
   document.getElementById('evFieldsGroup').classList.add('hidden');
   resetPlateAndAIStatus();
-  document.getElementById('vehicleModal').classList.add('show');
+  const modal = document.getElementById('vehicleModal');
+  modal.classList.add('show');
+  trapFocus(modal);
 }
 
 function openEditVehicle(vehicleId) {
@@ -3878,11 +4028,15 @@ function openEditVehicle(vehicleId) {
   resetPlateAndAIStatus();
   document.getElementById('vPlate').value = v.plate || '';
   onFuelTypeChange(); // Show/hide EV fields based on fuel type
-  document.getElementById('vehicleModal').classList.add('show');
+  const modal = document.getElementById('vehicleModal');
+  modal.classList.add('show');
+  trapFocus(modal);
 }
 
 function closeModal() {
-  document.getElementById('vehicleModal').classList.remove('show');
+  const modal = document.getElementById('vehicleModal');
+  modal.classList.remove('show');
+  releaseFocus(modal);
 }
 
 function saveVehicle() {
@@ -3935,9 +4089,9 @@ function saveVehicle() {
     const purch = store.vehicles[id].purchaseDate;
     const purchKm = store.vehicles[id].purchaseKm;
     const curKm = store.vehicles[id].currentKm;
-    if (circ) store.vehicles[id].kmReadings.push({ id: 1, date: circ + '-01', km: 0, source: 'Mise en circulation' });
-    if (purch && purchKm) store.vehicles[id].kmReadings.push({ id: 2, date: purch + '-01', km: purchKm, source: 'Achat' });
-    if (curKm) store.vehicles[id].kmReadings.push({ id: 3, date: new Date().toISOString().slice(0,10), km: curKm, source: 'Estimation initiale' });
+    if (circ) store.vehicles[id].kmReadings.push({ id: genId(), date: circ + '-01', km: 0, source: 'Mise en circulation' });
+    if (purch && purchKm) store.vehicles[id].kmReadings.push({ id: genId(), date: purch + '-01', km: purchKm, source: 'Achat' });
+    if (curKm) store.vehicles[id].kmReadings.push({ id: genId(), date: new Date().toISOString().slice(0,10), km: curKm, source: 'Estimation initiale' });
   }
 
   store.activeVehicleId = id;
@@ -3945,22 +4099,22 @@ function saveVehicle() {
   closeModal();
   haptic();
   toast('Vehicule enregistre');
-  renderAllSections();
+  renderAll();
 }
 
-function deleteVehicle() {
+async function deleteVehicle() {
   const id = document.getElementById('modalVehicleId').value;
   if (!id) return;
   const store = loadStore();
   const name = store.vehicles[id]?.name || id;
-  if (!confirm(`Supprimer ${name} et tout son historique ?`)) return;
+  if (!await customConfirm(`Supprimer ${name} et tout son historique ?`)) return;
   delete store.vehicles[id];
   const remaining = Object.keys(store.vehicles);
   store.activeVehicleId = remaining[0] || '';
   saveStore(store);
   closeModal();
   if (remaining.length === 0) openAddVehicle();
-  else renderAllSections();
+  else renderAll();
 }
 
 // ── Photo resize helper ──
@@ -4339,7 +4493,7 @@ async function addFuel() {
   const station = document.getElementById('fuelStation').value.trim();
   const missedPrior = document.getElementById('fuelMissed').checked;
   if (!date || !liters || !cost) { toast('Date, litres et prix sont obligatoires', 'warning'); return; }
-  if (km && !validateKm(km)) return;
+  if (km && !await validateKm(km)) return;
 
   // Photo carburant : base64 inline
   let photoRef = null;
@@ -4420,8 +4574,8 @@ function cancelFuelEdit() {
   document.getElementById('fuelFormWrapper').classList.remove('open');
 }
 
-function deleteFuel(id) {
-  if (!confirm('Supprimer ce plein ?')) return;
+async function deleteFuel(id) {
+  if (!await customConfirm('Supprimer ce plein ?')) return;
   updateActiveVehicle(v => { v.fuelEntries = v.fuelEntries.filter(e => e.id !== id); });
   renderAll();
 }
@@ -4544,8 +4698,8 @@ function renderFuel() {
         ${metaHtml}</div>
         <div class="fuel-bottom">
           <div class="actions">
-            <button class="btn btn-secondary btn-sm" onclick="editFuel(${e.id})">Mod.</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteFuel(${e.id})">Sup.</button>
+            <button class="btn btn-secondary btn-sm" onclick="editFuel('${e.id}')">Mod.</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteFuel('${e.id}')">Sup.</button>
           </div>
         </div>
       </div>
@@ -4686,8 +4840,8 @@ function addNotebookEntry() {
   renderAll();
 }
 
-function deleteNotebookEntry(id) {
-  if (!confirm('Supprimer cette note ?')) return;
+async function deleteNotebookEntry(id) {
+  if (!await customConfirm('Supprimer cette note ?')) return;
   updateActiveVehicle(v => { v.notebook = (v.notebook || []).filter(n => n.id !== id); });
   renderAll();
 }
@@ -4706,7 +4860,7 @@ function renderNotebook() {
     const dateStr = new Date(n.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
     const icon = typeIcons[n.type] || '&#128196;';
     const label = typeLabels[n.type] || n.type;
-    html += `<div class="history-entry"><div class="header"><span class="date">${icon} ${label} - ${dateStr}</span></div><div class="ops">${escHtml(n.text)}</div><div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteNotebookEntry(${n.id})">Supprimer</button></div></div>`;
+    html += `<div class="history-entry"><div class="header"><span class="date">${icon} ${label} - ${dateStr}</span></div><div class="ops">${escHtml(n.text)}</div><div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteNotebookEntry('${n.id}')">Supprimer</button></div></div>`;
   }
   list.innerHTML = html;
 }
@@ -4751,8 +4905,8 @@ function addWash() {
   renderAll();
 }
 
-function deleteWash(id) {
-  if (!confirm('Supprimer ce lavage ?')) return;
+async function deleteWash(id) {
+  if (!await customConfirm('Supprimer ce lavage ?')) return;
   updateActiveVehicle(v => { v.washes = (v.washes || []).filter(w => w.id !== id); });
   renderAll();
 }
@@ -4791,8 +4945,8 @@ function addWashCredit() {
   renderAll();
 }
 
-function deleteWashCredit(id) {
-  if (!confirm('Supprimer cette recharge ?')) return;
+async function deleteWashCredit(id) {
+  if (!await customConfirm('Supprimer cette recharge ?')) return;
   updateActiveVehicle(v => { v.washCredits = (v.washCredits || []).filter(c => c.id !== id); });
   renderAll();
 }
@@ -4858,7 +5012,7 @@ function renderWash() {
       else if (item.cost) costStr = item.cost.toFixed(2) + ' EUR';
       html += `<div class="history-entry"><div class="header"><span class="date">&#128703; ${tLabel} - ${dateStr}</span><span class="cost">${costStr} (${pLabel})</span></div>`;
       if (item.description) html += `<div class="ops">${escHtml(item.description)}</div>`;
-      html += `<div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWash(${item.id})">Supprimer</button></div></div>`;
+      html += `<div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWash('${item.id}')">Supprimer</button></div></div>`;
     } else {
       let cLabel, cDetail;
       if (item.type === 'badge') {
@@ -4869,7 +5023,7 @@ function renderWash() {
         cDetail = `${(item.cost || 0).toFixed(2)} EUR - ${item.quantity || 0} jeton${(item.quantity || 0) > 1 ? 's' : ''}`;
       }
       html += `<div class="history-entry"><div class="header"><span class="date">&#128179; ${cLabel} - ${dateStr}</span><span class="cost">${cDetail}</span></div>`;
-      html += `<div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWashCredit(${item.id})">Supprimer</button></div></div>`;
+      html += `<div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWashCredit('${item.id}')">Supprimer</button></div></div>`;
     }
   }
   listEl.innerHTML = html;
@@ -4911,8 +5065,8 @@ function renderTires() {
         ${t.notes ? `<div class="notes">${escHtml(t.notes)}</div>` : ''}
       </div>
       <div class="actions">
-        <button class="btn btn-secondary btn-sm" onclick="editTire(${t.id})">Mod.</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteTire(${t.id})">Sup.</button>
+        <button class="btn btn-secondary btn-sm" onclick="editTire('${t.id}')">Mod.</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTire('${t.id}')">Sup.</button>
       </div>
     </div>`;
   }
@@ -4946,6 +5100,7 @@ function addTire() {
       v.tires.push(tire);
     }
   });
+  const wasEditingTire = !!_editingTireId;
   _editingTireId = null;
   document.getElementById('cancelTireBtn').style.display = 'none';
   document.getElementById('tireFormTitle').textContent = 'Nouveau jeu de pneus';
@@ -4955,7 +5110,7 @@ function addTire() {
   document.getElementById('tireActive').checked = true;
   document.getElementById('tireType').value = 'ete';
   document.getElementById('tirePosition').value = 'all';
-  toast(_editingTireId ? 'Pneu modifie' : 'Pneu ajoute');
+  toast(wasEditingTire ? 'Pneu modifie' : 'Pneu ajoute');
   renderAll('entretien');
 }
 
@@ -4991,8 +5146,8 @@ function cancelTireEdit() {
   document.getElementById('tireActive').checked = true;
 }
 
-function deleteTire(id) {
-  if (!confirm('Supprimer ce pneu ?')) return;
+async function deleteTire(id) {
+  if (!await customConfirm('Supprimer ce pneu ?')) return;
   updateActiveVehicle(v => { v.tires = (v.tires || []).filter(t => t.id !== id); });
   toast('Pneu supprime');
   renderAll('entretien');
@@ -5039,8 +5194,8 @@ function addDeadline() {
   renderAll();
 }
 
-function removeDeadline(id) {
-  if (!confirm('Supprimer cette echeance ?')) return;
+async function removeDeadline(id) {
+  if (!await customConfirm('Supprimer cette echeance ?')) return;
   updateActiveVehicle(v => { v.deadlines = v.deadlines.filter(d => d.id !== id); });
   renderAll();
 }
@@ -5098,8 +5253,8 @@ function renderDeadlines() {
       <div class="dl-info"><h3>${escHtml(label)}${costStr}</h3>${d.notes ? `<p>${escHtml(d.notes)}</p>` : ''}</div>
       <div style="display:flex;align-items:center;gap:12px;">
         <div class="dl-date"><div class="date">${dateStr}</div><div class="remaining" style="color:${remainingColor}">${remainingText}</div></div>
-        ${showRenew ? `<button class="btn btn-secondary btn-sm" onclick="renewDeadline(${d.id})" title="${(d.type||'').toLowerCase()==='ct'?'+2 ans':'+1 an'}">${renewLabel}</button>` : ''}
-        <button class="btn btn-danger btn-sm" onclick="removeDeadline(${d.id})">X</button>
+        ${showRenew ? `<button class="btn btn-secondary btn-sm" onclick="renewDeadline('${d.id}')" title="${(d.type||'').toLowerCase()==='ct'?'+2 ans':'+1 an'}">${renewLabel}</button>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="removeDeadline('${d.id}')">X</button>
       </div>
     </div>`;
   }
@@ -5580,6 +5735,7 @@ function renderCompare() {
 }
 
 // ── Navigation ──
+let _skipPushState = false;
 function switchSection(name) {
   document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -5593,8 +5749,18 @@ function switchSection(name) {
   document.getElementById('alertsBanner').style.display = name === 'dashboard' ? 'none' : '';
   document.getElementById('appHeader').style.display = name === 'dashboard' ? '' : 'none';
   document.getElementById('vehicleMini').style.display = name === 'dashboard' ? 'none' : 'flex';
+  if (!_skipPushState) {
+    history.pushState({ section: name }, '', '');
+  }
   renderAll(name);
 }
+window.addEventListener('popstate', e => {
+  const section = e.state?.section || 'dashboard';
+  _skipPushState = true;
+  switchSection(section);
+  _skipPushState = false;
+});
+history.replaceState({ section: 'dashboard' }, '', '');
 
 function switchSubTab(section, tab) {
   const container = document.getElementById('section-' + section);
@@ -6094,7 +6260,7 @@ function handleImport(event) {
         }
       }
       saveStore(data);
-      renderAllSections();
+      renderAll();
       toast('Import reussi !');
     } catch { toast('Erreur de lecture du fichier', 'error'); }
   };
@@ -6398,8 +6564,8 @@ function completePendingEntry(id, type) {
   }
 }
 
-function deletePendingEntry(id) {
-  if (!confirm('Supprimer cette saisie en attente ?')) return;
+async function deletePendingEntry(id) {
+  if (!await customConfirm('Supprimer cette saisie en attente ?')) return;
   updateActiveVehicle(v => {
     v.pendingEntries = (v.pendingEntries || []).filter(p => p.id !== id);
   });
@@ -6621,6 +6787,30 @@ async function initStationMap() {
   }
 }
 
+const FUEL_FIELDS = ['gazole', 'sp95', 'sp98', 'e10', 'e85', 'gplc'];
+const FUEL_LABELS = { gazole: 'Gazole', sp95: 'SP95', sp98: 'SP98', e10: 'E10', e85: 'E85', gplc: 'GPLc' };
+
+function getFuelKey(fuelType) {
+  if (fuelType === 'diesel') return 'gazole';
+  if (fuelType === 'e85') return 'e85';
+  return 'sp95';
+}
+
+function parseStationRecord(rec) {
+  const prices = {};
+  for (const f of FUEL_FIELDS) {
+    const prix = rec[f + '_prix'];
+    if (prix != null) {
+      prices[f] = { value: parseFloat(prix), updated: rec[f + '_maj'] || '' };
+    }
+  }
+  return {
+    id: rec.id, address: rec.adresse || '', city: rec.ville || '',
+    cp: rec.cp || '', lat: parseFloat(rec.latitude), lon: parseFloat(rec.longitude),
+    prices
+  };
+}
+
 async function fetchNearbyStations(lat, lon) {
   stationMapStatus('Recherche des stations...', 'var(--orange)');
   const v = getActiveVehicle();
@@ -6631,30 +6821,14 @@ async function fetchNearbyStations(lat, lon) {
   _stationMarkers = [];
 
   try {
-    let stations = [];
-    // Direct API (data.economie.gouv.fr has CORS support)
-    const apiUrl = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?select=id,adresse,ville,cp,latitude,longitude,prix_nom,prix_valeur,prix_maj&where=within_distance(geom,geom'POINT(${lon} ${lat})',10km)&order_by=distance(geom,geom'POINT(${lon} ${lat})')&limit=30`;
+    const selectFields = 'id,adresse,ville,cp,latitude,longitude,' + FUEL_FIELDS.map(f => f + '_prix,' + f + '_maj').join(',');
+    const apiUrl = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?select=${selectFields}&where=within_distance(geom,geom'POINT(${lon} ${lat})',10km)&order_by=distance(geom,geom'POINT(${lon} ${lat})')&limit=30`;
 
     const resp = await fetch(apiUrl);
+    let stations = [];
     if (resp.ok) {
       const data = await resp.json();
-      // Group by station id
-      const stationsMap = {};
-      for (const rec of (data.results || [])) {
-        const sid = rec.id;
-        if (!stationsMap[sid]) {
-          stationsMap[sid] = {
-            id: sid, address: rec.adresse || '', city: rec.ville || '',
-            cp: rec.cp || '', lat: rec.latitude, lon: rec.longitude, prices: {}
-          };
-        }
-        if (rec.prix_nom && rec.prix_valeur) {
-          stationsMap[sid].prices[rec.prix_nom.toLowerCase()] = {
-            value: rec.prix_valeur, updated: rec.prix_maj || ''
-          };
-        }
-      }
-      stations = Object.values(stationsMap);
+      stations = (data.results || []).map(parseStationRecord);
     }
 
     if (stations.length === 0) {
@@ -6663,15 +6837,18 @@ async function fetchNearbyStations(lat, lon) {
       return;
     }
 
-    // Determine which fuel price to highlight
-    const fuelKey = fuelType === 'diesel' ? 'gazole' : fuelType === 'e85' ? 'e85' : 'sp95';
+    const fuelKey = getFuelKey(fuelType);
+
+    // Compute dynamic price thresholds (terciles of available prices)
+    const allPrices = stations.map(s => s.prices[fuelKey]?.value).filter(Boolean).sort((a, b) => a - b);
+    const lowThreshold = allPrices.length > 2 ? allPrices[Math.floor(allPrices.length / 3)] : 999;
+    const highThreshold = allPrices.length > 2 ? allPrices[Math.floor(allPrices.length * 2 / 3)] : 999;
 
     // Add markers
     for (const s of stations) {
       if (!s.lat || !s.lon) continue;
-      const price = s.prices[fuelKey]?.value ? (s.prices[fuelKey].value / 1000).toFixed(3) : null;
-      const label = price ? price + ' EUR' : '?';
-      const color = price ? (parseFloat(price) < 1.6 ? '#4ecca3' : parseFloat(price) < 1.8 ? '#f0a500' : '#e94560') : '#888';
+      const price = s.prices[fuelKey]?.value ? s.prices[fuelKey].value.toFixed(3) : null;
+      const color = price ? (parseFloat(price) <= lowThreshold ? '#4ecca3' : parseFloat(price) <= highThreshold ? '#f0a500' : '#e94560') : '#888';
 
       const marker = L.circleMarker([s.lat / 100000, s.lon / 100000], {
         radius: 10, color, fillColor: color, fillOpacity: 0.7, weight: 2
@@ -6681,7 +6858,7 @@ async function fetchNearbyStations(lat, lon) {
         <strong>${escHtml(s.address)}</strong><br>
         ${escHtml(s.cp)} ${escHtml(s.city)}<br>
         ${Object.entries(s.prices).map(([k, p]) =>
-          `<div style="display:flex;justify-content:space-between;"><span>${escHtml(k)}</span><strong>${(p.value / 1000).toFixed(3)} EUR</strong></div>`
+          `<div style="display:flex;justify-content:space-between;gap:12px;"><span>${escHtml(FUEL_LABELS[k] || k)}</span><strong>${p.value.toFixed(3)} EUR</strong></div>`
         ).join('')}
       </div>`;
       marker.bindPopup(popupHtml);
@@ -6704,12 +6881,16 @@ function renderNearbyStationsList(stations, fuelKey) {
 
   if (sorted.length === 0) { el.innerHTML = ''; return; }
 
-  const fuelLabel = fuelKey.charAt(0).toUpperCase() + fuelKey.slice(1);
-  el.innerHTML = `<div style="font-size:0.85em;color:var(--muted);margin-bottom:6px;">Meilleurs prix ${escHtml(fuelLabel)} a proximite</div>` +
-    sorted.slice(0, 8).map((s, i) => {
-      const price = (s.prices[fuelKey].value / 1000).toFixed(3);
+  // Dynamic thresholds for list colors
+  const listPrices = sorted.map(s => s.prices[fuelKey].value);
+  const lowT = listPrices.length > 2 ? listPrices[Math.floor(listPrices.length / 3)] : 999;
+  const highT = listPrices.length > 2 ? listPrices[Math.floor(listPrices.length * 2 / 3)] : 999;
+
+  el.innerHTML = `<div style="font-size:0.85em;color:var(--muted);margin-bottom:6px;">Meilleurs prix ${escHtml(FUEL_LABELS[fuelKey] || fuelKey)} a proximite</div>` +
+    sorted.slice(0, 8).map(s => {
+      const price = s.prices[fuelKey].value.toFixed(3);
       const updated = s.prices[fuelKey].updated ? new Date(s.prices[fuelKey].updated).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '';
-      const barColor = parseFloat(price) < 1.6 ? 'var(--green)' : parseFloat(price) < 1.8 ? 'var(--orange)' : 'var(--accent)';
+      const barColor = parseFloat(price) <= lowT ? 'var(--green)' : parseFloat(price) <= highT ? 'var(--orange)' : 'var(--accent)';
       return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface);border-radius:8px;margin-bottom:4px;border-left:3px solid ${barColor};">
         <div style="flex:1;min-width:0;">
           <div style="font-size:0.85em;font-weight:500;">${escHtml(s.address)}</div>
@@ -7076,11 +7257,57 @@ function haptic() {
   if (navigator.vibrate) navigator.vibrate(10);
 }
 
+// ── Focus trap for modals (A11Y) ──
+let _focusTrapModal = null;
+let _previousFocus = null;
+function trapFocus(modal) {
+  _previousFocus = document.activeElement;
+  _focusTrapModal = modal;
+}
+function releaseFocus(modal) {
+  if (_focusTrapModal === modal) _focusTrapModal = null;
+  if (_previousFocus && typeof _previousFocus.focus === 'function') {
+    _previousFocus.focus();
+    _previousFocus = null;
+  }
+}
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Tab' || !_focusTrapModal) return;
+  const focusable = _focusTrapModal.querySelectorAll('button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey) {
+    if (document.activeElement === first || !_focusTrapModal.contains(document.activeElement)) { e.preventDefault(); last.focus(); }
+  } else {
+    if (document.activeElement === last || !_focusTrapModal.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+  }
+});
+
+// ── Custom confirm modal (replaces native confirm()) ──
+let _confirmResolve = null;
+function customConfirm(message) {
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmModal').classList.add('show');
+    trapFocus(document.getElementById('confirmModal'));
+    document.getElementById('confirmCancelBtn').focus();
+  });
+}
+function _closeConfirm(result) {
+  document.getElementById('confirmModal').classList.remove('show');
+  releaseFocus(document.getElementById('confirmModal'));
+  if (_confirmResolve) { _confirmResolve(result); _confirmResolve = null; }
+}
+document.getElementById('confirmOkBtn').addEventListener('click', () => _closeConfirm(true));
+document.getElementById('confirmCancelBtn').addEventListener('click', () => _closeConfirm(false));
+
 // ── Km validation ──
-function validateKm(newKm) {
+async function validateKm(newKm) {
   const v = getActiveVehicle();
   if (v && newKm < v.currentKm && newKm > 0) {
-    return confirm(`Attention : ${newKm.toLocaleString()} km est inferieur au compteur actuel (${v.currentKm.toLocaleString()} km). Continuer ?`);
+    return await customConfirm(`Attention : ${newKm.toLocaleString()} km est inferieur au compteur actuel (${v.currentKm.toLocaleString()} km). Continuer ?`);
   }
   return true;
 }
@@ -7089,6 +7316,7 @@ function validateKm(newKm) {
 let touchStartX = 0;
 let touchStartY = 0;
 let ptrTriggered = false;
+let touchStartedOnMap = false;
 
 function getSwipeSections() {
   const v = getActiveVehicle();
@@ -7097,10 +7325,30 @@ function getSwipeSections() {
   return ['dashboard', 'entretien', 'carburant', 'stats'];
 }
 
+function getSubTabs(section) {
+  const container = document.getElementById('section-' + section);
+  if (!container) return [];
+  const btns = container.querySelectorAll('.sub-tabs .sub-tab');
+  return [...btns].map(b => {
+    const m = b.getAttribute('onclick')?.match(/switchSubTab\('[^']+','([^']+)'\)/);
+    return m ? m[1] : null;
+  }).filter(Boolean);
+}
+
+function getActiveSubTab(section) {
+  const container = document.getElementById('section-' + section);
+  if (!container) return '';
+  const active = container.querySelector('.sub-tabs .sub-tab.active');
+  if (!active) return '';
+  const m = active.getAttribute('onclick')?.match(/switchSubTab\('[^']+','([^']+)'\)/);
+  return m ? m[1] : '';
+}
+
 document.addEventListener('touchstart', e => {
   touchStartX = e.touches[0].clientX;
   touchStartY = e.touches[0].clientY;
   ptrTriggered = false;
+  touchStartedOnMap = !!e.target.closest('#stationMap, .leaflet-container');
 }, { passive: true });
 
 document.addEventListener('touchmove', e => {
@@ -7131,17 +7379,17 @@ document.addEventListener('touchend', e => {
       db.doc(GARAGE_DOC).get().then(snap => {
         if (snap.exists) {
           try {
-            const remote = JSON.parse(snap.data().data);
+            localStorage.setItem(STORAGE_KEY, snap.data().data);
             invalidateStoreCache();
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(remote));
-            renderAllSections();
+            loadStore();
+            renderAll();
             toast('Donnees synchronisees');
           } catch (e) { toast('Erreur de sync', 'error'); }
         }
         indicator.classList.remove('refreshing');
       }).catch(() => { indicator.classList.remove('refreshing'); toast('Erreur de sync', 'error'); });
     } else {
-      renderAllSections();
+      renderAll();
       indicator.classList.remove('refreshing');
       toast('Rafraichi (hors ligne)');
     }
@@ -7151,10 +7399,24 @@ document.addEventListener('touchend', e => {
   indicator.classList.remove('pulling');
   ptrTriggered = false;
 
-  // Swipe navigation (horizontal dominant)
-  if (Math.abs(dx) >= 80 && Math.abs(dy) <= Math.abs(dx) * 0.7) {
+  // Swipe navigation (horizontal dominant) - skip if touch started on map
+  if (!touchStartedOnMap && Math.abs(dx) >= 80 && Math.abs(dy) <= Math.abs(dx) * 0.7) {
+    const section = getActiveSection();
+
+    // Try sub-tab swipe first for sections with sub-tabs
+    const subTabs = getSubTabs(section);
+    if (subTabs.length > 1) {
+      const activeTab = getActiveSubTab(section);
+      const tabIdx = subTabs.indexOf(activeTab);
+      if (tabIdx !== -1) {
+        if (dx < 0 && tabIdx < subTabs.length - 1) { switchSubTab(section, subTabs[tabIdx + 1]); haptic(); return; }
+        if (dx > 0 && tabIdx > 0) { switchSubTab(section, subTabs[tabIdx - 1]); haptic(); return; }
+      }
+    }
+
+    // Fallback: main section swipe
     const sections = getSwipeSections();
-    const idx = sections.indexOf(getActiveSection());
+    const idx = sections.indexOf(section);
     if (idx === -1) return;
     if (dx < 0 && idx < sections.length - 1) { switchSection(sections[idx + 1]); haptic(); }
     else if (dx > 0 && idx > 0) { switchSection(sections[idx - 1]); haptic(); }
@@ -7169,13 +7431,19 @@ function openScheduleEditor() {
   if (!v) return;
   scheduleEditorData = JSON.parse(JSON.stringify(v.schedule));
   renderScheduleEditorRows();
-  document.getElementById('scheduleModal').classList.add('show');
+  const modal = document.getElementById('scheduleModal');
+  modal.classList.add('show');
+  trapFocus(modal);
 }
 
 function closeScheduleEditor() {
-  document.getElementById('scheduleModal').classList.remove('show');
+  const modal = document.getElementById('scheduleModal');
+  modal.classList.remove('show');
+  releaseFocus(modal);
   document.getElementById('aiSuggestionsArea').style.display = 'none';
-  document.getElementById('vehicleModal').classList.add('show');
+  const vm = document.getElementById('vehicleModal');
+  vm.classList.add('show');
+  trapFocus(vm);
 }
 
 function renderScheduleEditorRows() {
@@ -7343,11 +7611,15 @@ function openImportSchedule() {
   document.getElementById('importScheduleGoBtn').disabled = false;
   document.getElementById('importScheduleGoBtn').textContent = 'Analyser avec l\'IA';
   switchImportTab('text');
-  document.getElementById('importScheduleModal').classList.add('show');
+  const modal = document.getElementById('importScheduleModal');
+  modal.classList.add('show');
+  trapFocus(modal);
 }
 
 function closeImportSchedule() {
-  document.getElementById('importScheduleModal').classList.remove('show');
+  const modal = document.getElementById('importScheduleModal');
+  modal.classList.remove('show');
+  releaseFocus(modal);
 }
 
 function switchImportTab(tab) {
@@ -7469,7 +7741,7 @@ Reponds UNIQUEMENT avec le tableau JSON, sans texte avant ni apres.`;
         const existingSchedule = JSON.parse(existing);
         if (Array.isArray(existingSchedule) && existingSchedule.length > 0) {
           // Ask user
-          if (!confirm(existingSchedule.length + ' operations deja presentes. Remplacer ? (Annuler = fusionner)')) {
+          if (!await customConfirm(existingSchedule.length + ' operations deja presentes. Remplacer ? (Annuler = fusionner)')) {
             // Merge: add only new operations
             const existNames = existingSchedule.map(s => normalizeOpName(s.name));
             for (const s of valid) {
@@ -7812,7 +8084,6 @@ if ('serviceWorker' in navigator) {
 }
 
 // ── Init ──
-renderAllSections();
 updateNotifButton();
 checkAndNotify();
 // Re-check notifications every 30 min + on tab focus
@@ -7843,6 +8114,26 @@ document.addEventListener('click', e => {
 // Close share modal on overlay click
 document.getElementById('shareModal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeSharePanel();
+});
+
+// Close confirm modal on overlay click
+document.getElementById('confirmModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) _closeConfirm(false);
+});
+
+// Close modals on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const cm = document.getElementById('confirmModal');
+  if (cm && cm.classList.contains('show')) { _closeConfirm(false); return; }
+  const vm = document.getElementById('vehicleModal');
+  if (vm && vm.classList.contains('show')) { closeModal(); return; }
+  const sm = document.getElementById('scheduleModal');
+  if (sm && sm.classList.contains('show')) { closeScheduleEditor(); return; }
+  const im = document.getElementById('importScheduleModal');
+  if (im && im.classList.contains('show')) { closeImportSchedule(); return; }
+  const sh = document.getElementById('shareModal');
+  if (sh && sh.classList.contains('show')) { closeSharePanel(); return; }
 });
 
 // Sync indicator
