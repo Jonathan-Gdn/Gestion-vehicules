@@ -1794,7 +1794,15 @@ async function startFirestoreSync() {
   if (!firestoreReady || !db || !currentUser) return;
   try {
     const snap = await db.doc(GARAGE_DOC).get();
-    if (!snap.exists) {
+    if (snap.exists) {
+      // Restore remote data to localStorage (critical after clear site data)
+      const remoteData = snap.data().data;
+      if (remoteData) {
+        localStorage.setItem(STORAGE_KEY, remoteData);
+        invalidateStoreCache();
+        console.log('Donnees restaurees depuis Firestore');
+      }
+    } else {
       const store = loadStore();
       await db.doc(GARAGE_DOC).set({
         data: JSON.stringify(store),
