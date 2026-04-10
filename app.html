@@ -939,7 +939,8 @@ async function clearFirebaseConfig() {
       <button class="profile-menu-item" onclick="migratePhotosToDrive(); toggleProfileMenu();">Migrer photos Drive</button>
       <button class="profile-menu-item" onclick="showDiagnosticLights(); toggleProfileMenu();">Diagnostic voyants</button>
       <button class="profile-menu-item" onclick="connectOBD(); toggleProfileMenu();">Import OBD-II</button>
-      <div class="profile-menu-item" style="display:flex;align-items:center;gap:6px;">
+      <div class="profile-menu-item" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Langue</span>
         <select onchange="setLanguage(this.value); toggleProfileMenu();" style="background:var(--surface);color:var(--text);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:2px 4px;font-size:0.85em;width:52px;" aria-label="Langue">
           <option value="fr">FR</option>
           <option value="en">EN</option>

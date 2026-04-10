@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mongarage-v4.1.1';
+const CACHE_NAME = 'mongarage-v4.1.2';
 const ASSETS = [
   './app.html',
   './manifest.json',
