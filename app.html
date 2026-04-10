@@ -3761,28 +3761,15 @@ function renderSchedule() {
   const warning = items.filter(i => i.s.status === 'warning');
   const ok = items.filter(i => i.s.status === 'ok');
 
-  // Summary card
+  // Summary banner: just pills + toggle button
   let summaryHtml = '<div class="summary-counts">';
   if (overdue.length) summaryHtml += `<span class="summary-pill pill-overdue"><span class="pill-count">${overdue.length}</span> En retard</span>`;
   if (warning.length) summaryHtml += `<span class="summary-pill pill-warning"><span class="pill-count">${warning.length}</span> Bientot</span>`;
   if (ok.length) summaryHtml += `<span class="summary-pill pill-ok"><span class="pill-count">${ok.length}</span> OK</span>`;
   summaryHtml += '</div>';
 
-  // Show overdue + warning items in summary
-  const urgent = [...overdue, ...warning];
-  if (urgent.length) {
-    summaryHtml += '<div class="summary-items">';
-    for (const { item, s } of urgent) {
-      const badge = s.status === 'overdue' ? 'badge-overdue' : 'badge-warning';
-      const label = s.status === 'overdue' ? 'En retard' : 'Bientot';
-      summaryHtml += `<div class="summary-item"><span>${escHtml(item.name)} <span class="badge ${badge}" style="font-size:0.75em;padding:2px 8px;">${label}</span></span><span class="item-next">${s.nextKm.toLocaleString()} km - ${s.nextDate.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}</span></div>`;
-    }
-    summaryHtml += '</div>';
-  }
-
   if (items.length > 0) {
-    const isExpanded = detailWrap.style.display !== 'none';
-    summaryHtml += `<button class="schedule-toggle" onclick="toggleScheduleDetail()">${isExpanded ? 'Masquer le detail' : 'Voir tout le programme (' + items.length + ')'}</button>`;
+    summaryHtml += `<button class="schedule-toggle" onclick="toggleScheduleDetail()">Voir le detail (${items.length})</button>`;
   }
   summaryEl.innerHTML = summaryHtml;
 
