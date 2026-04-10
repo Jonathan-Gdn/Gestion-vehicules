@@ -8,7 +8,7 @@ admin.initializeApp();
 // ── Cloud Function: accept family invitation ──
 // Triggered when an invitation status changes to 'accepted'
 // Adds the accepting user's UID to the owner's garage sharedWith[]
-exports.onInvitationAccepted = onDocumentUpdated("invitations/{inviteId}", async (event) => {
+exports.onInvitationAccepted = onDocumentUpdated({ document: "invitations/{inviteId}", region: "europe-west1" }, async (event) => {
   const before = event.data.before.data();
   const after = event.data.after.data();
 
