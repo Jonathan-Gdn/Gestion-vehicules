@@ -1727,6 +1727,7 @@ function signOut() {
   PLATE_API_TOKEN = '';
   GROQ_API_KEY = '';
   // Clear sync state
+  _syncReady = false;
   _pendingWrites = 0;
   _viewingSharedGarage = null;
   _sharedGarages = [];
@@ -1781,6 +1782,7 @@ async function onAuthReady(user) {
     GARAGE_DOC = null;
     PLATE_API_TOKEN = '';
     GROQ_API_KEY = '';
+    _syncReady = false;
     _pendingWrites = 0;
     _viewingSharedGarage = null;
     _sharedGarages = [];
@@ -1829,6 +1831,7 @@ async function startFirestoreSync() {
       console.log('Sync depuis Firestore');
     } catch (e) { console.warn('Snapshot parse error:', e); }
   }, err => console.warn('Snapshot error:', err));
+  _syncReady = true;
 }
 
 // ── Firebase Storage (photos) ──
@@ -2398,11 +2401,13 @@ function loadStore() {
 function invalidateStoreCache() { _storeCache = null; _statusCache = {}; }
 
 let _saveDebounceTimer = null;
-function saveStore(store) {
+let _syncReady = false; // true once startFirestoreSync has restored data
+
+function saveStore(store, localOnly) {
   _storeCache = store;
   const json = JSON.stringify(store);
   localStorage.setItem(STORAGE_KEY, json);
-  if (firestoreReady && db && currentUser) {
+  if (!localOnly && _syncReady && firestoreReady && db && currentUser) {
     clearTimeout(_saveDebounceTimer);
     _saveDebounceTimer = setTimeout(() => {
       _pendingWrites++;
