@@ -620,7 +620,7 @@ async function clearFirebaseConfig() {
   #appContent { display: none; }
 
   /* Alert banner */
-  .alerts-banner { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .alerts-banner { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; min-width: 0; }
   .alert-chip {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 5px 10px; border-radius: 20px;
@@ -924,7 +924,8 @@ async function clearFirebaseConfig() {
   <!-- Pull to refresh indicator -->
   <div class="ptr-indicator" id="ptrIndicator">&#8635; Tirer pour rafraichir</div>
 
-  <div style="display:flex;justify-content:flex-end;margin-bottom:6px;position:relative;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;position:relative;">
+    <div class="alerts-banner" id="alertsBanner"></div>
     <button class="profile-toggle" onclick="toggleProfileMenu()" id="profileToggle" aria-label="Menu utilisateur">
       <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     </button>
@@ -938,14 +939,13 @@ async function clearFirebaseConfig() {
       <button class="profile-menu-item" onclick="migratePhotosToDrive(); toggleProfileMenu();">Migrer photos Drive</button>
       <button class="profile-menu-item" onclick="showDiagnosticLights(); toggleProfileMenu();">Diagnostic voyants</button>
       <button class="profile-menu-item" onclick="connectOBD(); toggleProfileMenu();">Import OBD-II</button>
-      <button class="profile-menu-item" style="display:flex;align-items:center;gap:8px;">
-        Langue :
-        <select onchange="setLanguage(this.value); toggleProfileMenu();" style="background:var(--surface);color:var(--text);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:2px 6px;font-size:0.85em;">
+      <div class="profile-menu-item" style="display:flex;align-items:center;gap:6px;">
+        <select onchange="setLanguage(this.value); toggleProfileMenu();" style="background:var(--surface);color:var(--text);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:2px 4px;font-size:0.85em;width:52px;" aria-label="Langue">
           <option value="fr">FR</option>
           <option value="en">EN</option>
           <option value="es">ES</option>
         </select>
-      </button>
+      </div>
       <button class="profile-menu-item" onclick="resetFirebaseConfig()">Reinitialiser config</button>
       <button class="profile-menu-item" onclick="signOut()">Deconnexion</button>
     </div>
@@ -956,9 +956,6 @@ async function clearFirebaseConfig() {
     <!-- Vehicle selector -->
     <div class="vehicle-selector" id="vehicleSelector"></div>
   </div>
-
-  <!-- Alerts banner -->
-  <div class="alerts-banner" id="alertsBanner" style="display:none"></div>
 
   <!-- Vehicle mini banner (visible on non-dashboard pages) -->
   <div class="vehicle-mini-banner" id="vehicleMini" style="display:none"></div>
@@ -3677,16 +3674,9 @@ function renderAlerts() {
   for (const ca of consumableAlerts) { alerts.push(ca); }
 
   const banner = document.getElementById('alertsBanner');
-  // Filter out dismissed alerts (session only) and absurd ones (> 3 ans = pas de donnees)
+  // Filter out dismissed alerts (session only)
   const dismissed = window._dismissedAlerts || new Set();
-  const valid = alerts.filter(a => {
-    if (dismissed.has(a.text)) return false;
-    const match = a.detail.match(/retard de (\d+) jours/);
-    if (match && parseInt(match[1]) > 10000) return false;
-    const match2 = a.detail.match(/(\d+) jours/);
-    if (a.level === 'danger' && match2 && parseInt(match2[1]) > 10000) return false;
-    return true;
-  });
+  const valid = alerts.filter(a => !dismissed.has(a.text));
   if (valid.length === 0) {
     banner.innerHTML = '';
     return;
@@ -6287,7 +6277,6 @@ function switchSection(name) {
   } else {
     document.querySelector(`.nav-item[data-section="${name}"]`)?.classList.add('active');
   }
-  document.getElementById('alertsBanner').style.display = name === 'dashboard' ? 'none' : '';
   document.getElementById('appHeader').style.display = name === 'dashboard' ? '' : 'none';
   document.getElementById('vehicleMini').style.display = name === 'dashboard' ? 'none' : 'flex';
   if (!_skipPushState) {
