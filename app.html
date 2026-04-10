@@ -3749,6 +3749,9 @@ function renderSchedule() {
   const summaryEl = document.getElementById('scheduleSummary');
   const detailWrap = document.getElementById('scheduleDetailWrap');
 
+  // Collapse detail on re-render (vehicle switch)
+  detailWrap.style.display = 'none';
+
   // Compute statuses
   const items = (v.schedule || []).map(item => {
     const s = getStatus(item, v);
@@ -6295,7 +6298,7 @@ function copyFallback(text) {
 const _sectionRenderers = {
   dashboard: [renderAlerts, renderVehicleCard, renderOnboarding, renderPendingEntries, renderQuickActions, renderLastFill, renderDashboard, renderDashConsoTrend, renderCostDonut],
   entretien: [renderKmTab, renderHistory, renderSchedule, renderDeadlines, renderWash, renderTires, renderNotebook],
-  carburant: [renderFuel, renderStationPrices, renderNextFillEstimate],
+  carburant: [renderFuel, renderStationPrices, refreshStationListForVehicle, renderNextFillEstimate],
   energie: [renderBatterySoh, renderCharge, renderNextChargeEstimate, renderSohChart, renderSohReadings],
   stats: [renderStats, renderDepreciation, renderCompare, renderCharts, renderKmChart, renderCalendar]
 };
@@ -6708,6 +6711,8 @@ function renderNextFillEstimate() {
 let _leafletLoaded = false;
 let _stationMap = null;
 let _stationMarkers = [];
+let _lastStations = [];
+let _lastStationFuelKey = '';
 
 async function loadLeaflet() {
   if (_leafletLoaded) return;
@@ -6865,6 +6870,8 @@ async function fetchNearbyStations(lat, lon) {
       _stationMarkers.push(marker);
     }
 
+    _lastStations = stations;
+    _lastStationFuelKey = fuelKey;
     stationMapStatus(stations.length + ' stations trouvees', 'var(--green)');
     renderNearbyStationsList(stations, fuelKey);
   } catch (e) {
@@ -6899,6 +6906,16 @@ function renderNearbyStationsList(stations, fuelKey) {
         <div style="font-size:1em;font-weight:700;color:${barColor};white-space:nowrap;">${price} EUR</div>
       </div>`;
     }).join('');
+}
+
+function refreshStationListForVehicle() {
+  if (_lastStations.length === 0) return;
+  const v = getActiveVehicle();
+  const fuelKey = getFuelKey(v ? (v.fuelType || '') : '');
+  if (fuelKey !== _lastStationFuelKey) {
+    _lastStationFuelKey = fuelKey;
+    renderNearbyStationsList(_lastStations, fuelKey);
+  }
 }
 
 // ── Cumulative km chart ──
@@ -7414,7 +7431,10 @@ document.addEventListener('touchend', e => {
       }
     }
 
-    // Fallback: main section swipe
+    // If section has sub-tabs, stay within them (don't fall through to main sections)
+    if (subTabs.length > 1) return;
+
+    // Fallback: main section swipe (only for sections without sub-tabs, e.g. dashboard)
     const sections = getSwipeSections();
     const idx = sections.indexOf(section);
     if (idx === -1) return;
