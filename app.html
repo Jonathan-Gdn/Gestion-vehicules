@@ -67,7 +67,7 @@ async function clearFirebaseConfig() {
     --accent: #e94560;
     --green: #4ecca3;
     --orange: #f0a500;
-    --red: #e94560;
+    --red: #ff4757;
     --text: #eee;
     --muted: #bbb;
     --radius: 10px;
@@ -84,28 +84,43 @@ async function clearFirebaseConfig() {
     --muted: #666;
   }
   :root.light-theme .card,
-  :root.light-theme .stat-card { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-  :root.light-theme .profile-menu { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-  :root.light-theme .nav-bar { box-shadow: 0 -1px 4px rgba(0,0,0,0.1); }
-  :root.light-theme .modal-content { box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+  :root.light-theme .stat-card { box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  :root.light-theme .profile-menu { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+  :root.light-theme .bottom-nav { box-shadow: 0 -1px 4px rgba(0,0,0,0.08); border-top-color: rgba(0,0,0,0.08); }
+  :root.light-theme .modal { box-shadow: 0 4px 20px rgba(0,0,0,0.15); border-color: rgba(0,0,0,0.08); }
   :root.light-theme input, :root.light-theme select, :root.light-theme textarea {
     background: #f8f9fa; border-color: #ddd; color: var(--text);
+  }
+  :root.light-theme input:focus, :root.light-theme select:focus, :root.light-theme textarea:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 2px rgba(233,69,96,0.15);
   }
   :root.light-theme .sub-tab { background: #e8eaed; color: #555; }
   :root.light-theme .sub-tab.active { background: var(--accent); color: #fff; }
   :root.light-theme .v-tab { background: #e8eaed; color: #555; }
   :root.light-theme .v-tab.active { background: var(--accent); color: #fff; }
   :root.light-theme .btn-secondary { background: #e8eaed; color: #333; }
-  :root.light-theme .quick-action-btn { background: #e8eaed; color: #333; }
+  :root.light-theme .quick-action-btn { background: #f0f2f5; color: #333; border-color: rgba(0,0,0,0.08); }
+  :root.light-theme .history-entry,
+  :root.light-theme .fuel-entry,
+  :root.light-theme .charge-entry,
+  :root.light-theme .deadline-item,
+  :root.light-theme .maint-card,
+  :root.light-theme .vehicle-info-panel,
+  :root.light-theme .yearly-row { box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  :root.light-theme .sub-tabs-wrapper::after { background: linear-gradient(to right, transparent, var(--bg)); }
+  :root.light-theme .vmb-dropdown { border-color: rgba(0,0,0,0.1); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: 20px;
-    padding-top: calc(20px + env(safe-area-inset-top, 0px));
+    padding: 12px;
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
     padding-bottom: 80px;
+  }
+  @media (min-width: 600px) {
+    body { padding: 20px; padding-top: calc(20px + env(safe-area-inset-top, 0px)); padding-bottom: 80px; }
   }
   .container { max-width: 900px; margin: 0 auto; }
   h1 { text-align: center; margin-bottom: 6px; font-size: 1.6em; }
@@ -120,15 +135,17 @@ async function clearFirebaseConfig() {
     flex-wrap: wrap;
   }
   .v-tab {
-    padding: 8px 18px;
+    padding: 11px 22px;
+    min-height: 44px;
     background: var(--surface);
     border: 2px solid transparent;
     border-radius: 25px;
     color: var(--muted);
     cursor: pointer;
-    font-size: 0.85em;
+    font-size: 0.9em;
     font-weight: 600;
     transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
   .v-tab:hover { color: var(--text); border-color: rgba(255,255,255,0.1); }
   .v-tab.active { color: var(--accent); border-color: var(--accent); background: rgba(233,69,96,0.1); }
@@ -155,22 +172,23 @@ async function clearFirebaseConfig() {
     border-top: 1px solid rgba(255,255,255,0.08);
     display: flex;
     justify-content: space-around;
-    align-items: center;
-    height: 60px;
+    align-items: stretch;
+    height: calc(56px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     z-index: 50;
-    padding-bottom: env(safe-area-inset-bottom, 0);
   }
   .nav-item {
     position: relative;
-    display: flex; flex-direction: column; align-items: center;
-    gap: 3px; padding: 8px 14px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; padding: 6px 16px;
+    min-height: 48px; min-width: 64px;
     background: none; border: none;
     color: var(--muted); cursor: pointer;
-    font-size: 0.72em; font-weight: 600;
+    font-size: 0.7em; font-weight: 600;
     transition: color 0.2s;
     -webkit-tap-highlight-color: transparent;
   }
-  .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-item svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .nav-item:hover { color: var(--text); }
   .nav-item.active { color: var(--accent); }
   .nav-badge {
@@ -204,8 +222,9 @@ async function clearFirebaseConfig() {
   .vehicle-mini-banner.open .vmb-dropdown { display: block; }
   .vmb-option {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; cursor: pointer; transition: background 0.15s;
+    padding: 12px 14px; min-height: 44px; cursor: pointer; transition: background 0.15s;
     border-bottom: 1px solid rgba(255,255,255,0.05);
+    -webkit-tap-highlight-color: transparent;
   }
   .vmb-option:last-child { border-bottom: none; }
   .vmb-option:hover { background: rgba(255,255,255,0.05); }
@@ -216,9 +235,10 @@ async function clearFirebaseConfig() {
   /* Profile menu */
   .profile-toggle {
     background: var(--surface); border: none; color: var(--text);
-    width: 34px; height: 34px; border-radius: 50%;
+    width: 40px; height: 40px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; font-size: 1em; position: relative;
+    -webkit-tap-highlight-color: transparent;
   }
   .profile-menu {
     display: none; position: absolute; right: 0; top: 40px;
@@ -228,9 +248,11 @@ async function clearFirebaseConfig() {
   }
   .profile-menu.open { display: block; }
   .profile-menu-item {
-    display: block; width: 100%; padding: 10px 16px;
+    display: block; width: 100%; padding: 12px 16px;
+    min-height: 44px;
     background: none; border: none; color: var(--text);
     text-align: left; cursor: pointer; font-size: 0.85em;
+    -webkit-tap-highlight-color: transparent;
   }
   .profile-menu-item:hover { background: rgba(255,255,255,0.05); }
   .profile-menu-email { padding: 8px 16px 10px; color: var(--muted); font-size: 0.75em; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 4px; }
@@ -241,9 +263,11 @@ async function clearFirebaseConfig() {
   }
   .quick-action-btn {
     flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 12px; background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 10px; min-height: 48px;
+    background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
     border-radius: var(--radius); color: var(--text); cursor: pointer; font-size: 0.85em; font-weight: 600;
     transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
   .quick-action-btn:hover { background: rgba(255,255,255,0.05); }
   .quick-action-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
@@ -272,10 +296,22 @@ async function clearFirebaseConfig() {
   @keyframes fadeInSection { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
   /* Sub-tabs (pill toggle) */
+  .sub-tabs-wrapper {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .sub-tabs-wrapper::after {
+    content: '';
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: 24px;
+    background: linear-gradient(to right, transparent, var(--bg));
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 0 20px 20px 0;
+  }
   .sub-tabs {
     display: flex; gap: 6px;
-    margin-bottom: 16px;
-    padding-top: 6px;
+    padding-top: 6px; padding-right: 20px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -283,16 +319,18 @@ async function clearFirebaseConfig() {
   .sub-tabs::-webkit-scrollbar { display: none; }
   .sub-tab {
     position: relative;
-    padding: 7px 16px;
+    padding: 9px 18px;
+    min-height: 40px;
     background: var(--surface);
     border: 1px solid transparent;
     border-radius: 20px;
     color: var(--muted);
     cursor: pointer;
-    font-size: 0.8em;
+    font-size: 0.82em;
     font-weight: 600;
     white-space: nowrap;
     transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
   .sub-tab .subtab-badge {
     position: absolute; top: -4px; right: -4px;
@@ -309,7 +347,7 @@ async function clearFirebaseConfig() {
 
   /* Calendar */
   .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .cal-nav button { background: var(--surface); border: 1px solid rgba(255,255,255,0.1); color: var(--text); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 1em; }
+  .cal-nav button { background: var(--surface); border: 1px solid rgba(255,255,255,0.1); color: var(--text); padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 1em; min-height: 44px; -webkit-tap-highlight-color: transparent; }
   .cal-nav .cal-title { font-weight: 600; font-size: 1.05em; text-transform: capitalize; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
   .cal-header { text-align: center; font-size: 0.7em; color: var(--muted); padding: 4px 0; font-weight: 600; text-transform: uppercase; }
@@ -328,9 +366,14 @@ async function clearFirebaseConfig() {
   /* Action bar */
   .action-bar {
     display: flex; gap: 6px; margin-bottom: 12px;
-    flex-wrap: wrap; align-items: center;
+    align-items: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
-  .action-bar .spacer { flex: 1; }
+  .action-bar::-webkit-scrollbar { display: none; }
+  .action-bar .spacer { flex: 1; min-width: 8px; }
+  .action-bar .btn { white-space: nowrap; flex-shrink: 0; }
 
   /* Collapsible form */
   .form-collapse {
@@ -357,7 +400,7 @@ async function clearFirebaseConfig() {
   .badge-overdue { background: var(--red); color: #fff; }
 
   /* Schedule summary */
-  .schedule-summary { background: var(--surface); border-radius: 12px; padding: 14px 16px; }
+  .schedule-summary { background: var(--surface); border-radius: 12px; padding: 14px 12px; }
   .schedule-summary .summary-counts { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
   .schedule-summary .summary-pill { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; }
   .schedule-summary .pill-overdue { background: rgba(231,76,60,0.15); color: var(--red); }
@@ -412,12 +455,12 @@ async function clearFirebaseConfig() {
   label { display: block; font-size: 0.8em; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
   input, select, textarea {
     width: 100%;
-    padding: 9px 12px;
+    padding: 10px 12px;
     background: var(--bg);
     border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--text);
-    font-size: 0.9em;
+    font-size: 16px; /* Prevent iOS zoom on focus */
   }
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -425,18 +468,21 @@ async function clearFirebaseConfig() {
   input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
   textarea { resize: vertical; min-height: 60px; }
   .btn {
-    padding: 10px 24px;
+    padding: 12px 24px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
     font-size: 0.9em;
+    min-height: 44px;
     transition: opacity 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
   .btn:hover { opacity: 0.85; }
+  .btn:active { transform: scale(0.97); }
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid rgba(255,255,255,0.15); }
-  .btn-sm { padding: 8px 14px; font-size: 0.8em; min-height: 36px; }
+  .btn-sm { padding: 8px 14px; font-size: 0.82em; min-height: 40px; }
   .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); }
   .btn-green { background: var(--green); color: #111; }
 
@@ -544,12 +590,23 @@ async function clearFirebaseConfig() {
     max-width: 550px;
     max-height: 90vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     transform: scale(0.95) translateY(10px);
     transition: transform 0.25s ease;
   }
   .modal-overlay.show .modal { transform: scale(1) translateY(0); }
   .modal h2 { margin-bottom: 16px; font-size: 1.1em; }
   .modal-actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+  @media (max-width: 480px) {
+    .modal {
+      width: 100%; max-width: none; max-height: 100vh;
+      border-radius: 0; padding: 16px;
+      padding-top: calc(16px + env(safe-area-inset-top, 0px));
+      padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      height: 100%;
+    }
+    .modal-overlay { align-items: stretch; }
+  }
 
   /* Custom confirm modal */
   #confirmModal { z-index: 200; }
@@ -558,12 +615,33 @@ async function clearFirebaseConfig() {
   #confirmModal .confirm-actions { display: flex; gap: 10px; justify-content: center; }
   #confirmModal .confirm-actions .btn { min-width: 100px; }
 
+  @media (min-width: 601px) and (max-width: 768px) {
+    body { padding: 16px; }
+    .container { max-width: 720px; }
+    .form-row { grid-template-columns: 1fr 1fr; }
+    .stats-grid { grid-template-columns: repeat(3, 1fr); }
+    .km-reading { grid-template-columns: 100px 85px 140px 1fr 50px; font-size: 0.82em; }
+    .modal { max-width: 600px; }
+    .vehicle-info-panel .vip-grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
   @media (max-width: 600px) {
     .form-row { grid-template-columns: 1fr; }
     .km-form-inline { flex-wrap: wrap; }
-    .km-reading { grid-template-columns: 1fr 1fr; }
+    .km-reading { grid-template-columns: 1fr 1fr auto; font-size: 0.82em; }
+    .km-reading .km-delta { grid-column: 1 / -1; }
+    .km-reading > span:nth-child(4) { display: none; }
     .action-bar { justify-content: center; }
     .action-bar .spacer { display: none; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat-card .stat-value { font-size: 1.15em; }
+    .history-entry { padding: 12px 14px; }
+    .fuel-entry { padding: 12px 14px; }
+    .deadline-item { padding: 12px 14px; }
+    .yearly-row { padding: 12px 14px; }
+    .maint-card { padding: 12px 14px; }
+    h1 { font-size: 1.4em; }
+    .schedule-editor-row { grid-template-columns: 1fr 80px 60px 36px; gap: 6px; }
   }
 
   /* Login screen */
@@ -592,7 +670,7 @@ async function clearFirebaseConfig() {
   #setupScreen h1 { font-size: 2em; margin-bottom: 8px; }
   #setupScreen p { color: var(--muted); margin-bottom: 16px; }
   .setup-label { display: block; text-align: left; color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
-  .setup-input { display: block; width: 100%; margin-top: 3px; padding: 9px 12px; background: var(--card); color: var(--text); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-size: 0.95em; box-sizing: border-box; }
+  .setup-input { display: block; width: 100%; margin-top: 3px; padding: 10px 12px; background: var(--card); color: var(--text); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-size: 16px; box-sizing: border-box; min-height: 44px; }
   .setup-input:focus { border-color: var(--accent); outline: none; }
   .user-bar {
     display: flex; align-items: center; justify-content: flex-end;
@@ -619,25 +697,7 @@ async function clearFirebaseConfig() {
   .share-expired h2 { color: var(--accent); margin-bottom: 10px; }
   #appContent { display: none; }
 
-  /* Alert banner */
-  .alerts-banner { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; min-width: 0; }
-  .alert-chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 10px; border-radius: 20px;
-    font-size: 0.75em; font-weight: 600;
-    white-space: nowrap; cursor: pointer;
-    transition: opacity 0.2s;
-  }
-  .alert-chip:hover { opacity: 0.8; }
-  .alert-chip.alert-danger {
-    background: rgba(233, 69, 96, 0.2); color: #ff8a9e;
-  }
-  .alert-chip.alert-warning {
-    background: rgba(240, 165, 0, 0.2); color: #ffc954;
-  }
-  .alert-chip.alert-info {
-    background: rgba(78, 204, 163, 0.15); color: #7eecc7;
-  }
+  /* (Alert banner removed - alerts via nav badge only) */
 
   /* Fuel entries */
   .fuel-entry {
@@ -672,11 +732,12 @@ async function clearFirebaseConfig() {
   .photo-picker { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .photo-btn {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 14px; border-radius: 6px;
+    padding: 10px 14px; min-height: 44px; border-radius: 8px;
     border: 1px solid rgba(255,255,255,0.15);
     background: var(--bg); color: var(--text);
     font-size: 0.82em; cursor: pointer;
     transition: border-color 0.2s, background 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
   .photo-btn:hover { border-color: var(--accent); background: rgba(233,69,96,0.08); }
   .photo-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -752,9 +813,10 @@ async function clearFirebaseConfig() {
     display: flex; gap: 8px; margin-bottom: 12px; align-items: center;
   }
   .search-bar input {
-    flex: 1; padding: 8px 14px; font-size: 0.85em;
+    flex: 1; padding: 10px 16px; font-size: 16px;
     background: var(--surface); border: 1px solid rgba(255,255,255,0.1);
     border-radius: 20px; color: var(--text);
+    min-height: 44px;
   }
   .search-bar input::placeholder { color: var(--muted); }
   .search-bar input:focus { border-color: var(--accent); outline: none; }
@@ -865,6 +927,34 @@ async function clearFirebaseConfig() {
   /* Vehicle modal EV fields */
   .ev-fields-group { transition: all 0.2s ease; }
   .ev-fields-group.hidden { display: none; }
+
+  /* Utility classes (Phase 5 - reduce inline styles) */
+  .text-muted { color: var(--muted); }
+  .text-center { text-align: center; }
+  .text-sm { font-size: 0.85em; }
+  .text-xs { font-size: 0.78em; }
+  .flex { display: flex; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+  .flex-center { display: flex; align-items: center; justify-content: center; }
+  .flex-col { display: flex; flex-direction: column; }
+  .flex-wrap { flex-wrap: wrap; }
+  .gap-4 { gap: 4px; }
+  .gap-6 { gap: 6px; }
+  .gap-8 { gap: 8px; }
+  .gap-10 { gap: 10px; }
+  .mt-4 { margin-top: 4px; }
+  .mt-6 { margin-top: 6px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-10 { margin-top: 10px; }
+  .mt-12 { margin-top: 12px; }
+  .mb-6 { margin-bottom: 6px; }
+  .mb-8 { margin-bottom: 8px; }
+  .p-8 { padding: 8px; }
+  .p-10 { padding: 10px; }
+  .fw-600 { font-weight: 600; }
+  /* Accessible fieldset reset (Phase 6 - H4) */
+  fieldset.form-group { border: none; margin: 0; padding: 0; }
+  fieldset.form-group legend { font-size: 0.82em; font-weight: 600; color: var(--muted); margin-bottom: 4px; padding: 0; }
 </style>
 </head>
 <body>
@@ -924,8 +1014,7 @@ async function clearFirebaseConfig() {
   <!-- Pull to refresh indicator -->
   <div class="ptr-indicator" id="ptrIndicator">&#8635; Tirer pour rafraichir</div>
 
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;position:relative;">
-    <div class="alerts-banner" id="alertsBanner"></div>
+  <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px;position:relative;">
     <button class="profile-toggle" onclick="toggleProfileMenu()" id="profileToggle" aria-label="Menu utilisateur">
       <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     </button>
@@ -939,14 +1028,6 @@ async function clearFirebaseConfig() {
       <button class="profile-menu-item" onclick="migratePhotosToDrive(); toggleProfileMenu();">Migrer photos Drive</button>
       <button class="profile-menu-item" onclick="showDiagnosticLights(); toggleProfileMenu();">Diagnostic voyants</button>
       <button class="profile-menu-item" onclick="connectOBD(); toggleProfileMenu();">Import OBD-II</button>
-      <div class="profile-menu-item" style="display:flex;align-items:center;justify-content:space-between;padding:4px 16px;">
-        <span>Langue</span>
-        <select onchange="setLanguage(this.value); toggleProfileMenu();" style="background:var(--surface);color:var(--text);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:2px 4px;font-size:0.85em;width:52px;" aria-label="Langue">
-          <option value="fr">FR</option>
-          <option value="en">EN</option>
-          <option value="es">ES</option>
-        </select>
-      </div>
       <button class="profile-menu-item" onclick="resetFirebaseConfig()">Reinitialiser config</button>
       <button class="profile-menu-item" onclick="signOut()">Deconnexion</button>
     </div>
@@ -1018,29 +1099,20 @@ async function clearFirebaseConfig() {
     <!-- Gamification badges -->
     <div id="dashBadges"></div>
 
-    <!-- Parking reminder -->
-    <div id="parkingReminder"></div>
-
-    <!-- Recall alerts -->
-    <div id="recallAlerts"></div>
-
     <!-- Photo migration progress -->
     <div id="migrationProgress" style="display:none"></div>
   </div>
 
   <!-- === Section: Entretien (Historique + Programme + Echeances) === -->
   <div id="section-entretien" class="section-content">
-    <div class="sub-tabs">
+    <div class="sub-tabs-wrapper"><div class="sub-tabs">
       <button class="sub-tab active" onclick="switchSubTab('entretien','history')">Historique</button>
       <button class="sub-tab" id="subtabBtnSchedule" onclick="switchSubTab('entretien','schedule')">Programme</button>
       <button class="sub-tab" id="subtabBtnDeadlines" onclick="switchSubTab('entretien','deadlines')">Echeances</button>
       <button class="sub-tab" onclick="switchSubTab('entretien','notebook')">Carnet</button>
       <button class="sub-tab" onclick="switchSubTab('entretien','wash')">Lavage</button>
       <button class="sub-tab" onclick="switchSubTab('entretien','tires')">Pneus</button>
-      <button class="sub-tab" onclick="switchSubTab('entretien','checklist')">Voyage</button>
-      <button class="sub-tab" onclick="switchSubTab('entretien','consumables')">Niveaux</button>
-      <button class="sub-tab" onclick="switchSubTab('entretien','trips')">Trajets</button>
-    </div>
+    </div></div>
 
     <!-- Sub: Historique -->
     <div id="subtab-entretien-history" class="subtab-content active">
@@ -1053,7 +1125,6 @@ async function clearFirebaseConfig() {
         <button class="btn btn-secondary btn-sm" onclick="exportCarnet()">Exporter fiche</button>
         <button class="btn btn-secondary btn-sm" style="background:var(--orange);color:#000;" onclick="exportDossierVente()">Dossier vente</button>
         <button class="btn btn-secondary btn-sm" onclick="exportDossierAssurance()">Dossier assurance</button>
-        <button class="btn btn-secondary btn-sm" onclick="showQrCode()">QR code</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
       </div>
       <div id="entryFormWrapper" class="form-collapse">
@@ -1101,7 +1172,7 @@ async function clearFirebaseConfig() {
                 <input type="file" id="invoiceOcrInput" accept="image/*" capture="environment" onchange="processInvoiceOcr(this)" style="display:none">
               </div>
             </div>
-            <div><img id="entryPhotoPreview" style="max-height:80px;border-radius:6px;display:none;cursor:pointer;" onclick="removeEntryPhotoPreview()"></div>
+            <div><img id="entryPhotoPreview" alt="Apercu photo entretien" style="max-height:80px;border-radius:6px;display:none;cursor:pointer;" onclick="removeEntryPhotoPreview()"></div>
           </div>
           <div id="invoiceOcrStatus" style="display:none;padding:8px 12px;border-radius:var(--radius);background:var(--surface);font-size:0.82em;margin-bottom:10px;"></div>
           <button class="btn btn-primary" onclick="addEntry()">Enregistrer</button>
@@ -1251,85 +1322,6 @@ async function clearFirebaseConfig() {
       <div id="tiresList" style="margin-top:12px;"></div>
     </div>
 
-    <!-- Sub: Checklist pre-voyage -->
-    <div id="subtab-entretien-checklist" class="subtab-content">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <h3 style="font-size:1em;">Checklist pre-voyage</h3>
-        <button class="btn btn-secondary btn-sm" onclick="resetChecklist()">Reinitialiser</button>
-      </div>
-      <div id="checklistItems"></div>
-      <div style="margin-top:14px;padding:12px;background:var(--surface);border-radius:10px;">
-        <div style="display:flex;gap:8px;">
-          <input type="text" id="checklistCustomItem" placeholder="Ajouter un element perso..." style="flex:1;">
-          <button class="btn btn-primary btn-sm" onclick="addCustomChecklistItem()">+</button>
-        </div>
-      </div>
-      <div id="checklistProgress" style="margin-top:12px;"></div>
-    </div>
-
-    <!-- Sub: Consommables -->
-    <div id="subtab-entretien-consumables" class="subtab-content">
-      <h3 style="font-size:1em;margin-bottom:12px;">Suivi niveaux consommables</h3>
-      <div id="consumablesList"></div>
-      <div class="form-section" style="margin-top:14px;">
-        <h4 style="font-size:0.9em;margin-bottom:8px;">Mise a jour niveau</h4>
-        <div class="form-row">
-          <div><label for="consumableType">Consommable</label>
-            <select id="consumableType">
-              <option value="oil">Huile moteur</option>
-              <option value="coolant">Liquide refroidissement</option>
-              <option value="brake">Liquide frein</option>
-              <option value="washer">Lave-glace</option>
-              <option value="adblue">AdBlue</option>
-              <option value="power_steering">Direction assistee</option>
-            </select>
-          </div>
-          <div><label for="consumableLevel">Niveau</label>
-            <select id="consumableLevel">
-              <option value="100">Plein</option>
-              <option value="75">3/4</option>
-              <option value="50">Moitie</option>
-              <option value="25">1/4</option>
-              <option value="10">Critique</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div><label for="consumableDate">Date</label><input type="date" id="consumableDate"></div>
-          <div><label for="consumableNote">Notes</label><input type="text" id="consumableNote" placeholder="ex: appoint 0.5L"></div>
-        </div>
-        <button class="btn btn-primary" onclick="addConsumableReading()">Enregistrer</button>
-      </div>
-    </div>
-
-    <!-- Sub: Journal trajets -->
-    <div id="subtab-entretien-trips" class="subtab-content">
-      <h3 style="font-size:1em;margin-bottom:12px;">Journal trajets pro / perso</h3>
-      <div id="tripsStats" style="margin-bottom:12px;"></div>
-      <div class="form-section">
-        <h4 style="font-size:0.9em;margin-bottom:8px;">Nouveau trajet</h4>
-        <div class="form-row">
-          <div><label for="tripDate">Date</label><input type="date" id="tripDate"></div>
-          <div><label for="tripType">Type</label>
-            <select id="tripType">
-              <option value="pro">Professionnel</option>
-              <option value="perso">Personnel</option>
-              <option value="mixte">Mixte</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div><label for="tripKmStart">Km depart</label><input type="number" id="tripKmStart" placeholder="ex: 82000"></div>
-          <div><label for="tripKmEnd">Km arrivee</label><input type="number" id="tripKmEnd" placeholder="ex: 82150"></div>
-        </div>
-        <div class="form-row">
-          <div style="grid-column:1/-1;"><label for="tripDescription">Description</label><input type="text" id="tripDescription" placeholder="ex: RDV client Toulouse-Bordeaux"></div>
-        </div>
-        <button class="btn btn-primary" onclick="addTrip()">Enregistrer</button>
-      </div>
-      <div id="tripsList" style="margin-top:12px;"></div>
-      <div id="tripsFiscal" style="margin-top:12px;"></div>
-    </div>
   </div>
 
   <!-- === Section: Carburant === -->
@@ -1383,7 +1375,7 @@ async function clearFirebaseConfig() {
             <input type="file" id="ocrFileInput" accept="image/*" capture="environment" onchange="processOcrCapture(this)" style="display:none">
           </div>
         </div>
-        <div><img id="fuelPhotoPreview" style="max-height:80px;border-radius:6px;display:none;cursor:pointer;" onclick="removeFuelPhotoPreview()"></div>
+        <div><img id="fuelPhotoPreview" alt="Apercu photo carburant" style="max-height:80px;border-radius:6px;display:none;cursor:pointer;" onclick="removeFuelPhotoPreview()"></div>
       </div>
       <div id="ocrStatus" style="display:none;padding:8px 12px;border-radius:var(--radius);background:var(--surface);font-size:0.82em;margin-bottom:10px;"></div>
       <button class="btn btn-primary" onclick="addFuel()">Enregistrer</button>
@@ -1422,7 +1414,17 @@ async function clearFirebaseConfig() {
     </div>
     <div id="stationMapContainer" style="display:none;">
       <div id="stationMap" style="height:350px;border-radius:var(--radius);margin-bottom:10px;background:var(--surface);"></div>
-      <div id="stationMapStatus" style="font-size:0.82em;color:var(--muted);margin-bottom:8px;"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+        <div id="stationMapStatus" style="font-size:0.82em;color:var(--muted);flex:1;"></div>
+        <select id="stationFuelSelect" onchange="onStationFuelChange()" style="padding:6px 10px;font-size:0.82em;border-radius:8px;min-width:90px;background:var(--surface);color:var(--text);border:1px solid rgba(255,255,255,0.1);">
+          <option value="gazole">Gazole</option>
+          <option value="sp95">SP95</option>
+          <option value="sp98">SP98</option>
+          <option value="e10">E10</option>
+          <option value="e85">E85</option>
+          <option value="gplc">GPLc</option>
+        </select>
+      </div>
       <div id="nearbyStationsList"></div>
     </div>
   </div>
@@ -1494,12 +1496,12 @@ async function clearFirebaseConfig() {
 
   <!-- === Section: Stats (Kilometrage + Synthese) === -->
   <div id="section-stats" class="section-content">
-    <div class="sub-tabs">
+    <div class="sub-tabs-wrapper"><div class="sub-tabs">
       <button class="sub-tab active" onclick="switchSubTab('stats','km')">Kilometrage</button>
       <button class="sub-tab" onclick="switchSubTab('stats','synthese')">Synthese</button>
       <button class="sub-tab" onclick="switchSubTab('stats','compare')">Comparaison</button>
       <button class="sub-tab" onclick="switchSubTab('stats','calendar')">Calendrier</button>
-    </div>
+    </div></div>
 
     <!-- Sub: Kilometrage -->
     <div id="subtab-stats-km" class="subtab-content active">
@@ -1691,7 +1693,7 @@ async function clearFirebaseConfig() {
 
 <!-- Photo viewer overlay -->
 <div class="photo-overlay" id="photoOverlay" onclick="this.classList.remove('show')">
-  <img id="photoOverlayImg" src="">
+  <img id="photoOverlayImg" alt="Photo en plein ecran" src="">
 </div>
 
 <!-- Modal: custom confirm (replaces native confirm()) -->
@@ -1706,25 +1708,14 @@ async function clearFirebaseConfig() {
   </div>
 </div>
 
-<!-- QR Code modal -->
-<div class="modal-overlay" id="qrModal" style="display:none" role="dialog" aria-modal="true">
-  <div class="modal" style="text-align:center;">
-    <h2>QR Code vehicule</h2>
-    <p style="color:var(--muted);font-size:0.85em;margin-bottom:14px;">Scannez ce QR code pour acceder a la fiche vehicule.</p>
-    <div id="qrCanvas" style="margin:16px auto;"></div>
-    <p id="qrVehicleName" style="font-weight:600;margin:10px 0;"></p>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="document.getElementById('qrModal').style.display='none'">Fermer</button>
-      <button class="btn btn-primary" onclick="printQrCode()">Imprimer</button>
-    </div>
-  </div>
-</div>
 
 <!-- Modal: add/edit vehicle -->
 <div class="modal-overlay" id="vehicleModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
     <h2 id="modalTitle">Nouveau vehicule</h2>
     <input type="hidden" id="modalVehicleId">
+    <fieldset class="form-group">
+    <legend>Identification</legend>
     <div class="form-row" id="plateRow" style="grid-template-columns: 1fr auto;">
       <div><label>Plaque d'immatriculation</label><input type="text" id="vPlate" placeholder="ex: AB-123-CD" style="text-transform:uppercase"></div>
       <div style="display:flex;align-items:flex-end"><button type="button" class="btn btn-primary btn-sm" id="plateLookupBtn" onclick="lookupPlate()">Rechercher</button></div>
@@ -1742,6 +1733,9 @@ async function clearFirebaseConfig() {
       <div><label>Nom court</label><input type="text" id="vName" placeholder="ex: Clio, 308, Captur..."></div>
       <div><label>Marque / Modele</label><input type="text" id="vModel" placeholder="ex: Renault Clio V"></div>
     </div>
+    </fieldset>
+    <fieldset class="form-group">
+    <legend>Caracteristiques techniques</legend>
     <div class="form-row">
       <div><label>Motorisation</label><input type="text" id="vEngine" placeholder="ex: 1.5 dCi 115"></div>
       <div><label>Type carburant</label><select id="vFuelType" onchange="onFuelTypeChange()"><option value="">-- Choisir --</option><option value="diesel">Diesel</option><option value="essence">Essence</option><option value="e85">E85 / Flexfuel</option><option value="hybride">Hybride</option><option value="electrique">Electrique</option></select></div>
@@ -1753,6 +1747,9 @@ async function clearFirebaseConfig() {
       <div><label>Boite de vitesses</label><input type="text" id="vGearbox" placeholder="ex: Manuelle 6 / Auto"></div>
       <div><label>Distribution</label><input type="text" id="vDistrib" placeholder="ex: Chaine / Courroie"></div>
     </div>
+    </fieldset>
+    <fieldset class="form-group">
+    <legend>Dates et kilometrage</legend>
     <div class="form-row">
       <div><label>Mise en circulation</label><input type="month" id="vCircDate"></div>
       <div><label>Date d'achat</label><input type="month" id="vPurchaseDate"></div>
@@ -1761,6 +1758,9 @@ async function clearFirebaseConfig() {
       <div><label>Km a l'achat</label><input type="number" id="vPurchaseKm" placeholder="ex: 65000"></div>
       <div><label>Km actuels</label><input type="number" id="vCurrentKm" placeholder="ex: 80000"></div>
     </div>
+    </fieldset>
+    <fieldset class="form-group">
+    <legend>Couts et budget</legend>
     <div class="form-row">
       <div><label>Prix d'achat (EUR)</label><input type="number" id="vPurchasePrice" step="0.01" placeholder="ex: 18500"></div>
       <div id="vEstConsumptionGroup"><label id="vEstConsumptionLabel">Conso estimee (L/100km)</label><input type="number" id="vEstConsumption" step="0.1" placeholder="ex: 6.0"></div>
@@ -1770,22 +1770,24 @@ async function clearFirebaseConfig() {
     <div class="form-row">
       <div><label>Puissance fiscale (CV)</label><input type="number" id="vFiscalCV" min="1" max="30" placeholder="ex: 6"></div>
     </div>
-    <div class="form-row ev-fields-group hidden" id="evFieldsGroup">
+    </fieldset>
+    <fieldset class="form-group ev-fields-group hidden" id="evFieldsGroup">
+    <legend>Batterie electrique</legend>
+    <div class="form-row">
       <div><label>Capacite batterie (kWh)</label><input type="number" id="vBatteryCapacity" step="0.1" placeholder="ex: 52.0"></div>
       <div><label>SoH actuel (%)</label><input type="number" id="vBatterySoh" step="0.1" min="0" max="100" placeholder="ex: 98.5"></div>
     </div>
-    <div class="form-row">
-      <div style="grid-column:1/-1;">
-        <label>Programme entretien</label>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal();openScheduleEditor()">Modifier</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="aiScheduleBtn" onclick="generateAISchedule()">Generer (IA)</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="importScheduleBtn" onclick="openImportSchedule()">Importer un carnet</button>
-        </div>
-        <div id="aiScheduleStatus" style="display:none; padding: 6px 0; font-size: 0.85em;"></div>
-        <textarea id="vSchedule" style="display:none;"></textarea>
-      </div>
+    </fieldset>
+    <fieldset class="form-group">
+    <legend>Programme entretien</legend>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal();openScheduleEditor()">Modifier</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="aiScheduleBtn" onclick="generateAISchedule()">Generer (IA)</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="importScheduleBtn" onclick="openImportSchedule()">Importer un carnet</button>
     </div>
+    <div id="aiScheduleStatus" style="display:none; padding: 6px 0; font-size: 0.85em;"></div>
+    <textarea id="vSchedule" style="display:none;"></textarea>
+    </fieldset>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn btn-danger btn-sm" id="modalDeleteBtn" onclick="deleteVehicle()" style="display:none">Supprimer</button>
@@ -1807,6 +1809,7 @@ let _pendingWrites = 0;
 let unsubSnapshot = null;
 let PLATE_API_TOKEN = '';
 let GROQ_API_KEY = '';
+function _cfUrl(fn) { const pid = firebase.app().options.projectId; return `https://europe-west1-${pid}.cloudfunctions.net/${fn}`; }
 let GARAGE_DOC = null; // set to garages/{uid} after auth
 let _sharedGarages = []; // [{uid, email, doc}] garages shared with current user
 let _viewingSharedGarage = null; // null = own garage, or {uid, email}
@@ -2006,10 +2009,37 @@ async function startFirestoreSync() {
     if (snap.exists) {
       const remoteData = snap.data().data;
       if (remoteData) {
-        localStorage.setItem(STORAGE_KEY, remoteData);
-        invalidateStoreCache();
-        dataRestored = true;
-        console.log('Donnees restaurees depuis Firestore');
+        // Safety: if remote has no vehicles but local does, keep local and push to Firestore
+        try {
+          const remoteStore = JSON.parse(remoteData);
+          const localRaw = localStorage.getItem(STORAGE_KEY);
+          if (localRaw) {
+            const localStore = JSON.parse(localRaw);
+            const remoteCount = Object.keys(remoteStore.vehicles || {}).length;
+            const localCount = Object.keys(localStore.vehicles || {}).length;
+            if (remoteCount === 0 && localCount > 0) {
+              console.warn('Firestore empty but local has ' + localCount + ' vehicle(s) - keeping local, pushing to Firestore');
+              await db.doc(GARAGE_DOC).set({ data: localRaw, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+              invalidateStoreCache();
+              dataRestored = true;
+            } else {
+              localStorage.setItem(STORAGE_KEY, remoteData);
+              invalidateStoreCache();
+              dataRestored = true;
+              console.log('Donnees restaurees depuis Firestore (' + remoteCount + ' vehicule(s))');
+            }
+          } else {
+            localStorage.setItem(STORAGE_KEY, remoteData);
+            invalidateStoreCache();
+            dataRestored = true;
+            console.log('Donnees restaurees depuis Firestore');
+          }
+        } catch (parseErr) {
+          console.warn('Remote data parse error, applying raw:', parseErr);
+          localStorage.setItem(STORAGE_KEY, remoteData);
+          invalidateStoreCache();
+          dataRestored = true;
+        }
       }
     } else {
       // First time: create doc only if no data exists anywhere
@@ -2033,7 +2063,19 @@ async function startFirestoreSync() {
       const remoteData = snap.data().data;
       const localData = localStorage.getItem(STORAGE_KEY);
       if (remoteData === localData) return;
-      JSON.parse(remoteData); // validate before applying
+      const remoteStore = JSON.parse(remoteData); // validate before applying
+      // Safety: never overwrite local vehicles with empty remote data
+      if (localData) {
+        try {
+          const localStore = JSON.parse(localData);
+          const remoteCount = Object.keys(remoteStore.vehicles || {}).length;
+          const localCount = Object.keys(localStore.vehicles || {}).length;
+          if (remoteCount === 0 && localCount > 0) {
+            console.warn('Snapshot: remote empty but local has ' + localCount + ' vehicle(s) - ignoring');
+            return;
+          }
+        } catch {}
+      }
       invalidateStoreCache();
       localStorage.setItem(STORAGE_KEY, remoteData);
       if (!_syncReady) { _syncReady = true; console.log('Sync ready via snapshot'); }
@@ -2631,6 +2673,14 @@ function saveStore(store, localOnly) {
       // Read current data at write time to avoid stale closure overwrites
       const currentJson = localStorage.getItem(STORAGE_KEY);
       if (!currentJson) return;
+      // Safety: never overwrite Firestore with empty store if vehicles existed
+      try {
+        const parsed = JSON.parse(currentJson);
+        if (!parsed.vehicles || Object.keys(parsed.vehicles).length === 0) {
+          console.warn('saveStore: blocked empty vehicles write to Firestore');
+          return;
+        }
+      } catch { return; }
       _pendingWrites++;
       const writeTimer = setTimeout(() => { _pendingWrites = Math.max(0, _pendingWrites - 1); }, 10000);
       db.doc(GARAGE_DOC).set({
@@ -2900,7 +2950,7 @@ function renderCharge() {
   // Stats
   let statsHtml = '';
   if (entries.length > 0) {
-    const totalCost = entries.reduce((s, e) => s + (e.cost || 0), 0);
+    const totalCost = sumCosts(entries);
     const totalKwh = entries.reduce((s, e) => s + e.kwh, 0);
     const avgPricePerKwh = totalCost > 0 && totalKwh > 0 ? totalCost / totalKwh : 0;
     statsHtml += `<div class="stat-card accent"><div class="stat-value">${totalCost.toFixed(0)} EUR</div><div class="stat-label">Total recharges</div></div>`;
@@ -2994,8 +3044,8 @@ function renderCharge() {
         <div class="charge-price">${e.cost ? e.cost.toFixed(2) + ' EUR' : '-'}</div>
       </div>
       <div class="actions" style="margin-top:6px;">
-        <button class="btn btn-secondary btn-sm" onclick="editCharge('${e.id}')">Mod.</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteCharge('${e.id}')">Sup.</button>
+        <button class="btn btn-secondary btn-sm" onclick="editCharge('${escAttr(e.id)}')">Mod.</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCharge('${escAttr(e.id)}')">Sup.</button>
       </div>
     </div>`;
   }
@@ -3127,7 +3177,7 @@ function renderSohReadings() {
     const dateStr = new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
     html += `<div style="background:var(--surface);border-radius:var(--radius);padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
       <div><strong>${r.soh.toFixed(1)}%</strong> <span style="color:var(--muted);font-size:0.85em;">- ${dateStr}${r.km ? ' - ' + r.km.toLocaleString() + ' km' : ''}${r.source ? ' (' + escHtml(r.source) + ')' : ''}</span></div>
-      <button class="btn btn-danger btn-sm" onclick="deleteSohReading('${r.id}')">Sup.</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteSohReading('${escAttr(r.id)}')">Sup.</button>
     </div>`;
   }
   el.innerHTML = html;
@@ -3192,7 +3242,7 @@ function renderVehicleSelector() {
   let html = '';
   for (const v of Object.values(store.vehicles)) {
     const active = v.id === store.activeVehicleId ? 'active' : '';
-    html += `<div class="v-tab ${active}" onclick="selectVehicle('${v.id}')">${escHtml(v.name)} <span class="v-edit" onclick="event.stopPropagation(); openEditVehicle('${v.id}')">&#9998;</span></div>`;
+    html += `<div class="v-tab ${active}" onclick="selectVehicle('${escAttr(v.id)}')">${escHtml(v.name)} <span class="v-edit" onclick="event.stopPropagation(); openEditVehicle('${escAttr(v.id)}')">&#9998;</span></div>`;
   }
   html += `<button class="v-tab-add" onclick="openAddVehicle()">+ Vehicule</button>`;
   sel.innerHTML = html;
@@ -3387,7 +3437,7 @@ function renderKmTab() {
       <span class="km-val">${r.km.toLocaleString()} km</span>
       ${deltaHtml}
       <span style="font-size:0.75em;color:var(--muted)">${escHtml(r.source)}</span>
-      <span style="display:flex;gap:4px;"><button class="btn btn-secondary btn-sm" onclick="editKmReading('${r.id}')" style="padding:2px 6px;font-size:0.65em;">&#9998;</button><button class="btn btn-danger btn-sm" onclick="deleteKmReading('${r.id}')" style="padding:2px 6px;font-size:0.65em;">X</button></span>
+      <span style="display:flex;gap:4px;"><button class="btn btn-secondary btn-sm" onclick="editKmReading('${escAttr(r.id)}')" style="padding:2px 6px;font-size:0.65em;">&#9998;</button><button class="btn btn-danger btn-sm" onclick="deleteKmReading('${escAttr(r.id)}')" style="padding:2px 6px;font-size:0.65em;">X</button></span>
     </div>`;
   }
   document.getElementById('kmReadingsList').innerHTML = listHtml || '<div class="empty-state">Aucun releve</div>';
@@ -3570,7 +3620,7 @@ function getCtStatus(v) {
 
 function renderAlerts() {
   const v = getActiveVehicle();
-  if (!v) { document.getElementById('alertsBanner').innerHTML = ''; return; }
+  if (!v) return;
   const alerts = [];
   const now = new Date();
 
@@ -3670,49 +3720,15 @@ function renderAlerts() {
   const tireAlerts = getTireAlerts(v);
   for (const ta of tireAlerts) { alerts.push(ta); }
 
-  // Consumable alerts
-  const consumableAlerts = getConsumableAlerts(v);
-  for (const ca of consumableAlerts) { alerts.push(ca); }
-
-  const banner = document.getElementById('alertsBanner');
   // Filter out dismissed alerts (session only)
   const dismissed = window._dismissedAlerts || new Set();
   const valid = alerts.filter(a => !dismissed.has(a.text));
-  if (valid.length === 0) {
-    banner.innerHTML = '';
-    return;
-  }
+  if (valid.length === 0) return;
   valid.sort((a, b) => {
     const order = { danger: 0, warning: 1, info: 2 };
     return (order[a.level] ?? 3) - (order[b.level] ?? 3);
   });
   window._alertActions = valid;
-  const icons = { danger: '&#9888;', warning: '&#9432;', info: '&#128200;' };
-
-  // Group maintenance alerts (action=entry) into compact summary chips
-  const maintenance = valid.filter(a => a.action === 'entry');
-  const other = valid.filter(a => a.action !== 'entry');
-  const chips = [];
-
-  if (maintenance.length > 0) {
-    const overdueM = maintenance.filter(a => a.level === 'danger');
-    const warningM = maintenance.filter(a => a.level === 'warning');
-    if (overdueM.length > 0) {
-      const idx = valid.indexOf(overdueM[0]);
-      chips.push(`<span class="alert-chip alert-danger" title="${overdueM.map(a => a.text).join(', ')}" onclick="switchSection('entretien');switchSubTab('entretien','schedule')">&#9888; ${overdueM.length} entretien${overdueM.length > 1 ? 's' : ''} en retard</span>`);
-    }
-    if (warningM.length > 0) {
-      chips.push(`<span class="alert-chip alert-warning" title="${warningM.map(a => a.text).join(', ')}" onclick="switchSection('entretien');switchSubTab('entretien','schedule')">&#9432; ${warningM.length} entretien${warningM.length > 1 ? 's' : ''} bientot</span>`);
-    }
-  }
-
-  // Individual chips for non-maintenance alerts (deadlines, km, battery, tires)
-  for (const a of other) {
-    const i = valid.indexOf(a);
-    chips.push(`<span class="alert-chip alert-${a.level}" title="${escAttr(a.detail)}" onclick="alertAction(${i})">${icons[a.level] || '&#9432;'} ${escHtml(a.text)}</span>`);
-  }
-
-  banner.innerHTML = chips.join('');
 }
 
 function alertAction(index) {
@@ -3904,13 +3920,13 @@ function renderCostDonut() {
   const purchaseDateStr = v.purchaseDate ? v.purchaseDate + '-01' : null;
   const entries = v.entries || [];
   const maintEntries = purchaseDateStr ? entries.filter(e => e.date >= purchaseDateStr) : entries;
-  const totalMaint = maintEntries.reduce((s, e) => s + (e.cost || 0), 0);
-  const totalFuel = (v.fuelEntries || []).reduce((s, e) => s + (e.cost || 0), 0);
-  const totalCharge = (v.chargeEntries || []).reduce((s, e) => s + (e.cost || 0), 0);
+  const totalMaint = sumCosts(maintEntries);
+  const totalFuel = sumCosts(v.fuelEntries);
+  const totalCharge = sumCosts(v.chargeEntries);
   const washes = v.washes || [];
   const washCredits = v.washCredits || [];
-  const totalWash = washes.filter(w => w.payment === 'direct').reduce((s, w) => s + (w.cost || 0), 0) + washCredits.reduce((s, c) => s + (c.cost || 0), 0);
-  const totalDeadline = (v.deadlines || []).reduce((s, d) => s + (d.cost || 0), 0);
+  const totalWash = sumCosts(washes.filter(w => w.payment === 'direct')) + sumCosts(washCredits);
+  const totalDeadline = sumCosts(v.deadlines);
 
   const cats = [
     { label: 'Entretien', value: totalMaint, color: '#e94560' },
@@ -3972,14 +3988,14 @@ function renderHistory() {
     }
     const entryThumbSrc = getPhotoSrc(e.photo);
     const entryFullSrc = getPhotoFullSrc(e.photo);
-    const entryPhotoHtml = entryThumbSrc ? `<div style="margin-top:8px"><img src="${escHtml(entryThumbSrc)}" class="fuel-photo-thumb photo-clickable" data-fullsrc="${escHtml(entryFullSrc || entryThumbSrc)}" onerror="this.style.display='none'" style="max-height:60px"> <span style="font-size:0.75em;color:var(--muted)">Facture</span></div>` : '';
+    const entryPhotoHtml = entryThumbSrc ? `<div style="margin-top:8px"><img src="${escHtml(entryThumbSrc)}" alt="Photo facture entretien" class="fuel-photo-thumb photo-clickable" data-fullsrc="${escHtml(entryFullSrc || entryThumbSrc)}" onerror="this.style.display='none'" style="max-height:60px"> <span style="font-size:0.75em;color:var(--muted)">Facture</span></div>` : '';
     html += `<div class="history-entry" data-date="${e.date}" data-km="${e.km || 0}" data-cost="${e.cost || 0}" data-ops="${escHtml(e.ops.join(' ').toLowerCase())}">
       <div class="entry-data"><div class="header"><span class="date">${dateStr}</span><span class="km">${e.km ? e.km.toLocaleString() + ' km' : 'km inconnu'}${costStr}</span></div>
       <div class="ops">${e.ops.map(o => '&bull; ' + escHtml(o)).join('<br>')}</div>
       ${e.notes ? `<div class="notes">${escHtml(e.notes)}</div>` : ''}
       ${e.provider ? `<div class="notes">Prestataire : ${escHtml(e.provider)}</div>` : ''}
       ${entryPhotoHtml}</div>
-      <div class="actions"><button class="btn btn-secondary btn-sm" onclick="redoEntry('${e.id}')" title="Refaire cet entretien">Refaire</button> <button class="btn btn-secondary btn-sm" onclick="editEntry('${e.id}')">Modifier</button> <button class="btn btn-danger btn-sm" onclick="deleteEntry('${e.id}')">Supprimer</button></div>
+      <div class="actions"><button class="btn btn-secondary btn-sm" onclick="redoEntry('${escAttr(e.id)}')" title="Refaire cet entretien">Refaire</button> <button class="btn btn-secondary btn-sm" onclick="editEntry('${escAttr(e.id)}')">Modifier</button> <button class="btn btn-danger btn-sm" onclick="deleteEntry('${escAttr(e.id)}')">Supprimer</button></div>
     </div>`;
   }
   list.innerHTML = html;
@@ -4037,8 +4053,8 @@ function renderSchedule() {
 async function lookupPlate() {
   const plate = document.getElementById('vPlate').value.trim().replace(/[\s-]/g, '').toUpperCase();
   if (!plate || plate.length < 7) { toast('Saisir une plaque valide (ex: AB-123-CD)', 'warning'); return; }
-  if (typeof PLATE_API_TOKEN === 'undefined' || !PLATE_API_TOKEN) {
-    toast('Cle API plaque non configuree (config.js)', 'warning'); return;
+  if (!PLATE_API_TOKEN && !currentUser) {
+    toast('Cle API plaque non configuree', 'warning'); return;
   }
   const btn = document.getElementById('plateLookupBtn');
   const status = document.getElementById('plateLookupStatus');
@@ -4046,10 +4062,15 @@ async function lookupPlate() {
   status.style.display = 'block'; status.style.color = 'var(--muted)';
   status.textContent = 'Interrogation de la base SIV...';
   try {
-    const resp = await fetch('https://api-de-plaque-d-immatriculation-france.p.rapidapi.com/?plaque=' + encodeURIComponent(plate), {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json', 'plaque': plate, 'x-rapidapi-host': 'api-de-plaque-d-immatriculation-france.p.rapidapi.com', 'x-rapidapi-key': PLATE_API_TOKEN }
-    });
+    let resp;
+    if (currentUser) {
+      resp = await fetch(_cfUrl('lookupPlate') + '?uid=' + encodeURIComponent(currentUser.uid) + '&plate=' + encodeURIComponent(plate));
+    } else {
+      resp = await fetch('https://api-de-plaque-d-immatriculation-france.p.rapidapi.com/?plaque=' + encodeURIComponent(plate), {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', 'plaque': plate, 'x-rapidapi-host': 'api-de-plaque-d-immatriculation-france.p.rapidapi.com', 'x-rapidapi-key': PLATE_API_TOKEN }
+      });
+    }
     if (!resp.ok) throw new Error('Erreur API: ' + resp.status);
     const json = await resp.json();
     if (json.error) throw new Error(json.message || 'Vehicule non trouve');
@@ -4099,7 +4120,7 @@ async function lookupPlate() {
 async function callGroqForSchedule(info) {
   const { model, engine, engineCode, fuelType, gearbox, distrib, circDate } = info;
   if (!model) throw new Error('Marque/modele manquant');
-  if (typeof GROQ_API_KEY === 'undefined' || !GROQ_API_KEY) throw new Error('Cle API Groq non configuree');
+  if (!GROQ_API_KEY && !currentUser) throw new Error('Cle API Groq non configuree');
   const vehicleDesc = [model, engine, engineCode, fuelType, gearbox, distrib, circDate ? 'annee ' + circDate.slice(0,4) : ''].filter(Boolean).join(', ');
   const isEVType = fuelType === 'electrique';
   const isHybridType = fuelType === 'hybride';
@@ -4142,15 +4163,24 @@ ${promptOps}
 Reponds UNIQUEMENT avec le tableau JSON, sans texte avant ni apres. Exemple de format :
 [{"name":"${isEVType ? 'Liquide caloporteur batterie HT' : 'Vidange moteur + filtre huile'}","kmInterval":${isEVType ? 60000 : 20000},"yearInterval":${isEVType ? 4 : 1}}]`;
 
-  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.3, max_tokens: 2000
-    })
-  });
+  let resp;
+  if (currentUser) {
+    resp = await fetch(_cfUrl('groqProxy') + '?uid=' + encodeURIComponent(currentUser.uid), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, temperature: 0.3, max_tokens: 2000 })
+    });
+  } else {
+    resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3, max_tokens: 2000
+      })
+    });
+  }
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
     throw new Error(err.error?.message || 'Erreur API Groq: ' + resp.status);
@@ -4207,9 +4237,9 @@ function resetPlateAndAIStatus() {
   document.getElementById('vPlate').value = '';
   document.getElementById('plateLookupStatus').style.display = 'none';
   document.getElementById('aiScheduleStatus').style.display = 'none';
-  // Masquer plaque/IA si APIs non configurees
-  const hasPlateApi = typeof PLATE_API_TOKEN !== 'undefined' && PLATE_API_TOKEN;
-  const hasGroqApi = typeof GROQ_API_KEY !== 'undefined' && GROQ_API_KEY;
+  // Masquer plaque/IA si APIs non configurees (sauf si connecte = Cloud Function proxy dispo)
+  const hasPlateApi = PLATE_API_TOKEN || currentUser;
+  const hasGroqApi = GROQ_API_KEY || currentUser;
   document.getElementById('plateRow').style.display = hasPlateApi ? '' : 'none';
   document.getElementById('aiScheduleBtn').style.display = hasGroqApi ? '' : 'none';
 }
@@ -4453,17 +4483,71 @@ async function getTesseractWorker() {
       document.head.appendChild(s);
     });
   }
-  ocrStatus('Initialisation OCR (premiere fois: ~10s)...', 'var(--orange)');
-  _tesseractWorker = await Tesseract.createWorker('fra', 1, {
-    workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
-    corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core-simd-lstm.wasm.js',
-  });
+  // Detect WASM SIMD support
+  let simdOk = false;
+  try { simdOk = WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,10,1,8,0,65,0,253,15,253,98,11])); } catch(e) {}
+  const coreBase = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core';
+  const coreSimd = coreBase + '-simd-lstm.wasm.js';
+  const coreNoSimd = coreBase + '-lstm.wasm.js';
+  ocrStatus(simdOk ? 'Initialisation OCR SIMD...' : 'Initialisation OCR...', 'var(--orange)');
+  const createWithTimeout = (corePath) => {
+    return Promise.race([
+      Tesseract.createWorker('fra', 1, {
+        workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+        corePath,
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('OCR timeout')), 45000))
+    ]);
+  };
+  if (simdOk) {
+    try {
+      _tesseractWorker = await createWithTimeout(coreSimd);
+    } catch (e1) {
+      console.warn('OCR SIMD init failed, falling back:', e1.message || e1);
+      ocrStatus('Fallback OCR sans SIMD...', 'var(--orange)');
+      _tesseractWorker = await createWithTimeout(coreNoSimd);
+    }
+  } else {
+    console.info('WASM SIMD non supporte, OCR mode standard');
+    _tesseractWorker = await createWithTimeout(coreNoSimd);
+  }
   scheduleTesseractCleanup();
   return _tesseractWorker;
 }
 
 function startOcrCapture() {
   document.getElementById('ocrFileInput').click();
+}
+
+function preprocessImageForOcr(file) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxDim = 2000;
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        const scale = maxDim / Math.max(w, h);
+        w = Math.round(w * scale); h = Math.round(h * scale);
+      }
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const imageData = ctx.getImageData(0, 0, w, h);
+      const d = imageData.data;
+      // Grayscale + mild contrast stretch (no binarization - preserves LCD digits)
+      for (let i = 0; i < d.length; i += 4) {
+        let gray = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
+        gray = Math.min(255, Math.max(0, (gray - 60) * 1.5));
+        d[i] = d[i+1] = d[i+2] = gray;
+      }
+      ctx.putImageData(imageData, 0, 0);
+      URL.revokeObjectURL(img.src);
+      canvas.toBlob(blob => resolve(blob), 'image/png');
+    };
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
 }
 
 async function processOcrCapture(input) {
@@ -4473,12 +4557,29 @@ async function processOcrCapture(input) {
   const btn = document.getElementById('ocrBtn');
   btn.disabled = true;
   try {
-    ocrStatus('Lecture de l\'image...', 'var(--orange)');
+    ocrStatus('Preparation de l\'image...', 'var(--orange)');
+    const processed = await preprocessImageForOcr(file);
     const worker = await getTesseractWorker();
     ocrStatus('Analyse du ticket en cours...', 'var(--orange)');
-    const { data: { text } } = await worker.recognize(file);
+    // Try preprocessed image first, fallback to original if no result
+    const { data: { text } } = await worker.recognize(processed);
+    let parsed = parseTicketText(text);
+    if (!parsed.liters && !parsed.totalPrice && !parsed.unitPrice) {
+      ocrStatus('Re-analyse sur image originale...', 'var(--orange)');
+      const { data: { text: textOrig } } = await worker.recognize(file);
+      const parsedOrig = parseTicketText(textOrig);
+      if (parsedOrig.liters || parsedOrig.totalPrice || parsedOrig.unitPrice) {
+        parsed = parsedOrig;
+        applyOcrResults(parsed, textOrig);
+        scheduleTesseractCleanup();
+        return;
+      }
+      // Both failed - show raw from original (more readable)
+      applyOcrResults(parsed, textOrig || text);
+      scheduleTesseractCleanup();
+      return;
+    }
     scheduleTesseractCleanup();
-    const parsed = parseTicketText(text);
     applyOcrResults(parsed, text);
   } catch (e) {
     console.error('OCR error:', e);
@@ -4490,54 +4591,99 @@ async function processOcrCapture(input) {
 
 function parseTicketText(text) {
   const result = { liters: null, totalPrice: null, unitPrice: null, date: null };
-  const lines = text.replace(/,/g, '.').split('\n').map(l => l.trim()).filter(Boolean);
+  // Normalize: commas to dots, collapse spaces around dots/digits, clean OCR artifacts
+  const cleaned = text.replace(/,/g, '.').replace(/(\d)[^\S\n]+(\d)/g, '$1$2').replace(/(\d)[^\S\n]*\.[^\S\n]*(\d)/g, '$1.$2');
+  const lines = cleaned.split('\n').map(l => l.trim()).filter(Boolean);
+  const allText = lines.join(' ');
 
-  // Volume in liters - look for patterns like "42.35 L", "VOLUME 42.35", "42.35L"
-  for (const line of lines) {
-    const mVol = line.match(/(\d{1,3}\.\d{1,3})\s*[lL]/);
-    if (mVol) { result.liters = parseFloat(mVol[1]); break; }
-  }
-  if (!result.liters) {
+  // Volume in liters - "42.35 L", "42.35 LITRES", "VOLUME 42.35", "LITRES: 42.35"
+  const volPatterns = [
+    /(\d{1,3}\.\d{1,3})\s*(?:LITRES?\b|[lL](?!\w))/i,
+    /VOL(?:UME)?\s*[:\s]*(\d{1,3}\.\d{1,3})/i,
+    /(?<!DU\s)LITRES?\s*[:\s]*(\d{1,3}\.\d{1,3})/i,
+  ];
+  for (const pat of volPatterns) {
+    if (result.liters) break;
     for (const line of lines) {
-      const mVol = line.match(/VOL(?:UME)?\s*[:\s]*(\d{1,3}\.\d{1,3})/i);
-      if (mVol) { result.liters = parseFloat(mVol[1]); break; }
+      const m = line.match(pat);
+      if (m) { result.liters = parseFloat(m[1]); break; }
     }
   }
 
-  // Total price - look for "TOTAL", "MONTANT", "A PAYER" followed by amount
-  for (const line of lines) {
-    const mTotal = line.match(/(?:TOTAL|MONTANT|A PAYER|EUR)\s*[:\s]*(\d{1,4}\.\d{1,2})/i);
-    if (mTotal) { result.totalPrice = parseFloat(mTotal[1]); break; }
-  }
-  // Fallback: largest EUR-like number
-  if (!result.totalPrice) {
-    let maxVal = 0;
+  // Total price - "TOTAL 65.20", "MONTANT: 65.20", "PRIX 82.92", "65.20 EUR/€"
+  const totalPatterns = [
+    /(?:TOTAL|MONTANT|A\s*PAYER)\s*[:\s]*(\d{1,4}\.\d{1,2})(?!\d)/i,
+    /PRIX(?!\s+DU\b|\s+AU\b|\s+UNIT|\s*\/)\s*[:\s]*(\d{1,4}\.\d{1,2})(?!\d)/i,
+    /(\d{1,4}\.\d{2})\s*(?:EUR|€)/i,
+  ];
+  for (const pat of totalPatterns) {
+    if (result.totalPrice) break;
     for (const line of lines) {
-      const mEur = line.match(/(\d{1,4}\.\d{2})\s*(?:EUR|€)/i);
-      if (mEur && parseFloat(mEur[1]) > maxVal) {
-        maxVal = parseFloat(mEur[1]);
-        result.totalPrice = maxVal;
+      const m = line.match(pat);
+      if (m) { result.totalPrice = parseFloat(m[1]); break; }
+    }
+  }
+
+  // Unit price per liter - "PRIX DU LITRE 2.053", "PRIX/L 1.679", "P.U. 1.679", "1.679 EUR/L"
+  const unitPatterns = [
+    /(?:PRIX\s+(?:DU\s+)?LITRE|PRIX\s*\/\s*L|P\.?\s*U\.?)\s*[:\s]*(\d{1,2}\.\d{2,4})/i,
+    /(\d{1,2}\.\d{2,4})\s*(?:EUR|€)\s*\/\s*[lL]/i,
+    /(\d{1,2}\.\d{3,4})\s*(?:EUR|€)/i,
+  ];
+  for (const pat of unitPatterns) {
+    if (result.unitPrice) break;
+    for (const line of lines) {
+      const m = line.match(pat);
+      if (m) { result.unitPrice = parseFloat(m[1]); break; }
+    }
+  }
+
+  // Pump display fallback: if no structured data found, look for 2-3 standalone numbers
+  // Pump displays typically show: unit price (1.xxx), volume (XX.XX), total (XX.XX)
+  if (!result.liters && !result.totalPrice && !result.unitPrice) {
+    const nums = [];
+    const numRe = /\b(\d{1,4}\.\d{1,4})\b/g;
+    let nm;
+    while ((nm = numRe.exec(allText)) !== null) {
+      const val = parseFloat(nm[1]);
+      if (val > 0 && val < 10000) nums.push(val);
+    }
+    if (nums.length >= 2) {
+      // Heuristic: unit price is ~1.0-2.5, volume is 5-100, total is 5-300
+      const unitCandidates = nums.filter(n => n >= 0.8 && n <= 3.0 && /\.\d{3}/.test(n.toFixed(3)));
+      const largeCandidates = nums.filter(n => n >= 3.0 && n <= 500);
+      if (unitCandidates.length >= 1) {
+        result.unitPrice = unitCandidates[0];
+      }
+      if (largeCandidates.length >= 2) {
+        largeCandidates.sort((a, b) => a - b);
+        result.liters = largeCandidates[0];
+        result.totalPrice = largeCandidates[largeCandidates.length - 1];
+      } else if (largeCandidates.length === 1 && result.unitPrice) {
+        const val = largeCandidates[0];
+        const derivedVol = val / result.unitPrice;
+        if (derivedVol >= 3 && derivedVol <= 120) {
+          result.totalPrice = val;
+          result.liters = Math.round(derivedVol * 100) / 100;
+        }
       }
     }
   }
 
-  // Unit price per liter - look for "PRIX" or "P.U." patterns
-  for (const line of lines) {
-    const mUnit = line.match(/(?:PRIX|P\.?\s*U\.?|LITRE)\s*[:\s]*(\d{1,2}\.\d{2,4})/i);
-    if (mUnit) { result.unitPrice = parseFloat(mUnit[1]); break; }
-  }
-  // Derive if missing: unitPrice = totalPrice / liters
+  // Derive missing values
   if (!result.unitPrice && result.totalPrice && result.liters) {
     result.unitPrice = Math.round(result.totalPrice / result.liters * 1000) / 1000;
   }
-  // Derive total if missing: totalPrice = unitPrice * liters
   if (!result.totalPrice && result.unitPrice && result.liters) {
     result.totalPrice = Math.round(result.unitPrice * result.liters * 100) / 100;
   }
+  if (!result.liters && result.totalPrice && result.unitPrice && result.unitPrice > 0) {
+    result.liters = Math.round(result.totalPrice / result.unitPrice * 100) / 100;
+  }
 
-  // Date - look for DD/MM/YYYY or DD-MM-YYYY
+  // Date - DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY
   for (const line of lines) {
-    const mDate = line.match(/(\d{2})[\/\-](\d{2})[\/\-](\d{4})/);
+    const mDate = line.match(/(\d{2})[\/\-.](\d{2})[\/\-.](\d{4})/);
     if (mDate) {
       const [, d, m, y] = mDate;
       if (parseInt(m) >= 1 && parseInt(m) <= 12 && parseInt(d) >= 1 && parseInt(d) <= 31) {
@@ -4592,12 +4738,27 @@ async function processCarteGriseScan(input) {
   const btn = document.getElementById('cgScanBtn');
   btn.disabled = true;
   try {
-    cgScanStatus('Lecture de l\'image...', 'var(--orange)');
+    cgScanStatus('Preparation de l\'image...', 'var(--orange)');
+    const processed = await preprocessImageForOcr(file);
     const worker = await getTesseractWorker();
     cgScanStatus('Analyse en cours (OCR local)...', 'var(--orange)');
-    const { data: { text } } = await worker.recognize(file);
+    const { data: { text } } = await worker.recognize(processed);
+    let parsed = parseCarteGriseText(text);
+    if (!parsed.marque && !parsed.modele && !parsed.dateMEC) {
+      cgScanStatus('Re-analyse sur image originale...', 'var(--orange)');
+      const { data: { text: textOrig } } = await worker.recognize(file);
+      const parsedOrig = parseCarteGriseText(textOrig);
+      if (parsedOrig.marque || parsedOrig.modele || parsedOrig.dateMEC) {
+        parsed = parsedOrig;
+        applyCarteGriseResults(parsed, textOrig);
+        scheduleTesseractCleanup();
+        return;
+      }
+      applyCarteGriseResults(parsed, textOrig || text);
+      scheduleTesseractCleanup();
+      return;
+    }
     scheduleTesseractCleanup();
-    const parsed = parseCarteGriseText(text);
     applyCarteGriseResults(parsed, text);
   } catch (e) {
     cgScanStatus('Erreur OCR : ' + escHtml(e.message), 'var(--accent)');
@@ -4901,7 +5062,7 @@ function renderFuel() {
     const pricePerL = (e.cost / e.liters).toFixed(3);
     const thumbSrc = getPhotoSrc(e.photo);
     const fullSrc = getPhotoFullSrc(e.photo);
-    const photoThumb = thumbSrc ? `<img src="${escHtml(thumbSrc)}" class="fuel-photo-thumb photo-clickable" data-fullsrc="${escHtml(fullSrc || thumbSrc)}" onerror="this.style.display='none'">` : '';
+    const photoThumb = thumbSrc ? `<img src="${escHtml(thumbSrc)}" alt="Photo ticket carburant" class="fuel-photo-thumb photo-clickable" data-fullsrc="${escHtml(fullSrc || thumbSrc)}" onerror="this.style.display='none'">` : '';
     const info = consoMap[e.id];
     let metaHtml = '';
     if (info) {
@@ -4929,8 +5090,8 @@ function renderFuel() {
         ${metaHtml}</div>
         <div class="fuel-bottom">
           <div class="actions">
-            <button class="btn btn-secondary btn-sm" onclick="editFuel('${e.id}')">Mod.</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteFuel('${e.id}')">Sup.</button>
+            <button class="btn btn-secondary btn-sm" onclick="editFuel('${escAttr(e.id)}')">Mod.</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteFuel('${escAttr(e.id)}')">Sup.</button>
           </div>
         </div>
       </div>
@@ -5091,7 +5252,7 @@ function renderNotebook() {
     const dateStr = new Date(n.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
     const icon = typeIcons[n.type] || '&#128196;';
     const label = typeLabels[n.type] || n.type;
-    html += `<div class="history-entry"><div class="header"><span class="date">${icon} ${label} - ${dateStr}</span></div><div class="ops">${escHtml(n.text)}</div><div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteNotebookEntry('${n.id}')">Supprimer</button></div></div>`;
+    html += `<div class="history-entry"><div class="header"><span class="date">${icon} ${label} - ${dateStr}</span></div><div class="ops">${escHtml(n.text)}</div><div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteNotebookEntry('${escAttr(n.id)}')">Supprimer</button></div></div>`;
   }
   list.innerHTML = html;
 }
@@ -5192,14 +5353,14 @@ function renderWash() {
   const payLabels = { direct: 'CB/Especes', badge: 'Badge', jetons: 'Jetons' };
 
   // Costs: actual money spent (what you paid, not what was credited)
-  const directCost = washes.filter(w => w.payment === 'direct').reduce((s, w) => s + (w.cost || 0), 0);
-  const badgeRechargeCost = credits.filter(c => c.type === 'badge').reduce((s, c) => s + (c.cost || 0), 0);
-  const jetonsPurchaseCost = credits.filter(c => c.type === 'jetons').reduce((s, c) => s + (c.cost || 0), 0);
+  const directCost = sumCosts(washes.filter(w => w.payment === 'direct'));
+  const badgeRechargeCost = sumCosts(credits.filter(c => c.type === 'badge'));
+  const jetonsPurchaseCost = sumCosts(credits.filter(c => c.type === 'jetons'));
   const totalSpent = directCost + badgeRechargeCost + jetonsPurchaseCost;
 
   // Badge balance (in credited euros)
   const badgeCredited = credits.filter(c => c.type === 'badge').reduce((s, c) => s + (c.creditAmount || c.cost || 0), 0);
-  const badgeUsed = washes.filter(w => w.payment === 'badge').reduce((s, w) => s + (w.cost || 0), 0);
+  const badgeUsed = sumCosts(washes.filter(w => w.payment === 'badge'));
   const badgeBalance = badgeCredited - badgeUsed;
 
   // Token balance (in units)
@@ -5243,7 +5404,7 @@ function renderWash() {
       else if (item.cost) costStr = item.cost.toFixed(2) + ' EUR';
       html += `<div class="history-entry"><div class="header"><span class="date">&#128703; ${tLabel} - ${dateStr}</span><span class="cost">${costStr} (${pLabel})</span></div>`;
       if (item.description) html += `<div class="ops">${escHtml(item.description)}</div>`;
-      html += `<div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWash('${item.id}')">Supprimer</button></div></div>`;
+      html += `<div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWash('${escAttr(item.id)}')">Supprimer</button></div></div>`;
     } else {
       let cLabel, cDetail;
       if (item.type === 'badge') {
@@ -5254,7 +5415,7 @@ function renderWash() {
         cDetail = `${(item.cost || 0).toFixed(2)} EUR - ${item.quantity || 0} jeton${(item.quantity || 0) > 1 ? 's' : ''}`;
       }
       html += `<div class="history-entry"><div class="header"><span class="date">&#128179; ${cLabel} - ${dateStr}</span><span class="cost">${cDetail}</span></div>`;
-      html += `<div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWashCredit('${item.id}')">Supprimer</button></div></div>`;
+      html += `<div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWashCredit('${escAttr(item.id)}')">Supprimer</button></div></div>`;
     }
   }
   listEl.innerHTML = html;
@@ -5296,8 +5457,8 @@ function renderTires() {
         ${t.notes ? `<div class="notes">${escHtml(t.notes)}</div>` : ''}
       </div>
       <div class="actions">
-        <button class="btn btn-secondary btn-sm" onclick="editTire('${t.id}')">Mod.</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteTire('${t.id}')">Sup.</button>
+        <button class="btn btn-secondary btn-sm" onclick="editTire('${escAttr(t.id)}')">Mod.</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTire('${escAttr(t.id)}')">Sup.</button>
       </div>
     </div>`;
   }
@@ -5405,302 +5566,6 @@ function getTireAlerts(v) {
   return alerts;
 }
 
-// ── Checklist pre-voyage ──
-
-const DEFAULT_CHECKLIST = [
-  { id: 'chk-oil', label: 'Niveau huile moteur', category: 'Niveaux' },
-  { id: 'chk-coolant', label: 'Liquide de refroidissement', category: 'Niveaux' },
-  { id: 'chk-washer', label: 'Lave-glace', category: 'Niveaux' },
-  { id: 'chk-brake', label: 'Liquide de frein', category: 'Niveaux' },
-  { id: 'chk-tire-pressure', label: 'Pression des pneus', category: 'Pneus' },
-  { id: 'chk-tire-wear', label: 'Usure des pneus', category: 'Pneus' },
-  { id: 'chk-spare', label: 'Roue de secours / kit crevaison', category: 'Pneus' },
-  { id: 'chk-lights-front', label: 'Feux avant (codes, pleins phares)', category: 'Eclairage' },
-  { id: 'chk-lights-rear', label: 'Feux arriere + stop', category: 'Eclairage' },
-  { id: 'chk-indicators', label: 'Clignotants', category: 'Eclairage' },
-  { id: 'chk-wipers', label: 'Essuie-glaces', category: 'Eclairage' },
-  { id: 'chk-ct', label: 'Controle technique a jour', category: 'Documents' },
-  { id: 'chk-insurance', label: 'Carte verte assurance', category: 'Documents' },
-  { id: 'chk-license', label: 'Permis de conduire', category: 'Documents' },
-  { id: 'chk-cg', label: 'Carte grise', category: 'Documents' },
-  { id: 'chk-vest', label: 'Gilet jaune', category: 'Securite' },
-  { id: 'chk-triangle', label: 'Triangle de signalisation', category: 'Securite' },
-  { id: 'chk-firstaid', label: 'Trousse de secours', category: 'Securite' },
-];
-
-function renderChecklist() {
-  const el = document.getElementById('checklistItems');
-  const progEl = document.getElementById('checklistProgress');
-  if (!el) return;
-  const v = getActiveVehicle();
-  if (!v) return;
-  const saved = v.travelChecklist || {};
-  const customItems = v.customChecklistItems || [];
-
-  const allItems = [...DEFAULT_CHECKLIST, ...customItems.map(c => ({ id: c.id, label: c.label, category: 'Personnel' }))];
-  const categories = [...new Set(allItems.map(i => i.category))];
-
-  let checked = 0;
-  let html = '';
-  for (const cat of categories) {
-    const items = allItems.filter(i => i.category === cat);
-    html += `<div style="margin-bottom:10px;"><div style="font-weight:600;font-size:0.85em;color:var(--muted);margin-bottom:4px;">${escHtml(cat)}</div>`;
-    for (const item of items) {
-      const isChecked = !!saved[item.id];
-      if (isChecked) checked++;
-      const isCustom = customItems.some(c => c.id === item.id);
-      html += `<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface);border-radius:8px;margin-bottom:3px;cursor:pointer;font-size:0.9em;${isChecked ? 'opacity:0.6;text-decoration:line-through;' : ''}">
-        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleChecklistItem('${item.id}')" style="width:18px;height:18px;accent-color:var(--green);">
-        ${escHtml(item.label)}
-        ${isCustom ? `<button class="btn btn-secondary btn-sm" onclick="event.preventDefault();removeCustomChecklistItem('${item.id}')" style="margin-left:auto;font-size:0.7em;padding:2px 6px;">x</button>` : ''}
-      </label>`;
-    }
-    html += '</div>';
-  }
-  el.innerHTML = html;
-
-  const total = allItems.length;
-  const pct = total > 0 ? Math.round(checked / total * 100) : 0;
-  const color = pct === 100 ? 'var(--green)' : pct >= 60 ? 'var(--orange)' : 'var(--accent)';
-  progEl.innerHTML = `<div style="background:var(--surface);border-radius:10px;height:22px;overflow:hidden;position:relative;">
-    <div style="background:${color};height:100%;width:${pct}%;border-radius:10px;transition:width 0.3s;"></div>
-    <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:0.8em;font-weight:600;">${checked}/${total} (${pct}%)</span>
-  </div>`;
-}
-
-function toggleChecklistItem(itemId) {
-  updateActiveVehicle(v => {
-    if (!v.travelChecklist) v.travelChecklist = {};
-    v.travelChecklist[itemId] = !v.travelChecklist[itemId];
-  });
-  renderChecklist();
-}
-
-function resetChecklist() {
-  updateActiveVehicle(v => { v.travelChecklist = {}; });
-  renderChecklist();
-  toast('Checklist reinitialisee');
-}
-
-function addCustomChecklistItem() {
-  const input = document.getElementById('checklistCustomItem');
-  const label = input.value.trim();
-  if (!label) return;
-  updateActiveVehicle(v => {
-    if (!v.customChecklistItems) v.customChecklistItems = [];
-    v.customChecklistItems.push({ id: 'chk-custom-' + genId(), label });
-  });
-  input.value = '';
-  renderChecklist();
-}
-
-function removeCustomChecklistItem(id) {
-  updateActiveVehicle(v => {
-    v.customChecklistItems = (v.customChecklistItems || []).filter(c => c.id !== id);
-    if (v.travelChecklist) delete v.travelChecklist[id];
-  });
-  renderChecklist();
-}
-
-// ── Suivi consommables ──
-
-const CONSUMABLE_LABELS = {
-  oil: 'Huile moteur', coolant: 'Liquide refroidissement', brake: 'Liquide frein',
-  washer: 'Lave-glace', adblue: 'AdBlue', power_steering: 'Direction assistee'
-};
-const CONSUMABLE_ICONS = {
-  oil: '\u{1F6E2}', coolant: '\u{2744}', brake: '\u{1F6D1}',
-  washer: '\u{1F4A7}', adblue: '\u{1F7E6}', power_steering: '\u{1F504}'
-};
-
-function renderConsumables() {
-  const el = document.getElementById('consumablesList');
-  if (!el) return;
-  const v = getActiveVehicle();
-  if (!v) return;
-  const consumables = v.consumables || {};
-
-  if (Object.keys(consumables).length === 0) {
-    el.innerHTML = '<p style="color:var(--muted);font-size:0.85em;">Aucun niveau enregistre. Utilisez le formulaire ci-dessous pour ajouter un releve.</p>';
-    return;
-  }
-
-  let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;">';
-  for (const [type, readings] of Object.entries(consumables)) {
-    if (!readings || readings.length === 0) continue;
-    const latest = readings[readings.length - 1];
-    const level = latest.level;
-    const color = level <= 10 ? 'var(--accent)' : level <= 25 ? 'var(--orange)' : 'var(--green)';
-    const label = CONSUMABLE_LABELS[type] || type;
-    const daysSince = Math.round((Date.now() - new Date(latest.date).getTime()) / 86400000);
-    html += `<div style="background:var(--surface);border-radius:10px;padding:12px;text-align:center;">
-      <div style="font-size:1.4em;">${CONSUMABLE_ICONS[type] || ''}</div>
-      <div style="font-weight:600;font-size:0.85em;margin:4px 0;">${escHtml(label)}</div>
-      <div style="background:var(--bg);border-radius:8px;height:18px;overflow:hidden;position:relative;margin:6px 0;">
-        <div style="background:${color};height:100%;width:${level}%;border-radius:8px;"></div>
-      </div>
-      <div style="font-size:0.8em;color:var(--muted);">${level}% - il y a ${daysSince}j</div>
-      ${latest.note ? `<div style="font-size:0.75em;color:var(--muted);margin-top:2px;">${escHtml(latest.note)}</div>` : ''}
-    </div>`;
-  }
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-function addConsumableReading() {
-  const type = document.getElementById('consumableType').value;
-  const level = parseInt(document.getElementById('consumableLevel').value);
-  const date = document.getElementById('consumableDate').value || new Date().toISOString().slice(0, 10);
-  const note = document.getElementById('consumableNote').value.trim();
-
-  updateActiveVehicle(v => {
-    if (!v.consumables) v.consumables = {};
-    if (!v.consumables[type]) v.consumables[type] = [];
-    v.consumables[type].push({ id: genId(), date, level, note });
-  });
-  document.getElementById('consumableNote').value = '';
-  renderConsumables();
-  toast('Niveau enregistre');
-}
-
-function getConsumableAlerts(v) {
-  const alerts = [];
-  const consumables = v.consumables || {};
-  for (const [type, readings] of Object.entries(consumables)) {
-    if (!readings || readings.length === 0) continue;
-    const latest = readings[readings.length - 1];
-    const label = CONSUMABLE_LABELS[type] || type;
-    if (latest.level <= 10) {
-      alerts.push({ level: 'danger', text: `${label} critique (${latest.level}%)`, detail: 'Appoint urgent necessaire', action: 'consumables' });
-    } else if (latest.level <= 25) {
-      alerts.push({ level: 'warning', text: `${label} bas (${latest.level}%)`, detail: 'Prevoir un appoint', action: 'consumables' });
-    }
-  }
-  return alerts;
-}
-
-// ── Journal trajets ──
-
-function renderTrips() {
-  const listEl = document.getElementById('tripsList');
-  const statsEl = document.getElementById('tripsStats');
-  const fiscalEl = document.getElementById('tripsFiscal');
-  if (!listEl) return;
-  const v = getActiveVehicle();
-  if (!v) return;
-  const trips = (v.trips || []).sort((a, b) => b.date.localeCompare(a.date));
-
-  // Stats
-  const year = new Date().getFullYear();
-  const thisYear = trips.filter(t => t.date.startsWith(year));
-  const proKm = thisYear.filter(t => t.type === 'pro').reduce((s, t) => s + (t.kmEnd - t.kmStart), 0);
-  const persoKm = thisYear.filter(t => t.type === 'perso').reduce((s, t) => s + (t.kmEnd - t.kmStart), 0);
-  const mixteKm = thisYear.filter(t => t.type === 'mixte').reduce((s, t) => s + (t.kmEnd - t.kmStart), 0);
-  const totalKm = proKm + persoKm + mixteKm;
-
-  statsEl.innerHTML = totalKm > 0 ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;">
-    <div style="background:var(--surface);border-radius:10px;padding:10px;text-align:center;">
-      <div style="font-size:1.2em;font-weight:700;color:var(--green);">${proKm.toLocaleString('fr-FR')}</div>
-      <div style="font-size:0.75em;color:var(--muted);">km Pro ${year}</div>
-    </div>
-    <div style="background:var(--surface);border-radius:10px;padding:10px;text-align:center;">
-      <div style="font-size:1.2em;font-weight:700;">${persoKm.toLocaleString('fr-FR')}</div>
-      <div style="font-size:0.75em;color:var(--muted);">km Perso</div>
-    </div>
-    ${mixteKm > 0 ? `<div style="background:var(--surface);border-radius:10px;padding:10px;text-align:center;">
-      <div style="font-size:1.2em;font-weight:700;color:var(--orange);">${mixteKm.toLocaleString('fr-FR')}</div>
-      <div style="font-size:0.75em;color:var(--muted);">km Mixte</div>
-    </div>` : ''}
-    <div style="background:var(--surface);border-radius:10px;padding:10px;text-align:center;">
-      <div style="font-size:1.2em;font-weight:700;">${totalKm > 0 ? Math.round(proKm / totalKm * 100) : 0}%</div>
-      <div style="font-size:0.75em;color:var(--muted);">Part pro</div>
-    </div>
-  </div>` : '';
-
-  // Trip list
-  if (trips.length === 0) {
-    listEl.innerHTML = '<p style="color:var(--muted);font-size:0.85em;">Aucun trajet enregistre.</p>';
-  } else {
-    listEl.innerHTML = trips.slice(0, 50).map(t => {
-      const km = t.kmEnd - t.kmStart;
-      const typeLabel = t.type === 'pro' ? 'Pro' : t.type === 'perso' ? 'Perso' : 'Mixte';
-      const typeColor = t.type === 'pro' ? 'var(--green)' : t.type === 'mixte' ? 'var(--orange)' : 'var(--muted)';
-      return `<div style="background:var(--surface);border-radius:10px;padding:10px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <span style="font-size:0.85em;">${t.date}</span>
-          <span style="font-size:0.75em;padding:2px 8px;border-radius:10px;background:${typeColor};color:#fff;margin-left:6px;">${typeLabel}</span>
-          ${t.description ? `<div style="font-size:0.8em;color:var(--muted);margin-top:2px;">${escHtml(t.description)}</div>` : ''}
-        </div>
-        <div style="text-align:right;">
-          <div style="font-weight:600;font-size:0.9em;">${km.toLocaleString('fr-FR')} km</div>
-          <button class="btn btn-secondary btn-sm" onclick="deleteTrip('${t.id}')" style="font-size:0.7em;padding:2px 6px;margin-top:2px;">Suppr.</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // Fiscal IK calculation
-  const fiscalCV = v.fiscalCV || 0;
-  if (proKm > 0 && fiscalCV > 0) {
-    const ik = computeIK(proKm, fiscalCV);
-    fiscalEl.innerHTML = `<div style="background:var(--card);border-radius:10px;padding:14px;margin-top:8px;">
-      <div style="font-weight:600;font-size:0.9em;margin-bottom:6px;">Indemnites kilometriques ${year}</div>
-      <div style="display:flex;justify-content:space-between;font-size:0.85em;">
-        <span>${proKm.toLocaleString('fr-FR')} km pro x ${fiscalCV} CV</span>
-        <span style="font-weight:700;color:var(--green);">${ik.toFixed(2)} EUR</span>
-      </div>
-      <div style="font-size:0.75em;color:var(--muted);margin-top:4px;">Bareme IK 2024 - Declaration fiscale</div>
-    </div>`;
-  } else if (proKm > 0) {
-    fiscalEl.innerHTML = `<div style="background:var(--card);border-radius:10px;padding:14px;margin-top:8px;">
-      <div style="font-size:0.85em;color:var(--muted);">Renseignez la puissance fiscale (CV) du vehicule pour calculer les IK.</div>
-    </div>`;
-  } else {
-    fiscalEl.innerHTML = '';
-  }
-}
-
-function computeIK(km, cv) {
-  // Bareme IK 2024 (simplifie)
-  if (cv <= 3) {
-    return km <= 5000 ? km * 0.529 : km <= 20000 ? km * 0.316 + 1065 : km * 0.370;
-  } else if (cv === 4) {
-    return km <= 5000 ? km * 0.606 : km <= 20000 ? km * 0.340 + 1330 : km * 0.407;
-  } else if (cv === 5) {
-    return km <= 5000 ? km * 0.636 : km <= 20000 ? km * 0.357 + 1395 : km * 0.427;
-  } else if (cv === 6) {
-    return km <= 5000 ? km * 0.665 : km <= 20000 ? km * 0.374 + 1457 : km * 0.447;
-  } else {
-    return km <= 5000 ? km * 0.697 : km <= 20000 ? km * 0.394 + 1515 : km * 0.470;
-  }
-}
-
-function addTrip() {
-  const date = document.getElementById('tripDate').value;
-  const type = document.getElementById('tripType').value;
-  const kmStart = parseInt(document.getElementById('tripKmStart').value);
-  const kmEnd = parseInt(document.getElementById('tripKmEnd').value);
-  const description = document.getElementById('tripDescription').value.trim();
-
-  if (!date || !kmStart || !kmEnd) { toast('Remplir date et km', 'warning'); return; }
-  if (kmEnd <= kmStart) { toast('Km arrivee doit etre superieur au depart', 'warning'); return; }
-
-  updateActiveVehicle(v => {
-    if (!v.trips) v.trips = [];
-    v.trips.push({ id: genId(), date, type, kmStart, kmEnd, description });
-    if (kmEnd > (v.currentKm || 0)) v.currentKm = kmEnd;
-  });
-  ['tripKmStart', 'tripKmEnd', 'tripDescription'].forEach(id => document.getElementById(id).value = '');
-  renderAll('entretien');
-  toast('Trajet enregistre');
-}
-
-async function deleteTrip(id) {
-  if (!await customConfirm('Supprimer ce trajet ?')) return;
-  updateActiveVehicle(v => { v.trips = (v.trips || []).filter(t => t.id !== id); });
-  toast('Trajet supprime');
-  renderAll('entretien');
-}
 
 // ── Deadlines ──
 function addDeadline() {
@@ -5785,8 +5650,8 @@ function renderDeadlines() {
       <div class="dl-info"><h3>${escHtml(label)}${costStr}</h3>${d.notes ? `<p>${escHtml(d.notes)}${alertLabel}</p>` : (alertLabel ? `<p style="color:var(--muted);font-size:0.82em;">${alertLabel}</p>` : '')}</div>
       <div style="display:flex;align-items:center;gap:12px;">
         <div class="dl-date"><div class="date">${dateStr}</div><div class="remaining" style="color:${remainingColor}">${remainingText}</div></div>
-        ${showRenew ? `<button class="btn btn-secondary btn-sm" onclick="renewDeadline('${d.id}')" title="${(d.type||'').toLowerCase()==='ct'?'+2 ans':'+1 an'}">${renewLabel}</button>` : ''}
-        <button class="btn btn-danger btn-sm" onclick="removeDeadline('${d.id}')">X</button>
+        ${showRenew ? `<button class="btn btn-secondary btn-sm" onclick="renewDeadline('${escAttr(d.id)}')" title="${escAttr((d.type||'').toLowerCase()==='ct'?'+2 ans':'+1 an')}">${renewLabel}</button>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="removeDeadline('${escAttr(d.id)}')">X</button>
       </div>
     </div>`;
   }
@@ -5805,14 +5670,14 @@ function renderStats() {
 
   // Maintenance costs since purchase only
   const maintSincePurchase = purchaseDateStr ? entries.filter(e => e.date >= purchaseDateStr) : entries;
-  const totalMaintCost = maintSincePurchase.reduce((s, e) => s + (e.cost || 0), 0);
+  const totalMaintCost = sumCosts(maintSincePurchase);
 
   // Actual fuel costs
-  const totalActualFuelCost = fuelEntries.reduce((s, e) => s + e.cost, 0);
+  const totalActualFuelCost = sumCosts(fuelEntries);
 
   // Actual charge costs (EV/hybrid)
   const chargeEntries = v.chargeEntries || [];
-  const totalActualChargeCost = chargeEntries.reduce((s, e) => s + (e.cost || 0), 0);
+  const totalActualChargeCost = sumCosts(chargeEntries);
 
   // Estimated fuel/energy cost from km driven since purchase
   const ownership = getKmSinceOwnership(v);
@@ -5833,13 +5698,13 @@ function renderStats() {
   // Wash costs (direct payments + credits/recharges)
   const washes = v.washes || [];
   const washCredits = v.washCredits || [];
-  const totalWashDirect = washes.filter(w => w.payment === 'direct').reduce((s, w) => s + (w.cost || 0), 0);
-  const totalWashCredits = washCredits.reduce((s, c) => s + (c.cost || 0), 0);
+  const totalWashDirect = sumCosts(washes.filter(w => w.payment === 'direct'));
+  const totalWashCredits = sumCosts(washCredits);
   const totalWashCost = totalWashDirect + totalWashCredits;
 
   // Deadline costs (assurance, CT, vignette, etc.)
   const deadlines = v.deadlines || [];
-  const totalDeadlineCost = deadlines.reduce((s, d) => s + (d.cost || 0), 0);
+  const totalDeadlineCost = sumCosts(deadlines);
 
   const purchasePrice = v.purchasePrice || 0;
   const totalCost = purchasePrice + totalMaintCost + fuelCost + totalWashCost + totalDeadlineCost;
@@ -6153,10 +6018,10 @@ function renderCompare() {
     const fuel = v.fuelEntries || [];
     const charges = v.chargeEntries || [];
     const entries = v.entries || [];
-    const totalFuel = fuel.reduce((s, e) => s + e.cost, 0);
-    const totalCharge = charges.reduce((s, e) => s + (e.cost || 0), 0);
+    const totalFuel = sumCosts(fuel);
+    const totalCharge = sumCosts(charges);
     const totalEnergy = totalFuel + totalCharge;
-    const totalMaint = entries.reduce((s, e) => s + (e.cost || 0), 0);
+    const totalMaint = sumCosts(entries);
     const totalLiters = fuel.reduce((s, e) => s + e.liters, 0);
 
     // Avg consumption (fuel or charge)
@@ -6187,7 +6052,7 @@ function renderCompare() {
     let kmYear = null;
     const readings = (v.kmReadings || []).sort((a, b) => a.date.localeCompare(b.date));
     if (readings.length >= 2) {
-      const days = (new Date(readings[readings.length - 1].date) - new Date(readings[0].date)) / 86400000;
+      const days = daysBetween(readings[0].date, readings[readings.length - 1].date);
       if (days > 30) {
         const kmDiff = readings[readings.length - 1].km - readings[0].km;
         kmYear = Math.round(kmDiff / days * 365);
@@ -6195,7 +6060,7 @@ function renderCompare() {
     }
 
     // Deadline costs (assurance, CT, vignette...)
-    const totalDeadline = (v.deadlines || []).reduce((s, d) => s + (d.cost || 0), 0);
+    const totalDeadline = sumCosts(v.deadlines);
 
     // Cost per km
     const totalCost = totalEnergy + totalMaint + totalDeadline;
@@ -6614,7 +6479,7 @@ function exportDossierVente() {
   }
 
   // Total maintenance cost
-  const totalMaintCost = v.entries.reduce((s, e) => s + (e.cost || 0), 0);
+  const totalMaintCost = sumCosts(v.entries);
 
   // Entries sorted
   const entries = [...v.entries].sort((a, b) => a.date.localeCompare(b.date));
@@ -6916,7 +6781,7 @@ function renderMechanicShareLinks() {
     return `<div style="background:var(--surface);border-radius:8px;padding:10px;margin-bottom:6px;font-size:0.85em;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span>${escHtml(s.vehicleName)} - expire dans ${remaining}h</span>
-        <button class="btn btn-secondary btn-sm" onclick="copyMechanicLink('${s.id}')">Copier</button>
+        <button class="btn btn-secondary btn-sm" onclick="copyMechanicLink('${escAttr(s.id)}')">Copier</button>
       </div>
     </div>`;
   }).join('');
@@ -7067,271 +6932,6 @@ ${(d.tires || []).length > 0 ? '<h2>Pneumatiques montes</h2><table><tr><th>Marqu
 </html>`;
 }
 
-// ── QR Code vehicule ──
-
-function generateQR(text) {
-  // Minimal QR code generator - alphanumeric mode, version auto
-  // Uses a canvas-based approach with inline SVG output
-  const size = 256;
-  const canvas = document.createElement('canvas');
-  canvas.width = size; canvas.height = size;
-  const ctx = canvas.getContext('2d');
-
-  // Encode as simple data URL with text for scanning
-  // Use a matrix-based approach for QR-like pattern
-  const data = encodeURIComponent(text);
-  const modules = generateQRMatrix(text);
-  if (!modules) return null;
-  const modCount = modules.length;
-  const cellSize = size / modCount;
-
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, size, size);
-  ctx.fillStyle = '#000000';
-
-  for (let r = 0; r < modCount; r++) {
-    for (let c = 0; c < modCount; c++) {
-      if (modules[r][c]) {
-        ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
-      }
-    }
-  }
-  return canvas.toDataURL('image/png');
-}
-
-function generateQRMatrix(text) {
-  // Minimal QR Code encoder - Version 2 (25x25), Error correction L
-  // Byte mode encoding
-  const size = 25;
-  const matrix = Array.from({ length: size }, () => Array(size).fill(null));
-  const reserved = Array.from({ length: size }, () => Array(size).fill(false));
-
-  function setModule(r, c, val, reserve) {
-    if (r >= 0 && r < size && c >= 0 && c < size) {
-      matrix[r][c] = val ? 1 : 0;
-      if (reserve) reserved[r][c] = true;
-    }
-  }
-
-  // Finder patterns (3 corners)
-  function drawFinder(row, col) {
-    for (let r = -1; r <= 7; r++) {
-      for (let c = -1; c <= 7; c++) {
-        const nr = row + r, nc = col + c;
-        if (nr < 0 || nr >= size || nc < 0 || nc >= size) continue;
-        const isBlack = (r >= 0 && r <= 6 && (c === 0 || c === 6)) ||
-                        (c >= 0 && c <= 6 && (r === 0 || r === 6)) ||
-                        (r >= 2 && r <= 4 && c >= 2 && c <= 4);
-        setModule(nr, nc, isBlack, true);
-      }
-    }
-  }
-  drawFinder(0, 0); drawFinder(0, size - 7); drawFinder(size - 7, 0);
-
-  // Alignment pattern for version 2 at (18, 18)
-  for (let r = -2; r <= 2; r++) {
-    for (let c = -2; c <= 2; c++) {
-      const isBlack = Math.abs(r) === 2 || Math.abs(c) === 2 || (r === 0 && c === 0);
-      setModule(18 + r, 18 + c, isBlack, true);
-    }
-  }
-
-  // Timing patterns
-  for (let i = 8; i < size - 8; i++) {
-    setModule(6, i, i % 2 === 0, true);
-    setModule(i, 6, i % 2 === 0, true);
-  }
-
-  // Dark module
-  setModule(size - 8, 8, true, true);
-
-  // Reserve format info areas
-  for (let i = 0; i < 15; i++) {
-    // Around top-left finder
-    if (i < 6) { reserved[8][i] = true; reserved[i][8] = true; }
-    else if (i < 8) { reserved[8][i + 1] = true; reserved[i + 1][8] = true; }
-    else if (i < 9) { reserved[8][size - 15 + i] = true; reserved[size - 15 + i][8] = true; }
-    else { reserved[8][size - 15 + i] = true; reserved[size - 15 + i][8] = true; }
-  }
-
-  // Encode data (byte mode)
-  const bytes = new TextEncoder().encode(text);
-  if (bytes.length > 32) return generateQRMatrixFallback(text); // Too long for v2
-
-  let bits = '';
-  bits += '0100'; // Byte mode indicator
-  bits += bytes.length.toString(2).padStart(8, '0'); // Character count (8 bits for v2 byte)
-  for (const b of bytes) bits += b.toString(2).padStart(8, '0');
-  bits += '0000'; // Terminator
-
-  // Pad to data capacity (44 bytes for V2-L = 352 bits)
-  while (bits.length % 8 !== 0) bits += '0';
-  while (bits.length < 352) {
-    bits += '11101100';
-    if (bits.length < 352) bits += '00010001';
-  }
-
-  // Simple EC: use Reed-Solomon placeholder - XOR pattern for visual density
-  const dataBytes = [];
-  for (let i = 0; i < bits.length; i += 8) {
-    dataBytes.push(parseInt(bits.substring(i, i + 8), 2));
-  }
-
-  // Add error correction bytes (simplified - polynomial division)
-  const ecBytes = computeEC(dataBytes, 10); // V2-L: 10 EC codewords per block
-  const allBytes = [...dataBytes, ...ecBytes];
-
-  // Convert to bit stream
-  let bitStream = '';
-  for (const b of allBytes) bitStream += b.toString(2).padStart(8, '0');
-
-  // Place data bits in zigzag pattern
-  let bitIdx = 0;
-  for (let col = size - 1; col >= 0; col -= 2) {
-    if (col === 6) col = 5; // Skip timing column
-    for (let row = 0; row < size; row++) {
-      for (let c = 0; c < 2; c++) {
-        const cc = col - c;
-        const isUpward = Math.floor((size - 1 - col + (col > 6 ? 1 : 0)) / 2) % 2 === 0;
-        const rr = isUpward ? size - 1 - row : row;
-        if (cc >= 0 && cc < size && !reserved[rr][cc]) {
-          if (bitIdx < bitStream.length) {
-            matrix[rr][cc] = parseInt(bitStream[bitIdx]) ^ (((rr + cc) % 2 === 0) ? 1 : 0);
-            bitIdx++;
-          } else {
-            matrix[rr][cc] = (rr + cc) % 2 === 0 ? 1 : 0;
-          }
-        }
-      }
-    }
-  }
-
-  // Apply mask pattern 0: (row + col) % 2 == 0 - already applied above
-  // Write format info for mask 0, EC level L = 0b111011111000100
-  const formatBits = '111011111000100';
-  const formatPositions1 = [[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[7,8],[8,8],[8,7],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0]];
-  const formatPositions2 = [[8,size-1],[8,size-2],[8,size-3],[8,size-4],[8,size-5],[8,size-6],[8,size-7],[8,size-8],[size-7,8],[size-6,8],[size-5,8],[size-4,8],[size-3,8],[size-2,8],[size-1,8]];
-  for (let i = 0; i < 15; i++) {
-    const bit = parseInt(formatBits[i]);
-    const [r1, c1] = formatPositions1[i];
-    const [r2, c2] = formatPositions2[i];
-    matrix[r1][c1] = bit;
-    matrix[r2][c2] = bit;
-  }
-
-  // Fill any remaining nulls
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      if (matrix[r][c] === null) matrix[r][c] = 0;
-    }
-  }
-
-  return matrix;
-}
-
-function generateQRMatrixFallback(text) {
-  // For longer text, create a simple visual hash pattern that looks like a QR
-  // Not scannable but visual placeholder
-  const size = 25;
-  const matrix = Array.from({ length: size }, () => Array(size).fill(0));
-
-  // Finder patterns
-  for (let i = 0; i < 7; i++) {
-    for (let j = 0; j < 7; j++) {
-      const v = (i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4)) ? 1 : 0;
-      matrix[i][j] = v;
-      matrix[i][size - 7 + j] = v;
-      matrix[size - 7 + i][j] = v;
-    }
-  }
-
-  // Hash the text for pseudo-random fill
-  let hash = 0;
-  for (let i = 0; i < text.length; i++) { hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0; }
-  for (let r = 8; r < size - 8; r++) {
-    for (let c = 8; c < size - 8; c++) {
-      hash = ((hash << 5) - hash + r * 31 + c * 17) | 0;
-      matrix[r][c] = (hash & 1) ? 1 : 0;
-    }
-  }
-  return matrix;
-}
-
-function computeEC(data, ecCount) {
-  // Simplified Reed-Solomon - GF(256) with primitive polynomial 0x11d
-  const gfExp = new Array(512);
-  const gfLog = new Array(256);
-  let x = 1;
-  for (let i = 0; i < 255; i++) {
-    gfExp[i] = x; gfLog[x] = i;
-    x = x << 1;
-    if (x >= 256) x ^= 0x11d;
-  }
-  for (let i = 255; i < 512; i++) gfExp[i] = gfExp[i - 255];
-
-  function gfMul(a, b) {
-    if (a === 0 || b === 0) return 0;
-    return gfExp[gfLog[a] + gfLog[b]];
-  }
-
-  // Generator polynomial for ecCount
-  let gen = [1];
-  for (let i = 0; i < ecCount; i++) {
-    const newGen = new Array(gen.length + 1).fill(0);
-    for (let j = 0; j < gen.length; j++) {
-      newGen[j] ^= gen[j];
-      newGen[j + 1] ^= gfMul(gen[j], gfExp[i]);
-    }
-    gen = newGen;
-  }
-
-  // Polynomial division
-  const msg = [...data, ...new Array(ecCount).fill(0)];
-  for (let i = 0; i < data.length; i++) {
-    const coef = msg[i];
-    if (coef !== 0) {
-      for (let j = 1; j < gen.length; j++) {
-        msg[i + j] ^= gfMul(gen[j], coef);
-      }
-    }
-  }
-  return msg.slice(data.length);
-}
-
-function showQrCode() {
-  const v = getActiveVehicle();
-  if (!v) return;
-
-  // Build a compact text with vehicle identity
-  const info = [v.name, v.model || '', v.plate || '', 'Km:' + (v.currentKm || 0)].filter(Boolean).join(' | ');
-  const qrText = info.length > 32 ? (v.name + '|' + (v.plate || '')).substring(0, 32) : info;
-
-  const dataUrl = generateQR(qrText);
-  const container = document.getElementById('qrCanvas');
-  const nameEl = document.getElementById('qrVehicleName');
-
-  if (dataUrl) {
-    container.innerHTML = `<img src="${dataUrl}" alt="QR Code" style="width:220px;height:220px;image-rendering:pixelated;border-radius:8px;">`;
-  } else {
-    container.innerHTML = '<p style="color:var(--muted);">Erreur generation QR</p>';
-  }
-  nameEl.textContent = v.name + (v.plate ? ' - ' + v.plate : '');
-  document.getElementById('qrModal').style.display = 'flex';
-}
-
-function printQrCode() {
-  const container = document.getElementById('qrCanvas');
-  const name = document.getElementById('qrVehicleName').textContent;
-  const img = container.querySelector('img');
-  if (!img) return;
-  const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>QR - ${escHtml(name)}</title>
-<style>body{font-family:sans-serif;text-align:center;padding:40px;}img{width:250px;height:250px;image-rendering:pixelated;}h2{margin-top:16px;}</style>
-</head><body><img src="${img.src}" alt="QR"><h2>${escHtml(name)}</h2><p style="color:#888;font-size:12px;">Scannez pour acceder a la fiche vehicule</p>
-<script>window.onload=()=>window.print();<\/script></body></html>`);
-  w.document.close();
-}
-
 function importData() { document.getElementById('importFile').click(); }
 function handleImport(event) {
   const file = event.target.files[0];
@@ -7376,6 +6976,8 @@ function escHtml(s) { const d = document.createElement('div'); d.textContent = s
 function escAttr(s) { return escHtml(s).replace(/'/g, '&#39;').replace(/"/g, '&quot;'); }
 function sanitizeCsvCell(val) { const s = String(val); return /^[=+\-@\t\r]/.test(s) ? "'" + s : s; }
 function genId() { return crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2, 10); }
+function sumCosts(arr) { return (arr || []).reduce((s, e) => s + (e.cost || 0), 0); }
+function daysBetween(d1, d2) { return (new Date(d2) - new Date(d1)) / 86400000; }
 
 function copyToClipboard(text) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -7438,12 +7040,12 @@ function renderDashCostPerKm() {
   const purchaseDateStr = v.purchaseDate ? v.purchaseDate + '-01' : null;
   const entries = v.entries || [];
   const maintSincePurchase = purchaseDateStr ? entries.filter(e => e.date >= purchaseDateStr) : entries;
-  const totalMaint = maintSincePurchase.reduce((s, e) => s + (e.cost || 0), 0);
-  const totalFuel = (v.fuelEntries || []).reduce((s, e) => s + (e.cost || 0), 0);
-  const totalCharge = (v.chargeEntries || []).reduce((s, e) => s + (e.cost || 0), 0);
-  const totalWashDirect = (v.washes || []).filter(w => w.payment === 'direct').reduce((s, w) => s + (w.cost || 0), 0);
-  const totalWashCredits = (v.washCredits || []).reduce((s, c) => s + (c.cost || 0), 0);
-  const totalDeadline = (v.deadlines || []).reduce((s, d) => s + (d.cost || 0), 0);
+  const totalMaint = sumCosts(maintSincePurchase);
+  const totalFuel = sumCosts(v.fuelEntries);
+  const totalCharge = sumCosts(v.chargeEntries);
+  const totalWashDirect = sumCosts((v.washes || []).filter(w => w.payment === 'direct'));
+  const totalWashCredits = sumCosts(v.washCredits);
+  const totalDeadline = sumCosts(v.deadlines);
   const totalRun = totalMaint + totalFuel + totalCharge + totalWashDirect + totalWashCredits + totalDeadline;
   const costPer100 = (totalRun / ownership.kmDone * 100).toFixed(1);
   const costPerKm = (totalRun / ownership.kmDone).toFixed(2);
@@ -7522,136 +7124,6 @@ function renderFuelPriceHistory() {
     </div></div>`;
 }
 
-// ── Feature: Comparateur prix entretien (stats) ──
-function renderEntretienComparator() {
-  const v = getActiveVehicle();
-  const el = document.getElementById('entretienComparator');
-  if (!el || !v) return;
-  const entries = v.entries || [];
-  if (entries.length < 2) { el.innerHTML = ''; return; }
-  // Group by operation
-  const byOp = {};
-  for (const e of entries) {
-    for (const op of (e.ops || [])) {
-      const key = op.toLowerCase().trim();
-      if (!byOp[key]) byOp[key] = { name: op, costs: [], providers: [] };
-      if (e.cost > 0) {
-        byOp[key].costs.push(e.cost);
-        if (e.provider) byOp[key].providers.push({ provider: e.provider, cost: e.cost, date: e.date });
-      }
-    }
-  }
-  // Only show ops with >= 2 costs
-  const ops = Object.values(byOp).filter(o => o.costs.length >= 2);
-  if (ops.length === 0) { el.innerHTML = ''; return; }
-  let html = '<div class="section-title" style="margin-top:16px;">Comparateur prix entretien</div>';
-  html += '<div class="card"><table style="width:100%;font-size:0.85em;border-collapse:collapse;">';
-  html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left;padding:6px 4px;">Operation</th><th>Nb</th><th>Moy</th><th>Min</th><th>Max</th><th>Ecart</th></tr>';
-  for (const op of ops.sort((a, b) => b.costs.length - a.costs.length)) {
-    const avg = op.costs.reduce((s, c) => s + c, 0) / op.costs.length;
-    const min = Math.min(...op.costs);
-    const max = Math.max(...op.costs);
-    const ecart = max - min;
-    const isOutlier = max > avg * 1.5 && op.costs.length >= 3;
-    html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${isOutlier ? 'background:rgba(233,69,96,0.08);' : ''}">
-      <td style="padding:6px 4px;">${escHtml(op.name)}</td>
-      <td style="text-align:center;">${op.costs.length}</td>
-      <td style="text-align:center;">${avg.toFixed(0)} EUR</td>
-      <td style="text-align:center;color:var(--green);">${min.toFixed(0)}</td>
-      <td style="text-align:center;color:var(--red);">${max.toFixed(0)}</td>
-      <td style="text-align:center;color:${isOutlier ? 'var(--red)' : 'var(--muted)'};">${ecart.toFixed(0)} EUR${isOutlier ? ' &#9888;' : ''}</td>
-    </tr>`;
-  }
-  html += '</table></div>';
-  el.innerHTML = html;
-}
-
-// ── Feature: Graphe cout possession cumule (stats) ──
-function renderCumulativeCostChart() {
-  const v = getActiveVehicle();
-  const el = document.getElementById('cumulativeCostChart');
-  if (!el || !v) return;
-  const purchaseDateStr = v.purchaseDate ? v.purchaseDate + '-01' : null;
-  const entries = v.entries || [];
-  const fuelEntries = v.fuelEntries || [];
-  const chargeEntries = v.chargeEntries || [];
-  const washes = v.washes || [];
-  const washCredits = v.washCredits || [];
-  const deadlines = v.deadlines || [];
-  // Build timeline of all expenses
-  const allExpenses = [
-    ...(purchaseDateStr ? entries.filter(e => e.date >= purchaseDateStr) : entries).map(e => ({ date: e.date, cost: e.cost || 0, type: 'entretien' })),
-    ...fuelEntries.map(e => ({ date: e.date, cost: e.cost || 0, type: 'carburant' })),
-    ...chargeEntries.filter(e => e.cost).map(e => ({ date: e.date, cost: e.cost, type: 'charge' })),
-    ...washes.filter(w => w.payment === 'direct').map(w => ({ date: w.date, cost: w.cost || 0, type: 'lavage' })),
-    ...washCredits.map(c => ({ date: c.date, cost: c.cost || 0, type: 'lavage' })),
-    ...deadlines.filter(d => d.cost && d.date).map(d => ({ date: d.date, cost: d.cost, type: 'frais' }))
-  ].sort((a, b) => a.date.localeCompare(b.date));
-  if (allExpenses.length < 2) { el.innerHTML = ''; return; }
-  // Build cumulative by month
-  const byMonth = {};
-  let cumEntretien = 0, cumEnergie = 0, cumLavage = 0, cumFrais = 0;
-  for (const exp of allExpenses) {
-    const month = exp.date.slice(0, 7);
-    if (exp.type === 'entretien') cumEntretien += exp.cost;
-    else if (exp.type === 'carburant' || exp.type === 'charge') cumEnergie += exp.cost;
-    else if (exp.type === 'lavage') cumLavage += exp.cost;
-    else if (exp.type === 'frais') cumFrais += exp.cost;
-    byMonth[month] = { entretien: cumEntretien, energie: cumEnergie, lavage: cumLavage, frais: cumFrais, total: cumEntretien + cumEnergie + cumLavage + cumFrais };
-  }
-  const months = Object.keys(byMonth).sort();
-  if (months.length < 2) { el.innerHTML = ''; return; }
-  const maxTotal = byMonth[months[months.length - 1]].total || 1;
-  const cW = 500, cH = 250;
-  const pad = { t: 20, r: 15, b: 35, l: 55 };
-  const plotW = cW - pad.l - pad.r, plotH = cH - pad.t - pad.b;
-  let svg = `<svg viewBox="0 0 ${cW} ${cH}" style="width:100%;max-width:${cW}px;display:block;margin:0 auto;">`;
-  // Grid
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.t + plotH * i / 4;
-    const val = Math.round(maxTotal * (1 - i / 4));
-    svg += `<line x1="${pad.l}" y1="${y}" x2="${cW - pad.r}" y2="${y}" stroke="rgba(255,255,255,0.06)"/>`;
-    svg += `<text x="${pad.l - 6}" y="${y + 4}" fill="#999" font-size="9" text-anchor="end">${val > 999 ? (val/1000).toFixed(1)+'k' : val}</text>`;
-  }
-  // Stacked areas (bottom to top: frais, lavage, energie, entretien)
-  const cats = [
-    { key: 'frais', color: '#9b59b6', label: 'Frais fixes' },
-    { key: 'lavage', color: '#4ecca3', label: 'Lavage' },
-    { key: 'energie', color: '#f0a500', label: isElectric(v) ? 'Electricite' : 'Energie' },
-    { key: 'entretien', color: '#e94560', label: 'Entretien' }
-  ];
-  // Build stacked values
-  const stacked = months.map(m => {
-    const d = byMonth[m];
-    return { month: m, layers: [d.frais, d.frais + d.lavage, d.frais + d.lavage + d.energie, d.frais + d.lavage + d.energie + d.entretien] };
-  });
-  // Draw areas from top to bottom
-  for (let ci = cats.length - 1; ci >= 0; ci--) {
-    const pts = stacked.map((s, i) => {
-      const x = pad.l + (i / (months.length - 1)) * plotW;
-      const y = pad.t + plotH * (1 - s.layers[ci] / maxTotal);
-      return `${x},${y}`;
-    });
-    const baseline = `${pad.l + plotW},${pad.t + plotH} ${pad.l},${pad.t + plotH}`;
-    svg += `<polygon points="${pts.join(' ')} ${baseline}" fill="${cats[ci].color}" opacity="0.35"/>`;
-    svg += `<polyline points="${pts.join(' ')}" fill="none" stroke="${cats[ci].color}" stroke-width="1.5"/>`;
-  }
-  // X labels
-  svg += `<text x="${pad.l}" y="${cH - 5}" fill="#999" font-size="9" text-anchor="start">${months[0]}</text>`;
-  svg += `<text x="${cW - pad.r}" y="${cH - 5}" fill="#999" font-size="9" text-anchor="end">${months[months.length - 1]}</text>`;
-  // Legend
-  let legX = pad.l;
-  const legY = cH - 18;
-  for (const cat of cats) {
-    svg += `<rect x="${legX}" y="${legY - 6}" width="8" height="8" fill="${cat.color}" rx="1" opacity="0.7"/>`;
-    svg += `<text x="${legX + 11}" y="${legY + 1}" fill="#bbb" font-size="8">${cat.label}</text>`;
-    legX += cat.label.length * 5.5 + 20;
-  }
-  svg += '</svg>';
-  el.innerHTML = `<div class="section-title" style="margin-top:16px;">Cout de possession cumule</div><div class="card">${svg}
-    <div style="text-align:center;font-size:0.85em;margin-top:6px;color:var(--muted);">Total: <b style="color:var(--text);">${maxTotal.toFixed(0)} EUR</b> sur ${months.length} mois</div></div>`;
-}
-
 // ── Feature: Budget mensuel (dashboard) ──
 function renderDashBudget() {
   const v = getActiveVehicle();
@@ -7661,10 +7133,10 @@ function renderDashBudget() {
   const now = new Date();
   const monthStart = now.toISOString().slice(0, 7);
   // Aggregate all costs this month
-  const maintThisMonth = (v.entries || []).filter(e => e.date && e.date.startsWith(monthStart)).reduce((s, e) => s + (e.cost || 0), 0);
-  const fuelThisMonth = (v.fuelEntries || []).filter(e => e.date && e.date.startsWith(monthStart)).reduce((s, e) => s + (e.cost || 0), 0);
-  const chargeThisMonth = (v.chargeEntries || []).filter(e => e.date && e.date.startsWith(monthStart)).reduce((s, e) => s + (e.cost || 0), 0);
-  const washThisMonth = (v.washes || []).filter(w => w.date && w.date.startsWith(monthStart) && w.payment === 'direct').reduce((s, w) => s + (w.cost || 0), 0);
+  const maintThisMonth = sumCosts((v.entries || []).filter(e => e.date && e.date.startsWith(monthStart)));
+  const fuelThisMonth = sumCosts((v.fuelEntries || []).filter(e => e.date && e.date.startsWith(monthStart)));
+  const chargeThisMonth = sumCosts((v.chargeEntries || []).filter(e => e.date && e.date.startsWith(monthStart)));
+  const washThisMonth = sumCosts((v.washes || []).filter(w => w.date && w.date.startsWith(monthStart) && w.payment === 'direct'));
   const total = maintThisMonth + fuelThisMonth + chargeThisMonth + washThisMonth;
   const pct = Math.min(total / budget * 100, 150);
   const remaining = budget - total;
@@ -7681,376 +7153,6 @@ function renderDashBudget() {
   el.innerHTML = html;
 }
 
-// ── Feature: Score eco-conduite (dashboard) ──
-function renderDashEcoScore() {
-  const v = getActiveVehicle();
-  const el = document.getElementById('dashEcoScore');
-  if (!el || !v) return;
-  const estConso = v.estConsumption || (isElectric(v) ? 16.0 : 6.0);
-  // Compute real consumption
-  let realConso = null;
-  if (hasThermal(v)) {
-    const { realPoints } = computeConsumption(v.fuelEntries || []);
-    if (realPoints && realPoints.length > 0) {
-      realConso = realPoints.reduce((s, p) => s + p.value, 0) / realPoints.length;
-    }
-  }
-  if (hasElectric(v)) {
-    const { realPoints: chargeConsoPoints } = computeChargeConsumption(v.chargeEntries || []);
-    if (chargeConsoPoints && chargeConsoPoints.length > 0) {
-      const avgCharge = chargeConsoPoints.reduce((s, p) => s + p.value, 0) / chargeConsoPoints.length;
-      if (!realConso) realConso = avgCharge;
-      else realConso = (realConso + avgCharge) / 2;
-    }
-  }
-  if (!realConso) { el.innerHTML = ''; return; }
-  // Score: 100 if real <= est, decreases linearly. 50 at +50% overconsumption
-  const ratio = realConso / estConso;
-  const score = Math.max(0, Math.min(100, Math.round(100 - (ratio - 1) * 100)));
-  const unit = isElectric(v) ? 'kWh/100km' : 'L/100km';
-  // SVG gauge
-  const angle = score / 100 * 180;
-  const rad = (180 - angle) * Math.PI / 180;
-  const cx = 100, cy = 90, r = 70;
-  const x = cx + r * Math.cos(rad);
-  const y = cy - r * Math.sin(rad);
-  const gaugeColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--orange)' : 'var(--red)';
-  let svg = `<svg viewBox="0 0 200 110" style="width:100%;max-width:200px;display:block;margin:0 auto;">`;
-  svg += `<path d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}" fill="none" stroke="var(--surface)" stroke-width="12" stroke-linecap="round"/>`;
-  const largeArc = angle > 180 ? 1 : 0;
-  svg += `<path d="M ${cx - r} ${cy} A ${r} ${r} 0 ${largeArc} 1 ${x} ${y}" fill="none" stroke="${gaugeColor}" stroke-width="12" stroke-linecap="round"/>`;
-  svg += `<text x="${cx}" y="${cy - 10}" fill="var(--text)" font-size="28" font-weight="bold" text-anchor="middle">${score}</text>`;
-  svg += `<text x="${cx}" y="${cy + 10}" fill="var(--muted)" font-size="10" text-anchor="middle">/100</text>`;
-  svg += '</svg>';
-  let advice = '';
-  if (score >= 80) advice = 'Excellente conduite economique !';
-  else if (score >= 60) advice = 'Bonne conduite, marge de progression.';
-  else if (score >= 40) advice = 'Surconsommation moderee. Anticiper le freinage.';
-  else advice = 'Conduite energivore. Revoir les habitudes.';
-  let html = `<div class="card" style="margin-top:12px;"><h3 style="font-size:0.95em;margin-bottom:6px;">Score eco-conduite</h3>`;
-  html += svg;
-  html += `<div style="text-align:center;font-size:0.82em;margin-top:4px;"><span style="color:var(--muted)">Reel: ${realConso.toFixed(1)} ${unit}</span> / <span style="color:var(--muted)">Ref: ${estConso.toFixed(1)} ${unit}</span></div>`;
-  html += `<div style="text-align:center;font-size:0.82em;color:${gaugeColor};margin-top:4px;">${advice}</div>`;
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-// ── Feature: Bilan carbone annuel (dashboard) ──
-function renderDashCarbon() {
-  const v = getActiveVehicle();
-  const el = document.getElementById('dashCarbon');
-  if (!el || !v) return;
-  // CO2 factors (kg CO2 / L or kWh)
-  const co2Factors = { diesel: 2.68, essence: 2.31, e85: 1.61, electrique: 0.05, hybride: 2.31 };
-  const fuelType = (v.fuelType || 'essence').toLowerCase();
-  const now = new Date();
-  const thisYear = now.getFullYear().toString();
-  // Fuel CO2
-  const fuelThisYear = (v.fuelEntries || []).filter(e => e.date && e.date.startsWith(thisYear));
-  const totalLiters = fuelThisYear.reduce((s, e) => s + (e.liters || 0), 0);
-  const co2Fuel = totalLiters * (co2Factors[fuelType] || 2.31);
-  // Charge CO2 (electricity France ~0.05 kg CO2/kWh)
-  const chargeThisYear = (v.chargeEntries || []).filter(e => e.date && e.date.startsWith(thisYear));
-  const totalKwh = chargeThisYear.reduce((s, e) => s + (e.kwh || 0), 0);
-  const co2Charge = totalKwh * 0.05;
-  const totalCo2 = co2Fuel + co2Charge;
-  if (totalCo2 <= 0) { el.innerHTML = ''; return; }
-  // Average FR: ~2000 kg CO2/year for a car
-  const avgFR = 2000;
-  const pctVsAvg = (totalCo2 / avgFR * 100).toFixed(0);
-  const compareColor = totalCo2 < avgFR ? 'var(--green)' : 'var(--orange)';
-  // Annual history
-  const years = {};
-  for (const e of (v.fuelEntries || [])) {
-    const yr = e.date ? e.date.slice(0, 4) : null;
-    if (!yr) continue;
-    if (!years[yr]) years[yr] = 0;
-    years[yr] += (e.liters || 0) * (co2Factors[fuelType] || 2.31);
-  }
-  for (const e of (v.chargeEntries || [])) {
-    const yr = e.date ? e.date.slice(0, 4) : null;
-    if (!yr) continue;
-    if (!years[yr]) years[yr] = 0;
-    years[yr] += (e.kwh || 0) * 0.05;
-  }
-  let html = `<div class="card" style="margin-top:12px;"><h3 style="font-size:0.95em;margin-bottom:10px;">Bilan carbone ${thisYear}</h3>`;
-  html += `<div class="stats-grid">`;
-  html += `<div class="stat-card accent"><div class="stat-value">${totalCo2.toFixed(0)} kg</div><div class="stat-label">CO2 ${thisYear}</div></div>`;
-  html += `<div class="stat-card" style="border-left:3px solid ${compareColor};"><div class="stat-value">${pctVsAvg}%</div><div class="stat-label">vs moy. FR (~${avgFR} kg)</div></div>`;
-  if (co2Fuel > 0) html += `<div class="stat-card"><div class="stat-value">${co2Fuel.toFixed(0)} kg</div><div class="stat-label">Carburant</div></div>`;
-  if (co2Charge > 0) html += `<div class="stat-card"><div class="stat-value">${co2Charge.toFixed(0)} kg</div><div class="stat-label">Electricite</div></div>`;
-  html += '</div>';
-  // Mini bar chart for years
-  const sortedYears = Object.keys(years).sort();
-  if (sortedYears.length >= 2) {
-    const maxCo2 = Math.max(...Object.values(years), 1);
-    html += '<div style="display:flex;gap:4px;align-items:end;height:60px;margin-top:10px;">';
-    for (const yr of sortedYears) {
-      const h = Math.max(4, years[yr] / maxCo2 * 50);
-      html += `<div style="flex:1;text-align:center;"><div style="background:var(--accent);height:${h}px;border-radius:3px 3px 0 0;margin:0 auto;width:80%;"></div><div style="font-size:0.7em;color:var(--muted);margin-top:2px;">${yr}</div></div>`;
-    }
-    html += '</div>';
-  }
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-// ── Feature: Pannes et fiabilite (dashboard) ──
-function renderDashReliability() {
-  const v = getActiveVehicle();
-  const el = document.getElementById('dashReliability');
-  if (!el || !v) return;
-  const entries = v.entries || [];
-  const pannes = entries.filter(e => e.isPanne);
-  if (pannes.length === 0 && entries.length < 3) { el.innerHTML = ''; return; }
-  const totalEntries = entries.length;
-  const panneCount = pannes.length;
-  const panneCost = pannes.reduce((s, e) => s + (e.cost || 0), 0);
-  // Reliability score: 100 if no pannes, decreases with pannes ratio
-  const panneRatio = totalEntries > 0 ? panneCount / totalEntries : 0;
-  const score = Math.max(0, Math.round(100 - panneRatio * 200));
-  const scoreColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--orange)' : 'var(--red)';
-  // Recurrent pannes
-  const panneOps = {};
-  for (const p of pannes) {
-    for (const op of (p.ops || [])) {
-      const key = op.toLowerCase().trim();
-      panneOps[key] = (panneOps[key] || 0) + 1;
-    }
-  }
-  const recurrent = Object.entries(panneOps).filter(([, c]) => c >= 2).sort((a, b) => b[1] - a[1]);
-  let html = `<div class="card" style="margin-top:12px;"><h3 style="font-size:0.95em;margin-bottom:10px;">Fiabilite</h3>`;
-  html += `<div class="stats-grid">`;
-  html += `<div class="stat-card" style="border-left:3px solid ${scoreColor};"><div class="stat-value">${score}/100</div><div class="stat-label">Score fiabilite</div></div>`;
-  html += `<div class="stat-card"><div class="stat-value">${panneCount}</div><div class="stat-label">Panne${panneCount > 1 ? 's' : ''}</div></div>`;
-  if (panneCost > 0) html += `<div class="stat-card orange"><div class="stat-value">${panneCost.toFixed(0)} EUR</div><div class="stat-label">Cout pannes</div></div>`;
-  html += '</div>';
-  if (recurrent.length > 0) {
-    html += '<div style="margin-top:8px;font-size:0.85em;"><b>Pannes recurrentes :</b>';
-    for (const [op, count] of recurrent) {
-      html += `<span style="display:inline-block;background:rgba(233,69,96,0.15);padding:2px 8px;border-radius:10px;margin:3px 4px;font-size:0.88em;">${escHtml(op)} (x${count})</span>`;
-    }
-    html += '</div>';
-  }
-  if (pannes.length > 0) {
-    html += '<div style="margin-top:8px;font-size:0.82em;color:var(--muted);">Derniere panne: ' + pannes.sort((a, b) => b.date.localeCompare(a.date))[0].date + '</div>';
-  }
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-// ── Feature 17: Gamification Badges ──
-
-const BADGE_DEFINITIONS = [
-  { id: 'first_entry', icon: '🔧', name: 'Premier entretien', desc: 'Ajouter un premier entretien', check: v => (v.entries || []).length >= 1 },
-  { id: 'ten_entries', icon: '🏅', name: 'Mecanicien assidu', desc: '10 entretiens enregistres', check: v => (v.entries || []).length >= 10 },
-  { id: 'first_fuel', icon: '⛽', name: 'Premier plein', desc: 'Ajouter un premier plein', check: v => (v.fuelEntries || []).length >= 1 },
-  { id: 'fifty_fuels', icon: '🏆', name: '50 pleins', desc: '50 pleins enregistres', check: v => (v.fuelEntries || []).length >= 50 },
-  { id: 'km_10k', icon: '🚗', name: '10 000 km', desc: 'Atteindre 10 000 km', check: v => (v.currentKm || 0) >= 10000 },
-  { id: 'km_50k', icon: '🛣️', name: '50 000 km', desc: 'Atteindre 50 000 km', check: v => (v.currentKm || 0) >= 50000 },
-  { id: 'km_100k', icon: '🌟', name: '100 000 km', desc: 'Atteindre 100 000 km', check: v => (v.currentKm || 0) >= 100000 },
-  { id: 'km_200k', icon: '💎', name: '200 000 km', desc: 'Atteindre 200 000 km', check: v => (v.currentKm || 0) >= 200000 },
-  { id: 'one_year', icon: '📅', name: '1 an ensemble', desc: '1 an depuis l\'achat', check: v => { if (!v.purchaseDate) return false; return (Date.now() - new Date(v.purchaseDate).getTime()) >= 365.25*86400000; } },
-  { id: 'three_years', icon: '🎂', name: '3 ans ensemble', desc: '3 ans depuis l\'achat', check: v => { if (!v.purchaseDate) return false; return (Date.now() - new Date(v.purchaseDate).getTime()) >= 3*365.25*86400000; } },
-  { id: 'no_late_1y', icon: '✅', name: 'Ponctuel 1 an', desc: 'Aucun retard d\'entretien pendant 1 an', check: v => {
-    const entries = v.entries || [];
-    if (entries.length < 2) return false;
-    const schedule = v.schedule || [];
-    if (schedule.length === 0) return false;
-    const now = new Date();
-    const oneYearAgo = new Date(now - 365.25*86400000);
-    // Check if any deadline was overdue in the last year
-    for (const s of schedule) {
-      const matching = entries.filter(e => (e.ops || []).some(op => op.toLowerCase().includes(s.name.toLowerCase())));
-      if (matching.length === 0) continue;
-      const last = matching.sort((a,b) => b.date.localeCompare(a.date))[0];
-      if (new Date(last.date) < oneYearAgo) return false;
-    }
-    return true;
-  }},
-  { id: 'eco_driver', icon: '🌿', name: 'Eco-conducteur', desc: 'Conso reelle < conso estimee', check: v => {
-    if (!v.estConsumption || (v.fuelEntries || []).length < 3) return false;
-    const fulls = v.fuelEntries.filter(f => f.fullTank && !f.forgottenFill);
-    if (fulls.length < 2) return false;
-    let totalL = 0, totalKm = 0;
-    for (let i = 1; i < fulls.length; i++) {
-      const km = fulls[i].km - fulls[i-1].km;
-      if (km > 0) { totalL += fulls[i].liters; totalKm += km; }
-    }
-    if (totalKm === 0) return false;
-    return (totalL / totalKm * 100) < v.estConsumption;
-  }},
-  { id: 'notebook_5', icon: '📝', name: 'Diariste', desc: '5 notes dans le carnet', check: v => (v.notebook || []).length >= 5 },
-  { id: 'photographer', icon: '📸', name: 'Photographe', desc: '5 photos ajoutees', check: v => {
-    const withPhotos = (v.entries || []).filter(e => e.photo).length + (v.fuelEntries || []).filter(f => f.photo).length;
-    return withPhotos >= 5;
-  }},
-  { id: 'multi_vehicle', icon: '🅿️', name: 'Collectionneur', desc: 'Avoir 2+ vehicules', check: (v, store) => Object.keys(store.vehicles || {}).length >= 2 },
-];
-
-function renderDashBadges() {
-  const el = document.getElementById('dashBadges');
-  if (!el) return;
-  const v = getActiveVehicle();
-  if (!v) { el.innerHTML = ''; return; }
-  const store = loadStore();
-  const earned = [];
-  const locked = [];
-  for (const b of BADGE_DEFINITIONS) {
-    try {
-      if (b.check(v, store)) earned.push(b);
-      else locked.push(b);
-    } catch(e) { locked.push(b); }
-  }
-  if (earned.length === 0 && (v.entries || []).length === 0 && (v.fuelEntries || []).length === 0) {
-    el.innerHTML = '';
-    return;
-  }
-  let html = '<div class="card" style="margin-top:12px;"><h3 style="font-size:0.95em;margin-bottom:10px;">Badges <span style="font-size:0.8em;color:var(--muted);">' + earned.length + '/' + BADGE_DEFINITIONS.length + '</span></h3>';
-  // Progress bar
-  const pct = Math.round(earned.length / BADGE_DEFINITIONS.length * 100);
-  html += '<div style="background:rgba(255,255,255,0.08);border-radius:6px;height:8px;margin-bottom:12px;overflow:hidden;">';
-  html += '<div style="background:var(--accent);height:100%;width:' + pct + '%;border-radius:6px;transition:width 0.5s;"></div></div>';
-  // Earned badges
-  if (earned.length > 0) {
-    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
-    for (const b of earned) {
-      html += '<div title="' + escHtml(b.desc) + '" style="display:flex;align-items:center;gap:4px;background:rgba(78,204,163,0.12);padding:4px 10px;border-radius:14px;font-size:0.85em;">';
-      html += '<span style="font-size:1.1em;">' + b.icon + '</span><span>' + escHtml(b.name) + '</span></div>';
-    }
-    html += '</div>';
-  }
-  // Next badges to unlock (max 3)
-  if (locked.length > 0) {
-    html += '<div style="margin-top:10px;font-size:0.82em;color:var(--muted);">Prochains badges :</div>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">';
-    for (const b of locked.slice(0, 3)) {
-      html += '<div title="' + escHtml(b.desc) + '" style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.04);padding:4px 10px;border-radius:14px;font-size:0.82em;opacity:0.5;">';
-      html += '<span style="font-size:1em;filter:grayscale(1);">' + b.icon + '</span><span>' + escHtml(b.name) + '</span></div>';
-    }
-    html += '</div>';
-  }
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-// ── Feature 18: Rappel stationnement ──
-
-let _parkingInterval = null;
-
-function startParking() {
-  if (!navigator.geolocation) {
-    toast('Geolocalisation non supportee', 'error');
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(pos => {
-    const parking = {
-      lat: pos.coords.latitude,
-      lng: pos.coords.longitude,
-      time: Date.now(),
-      timerMinutes: 0
-    };
-    localStorage.setItem('mongarage_parking', JSON.stringify(parking));
-    toast('Position enregistree', 'success');
-    renderParkingReminder();
-    showParkingTimerPrompt();
-  }, err => {
-    toast('Impossible de localiser : ' + err.message, 'error');
-  }, { enableHighAccuracy: true, timeout: 10000 });
-}
-
-function showParkingTimerPrompt() {
-  const parking = JSON.parse(localStorage.getItem('mongarage_parking') || 'null');
-  if (!parking) return;
-  const el = document.getElementById('parkingReminder');
-  if (!el) return;
-  // Build timer prompt inline
-  let html = '<div class="card" style="margin-top:12px;border-left:3px solid var(--accent);">';
-  html += '<h3 style="font-size:0.95em;margin-bottom:8px;">🅿️ Parking enregistre</h3>';
-  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
-  html += '<span style="font-size:0.85em;">Horodateur (min) :</span>';
-  html += '<input type="number" id="parkingTimerInput" min="0" max="1440" value="0" style="width:70px;padding:4px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:var(--surface);color:var(--text);font-size:0.9em;">';
-  html += '<button class="btn btn-primary btn-sm" onclick="setParkingTimer()">Demarrer</button>';
-  html += '<button class="btn btn-secondary btn-sm" onclick="clearParking()">Annuler</button>';
-  html += '</div>';
-  // Mini map
-  html += '<div id="parkingMiniMap" style="height:150px;border-radius:8px;overflow:hidden;background:var(--surface);">';
-  html += '<img src="https://tile.openstreetmap.org/' + Math.min(17, 16) + '/' + lon2tile(parking.lng, 16) + '/' + lat2tile(parking.lat, 16) + '.png" alt="map" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML=\'<div style=padding:20px;text-align:center;font-size:0.85em;color:var(--muted)>Lat: ' + parking.lat.toFixed(5) + ' / Lng: ' + parking.lng.toFixed(5) + '</div>\'">';
-  html += '</div>';
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-function lon2tile(lon, zoom) { return Math.floor((lon + 180) / 360 * Math.pow(2, zoom)); }
-function lat2tile(lat, zoom) { return Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom)); }
-
-function setParkingTimer() {
-  const minutes = parseInt(document.getElementById('parkingTimerInput')?.value || '0');
-  const parking = JSON.parse(localStorage.getItem('mongarage_parking') || 'null');
-  if (!parking) return;
-  parking.timerMinutes = minutes;
-  parking.timerStart = Date.now();
-  localStorage.setItem('mongarage_parking', JSON.stringify(parking));
-  if (minutes > 0) {
-    toast('Timer ' + minutes + ' min demarre', 'success');
-    // Schedule notification
-    if ('Notification' in window && Notification.permission === 'granted') {
-      setTimeout(() => {
-        new Notification('Horodateur expire !', { body: 'Votre horodateur de ' + minutes + ' min est termine.', icon: './icon-180.png' });
-      }, minutes * 60000);
-    }
-  }
-  renderParkingReminder();
-}
-
-function clearParking() {
-  localStorage.removeItem('mongarage_parking');
-  clearInterval(_parkingInterval);
-  _parkingInterval = null;
-  const el = document.getElementById('parkingReminder');
-  if (el) el.innerHTML = '';
-  toast('Parking supprime', 'success');
-}
-
-function renderParkingReminder() {
-  const el = document.getElementById('parkingReminder');
-  if (!el) return;
-  const parking = JSON.parse(localStorage.getItem('mongarage_parking') || 'null');
-  if (!parking) { el.innerHTML = ''; return; }
-  const elapsed = Math.floor((Date.now() - parking.time) / 60000);
-  let html = '<div class="card" style="margin-top:12px;border-left:3px solid var(--accent);">';
-  html += '<h3 style="font-size:0.95em;margin-bottom:8px;">🅿️ Vehicule gare</h3>';
-  html += '<div class="stats-grid">';
-  html += '<div class="stat-card"><div class="stat-value">' + elapsed + ' min</div><div class="stat-label">Temps ecoule</div></div>';
-  if (parking.timerMinutes > 0 && parking.timerStart) {
-    const remaining = Math.max(0, parking.timerMinutes - Math.floor((Date.now() - parking.timerStart) / 60000));
-    const timerColor = remaining <= 5 ? 'var(--red)' : remaining <= 15 ? 'var(--orange)' : 'var(--green)';
-    html += '<div class="stat-card" style="border-left:3px solid ' + timerColor + ';"><div class="stat-value">' + remaining + ' min</div><div class="stat-label">Horodateur restant</div></div>';
-    if (remaining === 0) {
-      html += '<div class="stat-card" style="border-left:3px solid var(--red);"><div class="stat-value" style="color:var(--red);">EXPIRE</div><div class="stat-label">Horodateur</div></div>';
-    }
-  }
-  html += '</div>';
-  // Coordinates
-  html += '<div style="margin-top:8px;font-size:0.82em;color:var(--muted);">Position : ' + parking.lat.toFixed(5) + ', ' + parking.lng.toFixed(5) + '</div>';
-  // Action buttons
-  html += '<div style="margin-top:10px;display:flex;gap:8px;">';
-  html += '<button class="btn btn-secondary btn-sm" onclick="navigateToParking()">Naviguer</button>';
-  html += '<button class="btn btn-secondary btn-sm" onclick="clearParking()">Supprimer</button>';
-  html += '</div>';
-  html += '</div>';
-  el.innerHTML = html;
-  // Auto-refresh timer
-  clearInterval(_parkingInterval);
-  _parkingInterval = setInterval(renderParkingReminder, 60000);
-}
-
-function navigateToParking() {
-  const parking = JSON.parse(localStorage.getItem('mongarage_parking') || 'null');
-  if (!parking) return;
-  const url = 'https://www.google.com/maps/dir/?api=1&destination=' + parking.lat + ',' + parking.lng + '&travelmode=walking';
-  window.open(url, '_blank');
-}
 
 // ── Feature 19: Estimation revente ajustee ──
 
@@ -8327,21 +7429,29 @@ async function rotateDriveBackups(token, folderId, maxKeep) {
 }
 
 async function getGoogleAccessToken() {
-  // Try to get token from current auth session
-  if (currentUser) {
+  if (googleAccessToken) return googleAccessToken;
+  if (!currentUser) return null;
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/drive.file');
+    const result = await currentUser.reauthenticateWithPopup(provider);
+    if (result.credential && result.credential.accessToken) {
+      googleAccessToken = result.credential.accessToken;
+      return googleAccessToken;
+    }
+  } catch (e) {
+    console.warn('Drive token reauth failed:', e);
+    // Fallback: try signInWithPopup if reauth fails (e.g. credential mismatch)
     try {
-      const cred = firebase.auth.GoogleAuthProvider.credential(null, currentUser.accessToken);
-      // Use gapi token if available, or re-auth with Drive scope
-      const tokenRes = await currentUser.getIdToken();
-      // For Drive access we need an OAuth token, not a Firebase ID token
-      // Try popup re-auth with Drive scope
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('https://www.googleapis.com/auth/drive.file');
       const result = await firebase.auth().signInWithPopup(provider);
-      return result.credential.accessToken;
-    } catch (e) {
-      console.warn('Failed to get Drive token:', e);
-      return null;
+      if (result.credential && result.credential.accessToken) {
+        googleAccessToken = result.credential.accessToken;
+        return googleAccessToken;
+      }
+    } catch (e2) {
+      console.warn('Drive token popup failed:', e2);
     }
   }
   return null;
@@ -8368,12 +7478,27 @@ async function processInvoiceOcr(input) {
   const btn = document.getElementById('invoiceOcrBtn');
   if (btn) btn.disabled = true;
   try {
-    invoiceOcrStatus('Lecture de la facture...', 'var(--orange)');
+    invoiceOcrStatus('Preparation de l\'image...', 'var(--orange)');
+    const processed = await preprocessImageForOcr(file);
     const worker = await getTesseractWorker();
     invoiceOcrStatus('Analyse de la facture en cours...', 'var(--orange)');
-    const { data: { text } } = await worker.recognize(file);
+    const { data: { text } } = await worker.recognize(processed);
+    let parsed = parseInvoiceText(text);
+    if (!parsed.totalTTC && parsed.operations.length === 0) {
+      invoiceOcrStatus('Re-analyse sur image originale...', 'var(--orange)');
+      const { data: { text: textOrig } } = await worker.recognize(file);
+      const parsedOrig = parseInvoiceText(textOrig);
+      if (parsedOrig.totalTTC || parsedOrig.operations.length > 0) {
+        parsed = parsedOrig;
+        applyInvoiceResults(parsed, textOrig);
+        scheduleTesseractCleanup();
+        return;
+      }
+      applyInvoiceResults(parsed, textOrig || text);
+      scheduleTesseractCleanup();
+      return;
+    }
     scheduleTesseractCleanup();
-    const parsed = parseInvoiceText(text);
     applyInvoiceResults(parsed, text);
   } catch (e) {
     console.error('Invoice OCR error:', e);
@@ -8565,6 +7690,363 @@ async function migratePhotosToDrive() {
   toast('Migration terminee : ' + migrated + '/' + total, migrated === total ? 'success' : 'warning');
 }
 
+// ── Feature: Comparateur prix entretien (stats) ──
+function renderEntretienComparator() {
+  const v = getActiveVehicle();
+  const el = document.getElementById('entretienComparator');
+  if (!el || !v) return;
+  const entries = v.entries || [];
+  if (entries.length < 2) { el.innerHTML = ''; return; }
+  const byOp = {};
+  for (const e of entries) {
+    for (const op of (e.ops || [])) {
+      const key = op.toLowerCase().trim();
+      if (!byOp[key]) byOp[key] = { name: op, costs: [], providers: [] };
+      if (e.cost > 0) {
+        byOp[key].costs.push(e.cost);
+        if (e.provider) byOp[key].providers.push({ provider: e.provider, cost: e.cost, date: e.date });
+      }
+    }
+  }
+  const ops = Object.values(byOp).filter(o => o.costs.length >= 2);
+  if (ops.length === 0) { el.innerHTML = ''; return; }
+  let html = '<div class="section-title" style="margin-top:16px;">Comparateur prix entretien</div>';
+  html += '<div class="card"><table style="width:100%;font-size:0.85em;border-collapse:collapse;">';
+  html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left;padding:6px 4px;">Operation</th><th>Nb</th><th>Moy</th><th>Min</th><th>Max</th><th>Ecart</th></tr>';
+  for (const op of ops.sort((a, b) => b.costs.length - a.costs.length)) {
+    const avg = op.costs.reduce((s, c) => s + c, 0) / op.costs.length;
+    const min = Math.min(...op.costs);
+    const max = Math.max(...op.costs);
+    const ecart = max - min;
+    const isOutlier = max > avg * 1.5 && op.costs.length >= 3;
+    html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${isOutlier ? 'background:rgba(233,69,96,0.08);' : ''}">
+      <td style="padding:6px 4px;">${escHtml(op.name)}</td>
+      <td style="text-align:center;">${op.costs.length}</td>
+      <td style="text-align:center;">${avg.toFixed(0)} EUR</td>
+      <td style="text-align:center;color:var(--green);">${min.toFixed(0)}</td>
+      <td style="text-align:center;color:var(--red);">${max.toFixed(0)}</td>
+      <td style="text-align:center;color:${isOutlier ? 'var(--red)' : 'var(--muted)'};">${ecart.toFixed(0)} EUR${isOutlier ? ' &#9888;' : ''}</td>
+    </tr>`;
+  }
+  html += '</table></div>';
+  el.innerHTML = html;
+}
+
+// ── Feature: Graphe cout possession cumule (stats) ──
+function renderCumulativeCostChart() {
+  const v = getActiveVehicle();
+  const el = document.getElementById('cumulativeCostChart');
+  if (!el || !v) return;
+  const purchaseDateStr = v.purchaseDate ? v.purchaseDate + '-01' : null;
+  const entries = v.entries || [];
+  const fuelEntries = v.fuelEntries || [];
+  const chargeEntries = v.chargeEntries || [];
+  const washes = v.washes || [];
+  const washCredits = v.washCredits || [];
+  const deadlines = v.deadlines || [];
+  const allExpenses = [
+    ...(purchaseDateStr ? entries.filter(e => e.date >= purchaseDateStr) : entries).map(e => ({ date: e.date, cost: e.cost || 0, type: 'entretien' })),
+    ...fuelEntries.map(e => ({ date: e.date, cost: e.cost || 0, type: 'carburant' })),
+    ...chargeEntries.filter(e => e.cost).map(e => ({ date: e.date, cost: e.cost, type: 'charge' })),
+    ...washes.filter(w => w.payment === 'direct').map(w => ({ date: w.date, cost: w.cost || 0, type: 'lavage' })),
+    ...washCredits.map(c => ({ date: c.date, cost: c.cost || 0, type: 'lavage' })),
+    ...deadlines.filter(d => d.cost && d.date).map(d => ({ date: d.date, cost: d.cost, type: 'frais' }))
+  ].sort((a, b) => a.date.localeCompare(b.date));
+  if (allExpenses.length < 2) { el.innerHTML = ''; return; }
+  const byMonth = {};
+  let cumEntretien = 0, cumEnergie = 0, cumLavage = 0, cumFrais = 0;
+  for (const exp of allExpenses) {
+    const month = exp.date.slice(0, 7);
+    if (exp.type === 'entretien') cumEntretien += exp.cost;
+    else if (exp.type === 'carburant' || exp.type === 'charge') cumEnergie += exp.cost;
+    else if (exp.type === 'lavage') cumLavage += exp.cost;
+    else if (exp.type === 'frais') cumFrais += exp.cost;
+    byMonth[month] = { entretien: cumEntretien, energie: cumEnergie, lavage: cumLavage, frais: cumFrais, total: cumEntretien + cumEnergie + cumLavage + cumFrais };
+  }
+  const months = Object.keys(byMonth).sort();
+  if (months.length < 2) { el.innerHTML = ''; return; }
+  const maxTotal = byMonth[months[months.length - 1]].total || 1;
+  const cW = 500, cH = 250;
+  const pad = { t: 20, r: 15, b: 35, l: 55 };
+  const plotW = cW - pad.l - pad.r, plotH = cH - pad.t - pad.b;
+  let svg = `<svg viewBox="0 0 ${cW} ${cH}" style="width:100%;max-width:${cW}px;display:block;margin:0 auto;">`;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + plotH * i / 4;
+    const val = Math.round(maxTotal * (1 - i / 4));
+    svg += `<line x1="${pad.l}" y1="${y}" x2="${cW - pad.r}" y2="${y}" stroke="rgba(255,255,255,0.06)"/>`;
+    svg += `<text x="${pad.l - 6}" y="${y + 4}" fill="#999" font-size="9" text-anchor="end">${val > 999 ? (val/1000).toFixed(1)+'k' : val}</text>`;
+  }
+  const cats = [
+    { key: 'frais', color: '#9b59b6', label: 'Frais fixes' },
+    { key: 'lavage', color: '#4ecca3', label: 'Lavage' },
+    { key: 'energie', color: '#f0a500', label: isElectric(v) ? 'Electricite' : 'Energie' },
+    { key: 'entretien', color: '#e94560', label: 'Entretien' }
+  ];
+  const stacked = months.map(m => {
+    const d = byMonth[m];
+    return { month: m, layers: [d.frais, d.frais + d.lavage, d.frais + d.lavage + d.energie, d.frais + d.lavage + d.energie + d.entretien] };
+  });
+  for (let ci = cats.length - 1; ci >= 0; ci--) {
+    const pts = stacked.map((s, i) => {
+      const x = pad.l + (i / (months.length - 1)) * plotW;
+      const y = pad.t + plotH * (1 - s.layers[ci] / maxTotal);
+      return `${x},${y}`;
+    });
+    const baseline = `${pad.l + plotW},${pad.t + plotH} ${pad.l},${pad.t + plotH}`;
+    svg += `<polygon points="${pts.join(' ')} ${baseline}" fill="${cats[ci].color}" opacity="0.35"/>`;
+    svg += `<polyline points="${pts.join(' ')}" fill="none" stroke="${cats[ci].color}" stroke-width="1.5"/>`;
+  }
+  svg += `<text x="${pad.l}" y="${cH - 5}" fill="#999" font-size="9" text-anchor="start">${months[0]}</text>`;
+  svg += `<text x="${cW - pad.r}" y="${cH - 5}" fill="#999" font-size="9" text-anchor="end">${months[months.length - 1]}</text>`;
+  let legX = pad.l;
+  const legY = cH - 18;
+  for (const cat of cats) {
+    svg += `<rect x="${legX}" y="${legY - 6}" width="8" height="8" fill="${cat.color}" rx="1" opacity="0.7"/>`;
+    svg += `<text x="${legX + 11}" y="${legY + 1}" fill="#bbb" font-size="8">${cat.label}</text>`;
+    legX += cat.label.length * 5.5 + 20;
+  }
+  svg += '</svg>';
+  el.innerHTML = `<div class="section-title" style="margin-top:16px;">Cout de possession cumule</div><div class="card">${svg}
+    <div style="text-align:center;font-size:0.85em;margin-top:6px;color:var(--muted);">Total: <b style="color:var(--text);">${maxTotal.toFixed(0)} EUR</b> sur ${months.length} mois</div></div>`;
+}
+
+// ── Feature: Score eco-conduite (dashboard) ──
+function renderDashEcoScore() {
+  const v = getActiveVehicle();
+  const el = document.getElementById('dashEcoScore');
+  if (!el || !v) return;
+  const estConso = v.estConsumption || (isElectric(v) ? 16.0 : 6.0);
+  let realConso = null;
+  if (hasThermal(v)) {
+    const { realPoints } = computeConsumption(v.fuelEntries || []);
+    if (realPoints && realPoints.length > 0) {
+      realConso = realPoints.reduce((s, p) => s + p.value, 0) / realPoints.length;
+    }
+  }
+  if (hasElectric(v)) {
+    const { realPoints: chargeConsoPoints } = computeChargeConsumption(v.chargeEntries || []);
+    if (chargeConsoPoints && chargeConsoPoints.length > 0) {
+      const avgCharge = chargeConsoPoints.reduce((s, p) => s + p.value, 0) / chargeConsoPoints.length;
+      if (!realConso) realConso = avgCharge;
+      else realConso = (realConso + avgCharge) / 2;
+    }
+  }
+  if (!realConso) { el.innerHTML = ''; return; }
+  const ratio = realConso / estConso;
+  const score = Math.max(0, Math.min(100, Math.round(100 - (ratio - 1) * 100)));
+  const unit = isElectric(v) ? 'kWh/100km' : 'L/100km';
+  const angle = score / 100 * 180;
+  const rad = (180 - angle) * Math.PI / 180;
+  const cx = 100, cy = 90, r = 70;
+  const x = cx + r * Math.cos(rad);
+  const y = cy - r * Math.sin(rad);
+  const gaugeColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--orange)' : 'var(--red)';
+  let svg = `<svg viewBox="0 0 200 110" style="width:100%;max-width:200px;display:block;margin:0 auto;">`;
+  svg += `<path d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}" fill="none" stroke="var(--surface)" stroke-width="12" stroke-linecap="round"/>`;
+  const largeArc = angle > 180 ? 1 : 0;
+  svg += `<path d="M ${cx - r} ${cy} A ${r} ${r} 0 ${largeArc} 1 ${x} ${y}" fill="none" stroke="${gaugeColor}" stroke-width="12" stroke-linecap="round"/>`;
+  svg += `<text x="${cx}" y="${cy - 10}" fill="var(--text)" font-size="28" font-weight="bold" text-anchor="middle">${score}</text>`;
+  svg += `<text x="${cx}" y="${cy + 10}" fill="var(--muted)" font-size="10" text-anchor="middle">/100</text>`;
+  svg += '</svg>';
+  let advice = '';
+  if (score >= 80) advice = 'Excellente conduite economique !';
+  else if (score >= 60) advice = 'Bonne conduite, marge de progression.';
+  else if (score >= 40) advice = 'Surconsommation moderee. Anticiper le freinage.';
+  else advice = 'Conduite energivore. Revoir les habitudes.';
+  let html = `<div class="card" style="margin-top:12px;"><h3 style="font-size:0.95em;margin-bottom:6px;">Score eco-conduite</h3>`;
+  html += svg;
+  html += `<div style="text-align:center;font-size:0.82em;margin-top:4px;"><span style="color:var(--muted)">Reel: ${realConso.toFixed(1)} ${unit}</span> / <span style="color:var(--muted)">Ref: ${estConso.toFixed(1)} ${unit}</span></div>`;
+  html += `<div style="text-align:center;font-size:0.82em;color:${gaugeColor};margin-top:4px;">${advice}</div>`;
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── Feature: Bilan carbone annuel (dashboard) ──
+function renderDashCarbon() {
+  const v = getActiveVehicle();
+  const el = document.getElementById('dashCarbon');
+  if (!el || !v) return;
+  const co2Factors = { diesel: 2.68, essence: 2.31, e85: 1.61, electrique: 0.05, hybride: 2.31 };
+  const fuelType = (v.fuelType || 'essence').toLowerCase();
+  const now = new Date();
+  const thisYear = now.getFullYear().toString();
+  const fuelThisYear = (v.fuelEntries || []).filter(e => e.date && e.date.startsWith(thisYear));
+  const totalLiters = fuelThisYear.reduce((s, e) => s + (e.liters || 0), 0);
+  const co2Fuel = totalLiters * (co2Factors[fuelType] || 2.31);
+  const chargeThisYear = (v.chargeEntries || []).filter(e => e.date && e.date.startsWith(thisYear));
+  const totalKwh = chargeThisYear.reduce((s, e) => s + (e.kwh || 0), 0);
+  const co2Charge = totalKwh * 0.05;
+  const totalCo2 = co2Fuel + co2Charge;
+  if (totalCo2 <= 0) { el.innerHTML = ''; return; }
+  const avgFR = 2000;
+  const pctVsAvg = (totalCo2 / avgFR * 100).toFixed(0);
+  const compareColor = totalCo2 < avgFR ? 'var(--green)' : 'var(--orange)';
+  const years = {};
+  for (const e of (v.fuelEntries || [])) {
+    const yr = e.date ? e.date.slice(0, 4) : null;
+    if (!yr) continue;
+    if (!years[yr]) years[yr] = 0;
+    years[yr] += (e.liters || 0) * (co2Factors[fuelType] || 2.31);
+  }
+  for (const e of (v.chargeEntries || [])) {
+    const yr = e.date ? e.date.slice(0, 4) : null;
+    if (!yr) continue;
+    if (!years[yr]) years[yr] = 0;
+    years[yr] += (e.kwh || 0) * 0.05;
+  }
+  let html = `<div class="card" style="margin-top:12px;"><h3 style="font-size:0.95em;margin-bottom:10px;">Bilan carbone ${thisYear}</h3>`;
+  html += `<div class="stats-grid">`;
+  html += `<div class="stat-card accent"><div class="stat-value">${totalCo2.toFixed(0)} kg</div><div class="stat-label">CO2 ${thisYear}</div></div>`;
+  html += `<div class="stat-card" style="border-left:3px solid ${compareColor};"><div class="stat-value">${pctVsAvg}%</div><div class="stat-label">vs moy. FR (~${avgFR} kg)</div></div>`;
+  if (co2Fuel > 0) html += `<div class="stat-card"><div class="stat-value">${co2Fuel.toFixed(0)} kg</div><div class="stat-label">Carburant</div></div>`;
+  if (co2Charge > 0) html += `<div class="stat-card"><div class="stat-value">${co2Charge.toFixed(0)} kg</div><div class="stat-label">Electricite</div></div>`;
+  html += '</div>';
+  const sortedYears = Object.keys(years).sort();
+  if (sortedYears.length >= 2) {
+    const maxCo2 = Math.max(...Object.values(years), 1);
+    html += '<div style="display:flex;gap:4px;align-items:end;height:60px;margin-top:10px;">';
+    for (const yr of sortedYears) {
+      const h = Math.max(4, years[yr] / maxCo2 * 50);
+      html += `<div style="flex:1;text-align:center;"><div style="background:var(--accent);height:${h}px;border-radius:3px 3px 0 0;margin:0 auto;width:80%;"></div><div style="font-size:0.7em;color:var(--muted);margin-top:2px;">${yr}</div></div>`;
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── Feature: Pannes et fiabilite (dashboard) ──
+function renderDashReliability() {
+  const v = getActiveVehicle();
+  const el = document.getElementById('dashReliability');
+  if (!el || !v) return;
+  const entries = v.entries || [];
+  const pannes = entries.filter(e => e.isPanne);
+  if (pannes.length === 0 && entries.length < 3) { el.innerHTML = ''; return; }
+  const totalEntries = entries.length;
+  const panneCount = pannes.length;
+  const panneCost = pannes.reduce((s, e) => s + (e.cost || 0), 0);
+  const panneRatio = totalEntries > 0 ? panneCount / totalEntries : 0;
+  const score = Math.max(0, Math.round(100 - panneRatio * 200));
+  const scoreColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--orange)' : 'var(--red)';
+  const panneOps = {};
+  for (const p of pannes) {
+    for (const op of (p.ops || [])) {
+      const key = op.toLowerCase().trim();
+      panneOps[key] = (panneOps[key] || 0) + 1;
+    }
+  }
+  const recurrent = Object.entries(panneOps).filter(([, c]) => c >= 2).sort((a, b) => b[1] - a[1]);
+  let html = `<div class="card" style="margin-top:12px;"><h3 style="font-size:0.95em;margin-bottom:10px;">Fiabilite</h3>`;
+  html += `<div class="stats-grid">`;
+  html += `<div class="stat-card" style="border-left:3px solid ${scoreColor};"><div class="stat-value">${score}/100</div><div class="stat-label">Score fiabilite</div></div>`;
+  html += `<div class="stat-card"><div class="stat-value">${panneCount}</div><div class="stat-label">Panne${panneCount > 1 ? 's' : ''}</div></div>`;
+  if (panneCost > 0) html += `<div class="stat-card orange"><div class="stat-value">${panneCost.toFixed(0)} EUR</div><div class="stat-label">Cout pannes</div></div>`;
+  html += '</div>';
+  if (recurrent.length > 0) {
+    html += '<div style="margin-top:8px;font-size:0.85em;"><b>Pannes recurrentes :</b>';
+    for (const [op, count] of recurrent) {
+      html += `<span style="display:inline-block;background:rgba(233,69,96,0.15);padding:2px 8px;border-radius:10px;margin:3px 4px;font-size:0.88em;">${escHtml(op)} (x${count})</span>`;
+    }
+    html += '</div>';
+  }
+  if (pannes.length > 0) {
+    html += '<div style="margin-top:8px;font-size:0.82em;color:var(--muted);">Derniere panne: ' + pannes.sort((a, b) => b.date.localeCompare(a.date))[0].date + '</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── Feature 17: Gamification Badges ──
+const BADGE_DEFINITIONS = [
+  { id: 'first_entry', icon: '\u{1F527}', name: 'Premier entretien', desc: 'Ajouter un premier entretien', check: v => (v.entries || []).length >= 1 },
+  { id: 'ten_entries', icon: '\u{1F3C5}', name: 'Mecanicien assidu', desc: '10 entretiens enregistres', check: v => (v.entries || []).length >= 10 },
+  { id: 'first_fuel', icon: '\u{26FD}', name: 'Premier plein', desc: 'Ajouter un premier plein', check: v => (v.fuelEntries || []).length >= 1 },
+  { id: 'fifty_fuels', icon: '\u{1F3C6}', name: '50 pleins', desc: '50 pleins enregistres', check: v => (v.fuelEntries || []).length >= 50 },
+  { id: 'km_10k', icon: '\u{1F697}', name: '10 000 km', desc: 'Atteindre 10 000 km', check: v => (v.currentKm || 0) >= 10000 },
+  { id: 'km_50k', icon: '\u{1F6E3}', name: '50 000 km', desc: 'Atteindre 50 000 km', check: v => (v.currentKm || 0) >= 50000 },
+  { id: 'km_100k', icon: '\u{1F31F}', name: '100 000 km', desc: 'Atteindre 100 000 km', check: v => (v.currentKm || 0) >= 100000 },
+  { id: 'km_200k', icon: '\u{1F48E}', name: '200 000 km', desc: 'Atteindre 200 000 km', check: v => (v.currentKm || 0) >= 200000 },
+  { id: 'one_year', icon: '\u{1F4C5}', name: '1 an ensemble', desc: '1 an depuis l\'achat', check: v => { if (!v.purchaseDate) return false; return (Date.now() - new Date(v.purchaseDate).getTime()) >= 365.25*86400000; } },
+  { id: 'three_years', icon: '\u{1F382}', name: '3 ans ensemble', desc: '3 ans depuis l\'achat', check: v => { if (!v.purchaseDate) return false; return (Date.now() - new Date(v.purchaseDate).getTime()) >= 3*365.25*86400000; } },
+  { id: 'no_late_1y', icon: '\u{2705}', name: 'Ponctuel 1 an', desc: 'Aucun retard d\'entretien pendant 1 an', check: v => {
+    const entries = v.entries || [];
+    if (entries.length < 2) return false;
+    const schedule = v.schedule || [];
+    if (schedule.length === 0) return false;
+    const now = new Date();
+    const oneYearAgo = new Date(now - 365.25*86400000);
+    for (const s of schedule) {
+      const matching = entries.filter(e => (e.ops || []).some(op => op.toLowerCase().includes(s.name.toLowerCase())));
+      if (matching.length === 0) continue;
+      const last = matching.sort((a,b) => b.date.localeCompare(a.date))[0];
+      if (new Date(last.date) < oneYearAgo) return false;
+    }
+    return true;
+  }},
+  { id: 'eco_driver', icon: '\u{1F33F}', name: 'Eco-conducteur', desc: 'Conso reelle < conso estimee', check: v => {
+    if (!v.estConsumption || (v.fuelEntries || []).length < 3) return false;
+    const fulls = v.fuelEntries.filter(f => f.fullTank && !f.forgottenFill);
+    if (fulls.length < 2) return false;
+    let totalL = 0, totalKm = 0;
+    for (let i = 1; i < fulls.length; i++) {
+      const km = fulls[i].km - fulls[i-1].km;
+      if (km > 0) { totalL += fulls[i].liters; totalKm += km; }
+    }
+    if (totalKm === 0) return false;
+    return (totalL / totalKm * 100) < v.estConsumption;
+  }},
+  { id: 'notebook_5', icon: '\u{1F4DD}', name: 'Diariste', desc: '5 notes dans le carnet', check: v => (v.notebook || []).length >= 5 },
+  { id: 'photographer', icon: '\u{1F4F8}', name: 'Photographe', desc: '5 photos ajoutees', check: v => {
+    const withPhotos = (v.entries || []).filter(e => e.photo).length + (v.fuelEntries || []).filter(f => f.photo).length;
+    return withPhotos >= 5;
+  }},
+  { id: 'multi_vehicle', icon: '\u{1F17F}', name: 'Collectionneur', desc: 'Avoir 2+ vehicules', check: (v, store) => Object.keys(store.vehicles || {}).length >= 2 },
+];
+
+function renderDashBadges() {
+  const el = document.getElementById('dashBadges');
+  if (!el) return;
+  const v = getActiveVehicle();
+  if (!v) { el.innerHTML = ''; return; }
+  const store = loadStore();
+  const earned = [];
+  const locked = [];
+  for (const b of BADGE_DEFINITIONS) {
+    try {
+      if (b.check(v, store)) earned.push(b);
+      else locked.push(b);
+    } catch(e) { locked.push(b); }
+  }
+  if (earned.length === 0 && (v.entries || []).length === 0 && (v.fuelEntries || []).length === 0) {
+    el.innerHTML = '';
+    return;
+  }
+  let html = '<div class="card" style="margin-top:12px;"><h3 style="font-size:0.95em;margin-bottom:10px;">Badges <span style="font-size:0.8em;color:var(--muted);">' + earned.length + '/' + BADGE_DEFINITIONS.length + '</span></h3>';
+  const pct = Math.round(earned.length / BADGE_DEFINITIONS.length * 100);
+  html += '<div style="background:rgba(255,255,255,0.08);border-radius:6px;height:8px;margin-bottom:12px;overflow:hidden;">';
+  html += '<div style="background:var(--accent);height:100%;width:' + pct + '%;border-radius:6px;transition:width 0.5s;"></div></div>';
+  if (earned.length > 0) {
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+    for (const b of earned) {
+      html += '<div title="' + escAttr(b.desc) + '" style="display:flex;align-items:center;gap:4px;background:rgba(78,204,163,0.12);padding:4px 10px;border-radius:14px;font-size:0.85em;">';
+      html += '<span style="font-size:1.1em;">' + b.icon + '</span><span>' + escHtml(b.name) + '</span></div>';
+    }
+    html += '</div>';
+  }
+  if (locked.length > 0) {
+    html += '<div style="margin-top:10px;font-size:0.82em;color:var(--muted);">Prochains badges :</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">';
+    for (const b of locked.slice(0, 3)) {
+      html += '<div title="' + escAttr(b.desc) + '" style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.04);padding:4px 10px;border-radius:14px;font-size:0.82em;opacity:0.5;">';
+      html += '<span style="font-size:1em;filter:grayscale(1);">' + b.icon + '</span><span>' + escHtml(b.name) + '</span></div>';
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
 // ── Feature 25: Widget dashboard configurable ──
 
 const DASHBOARD_WIDGETS = [
@@ -8582,7 +8064,6 @@ const DASHBOARD_WIDGETS = [
   { id: 'carbon', label: 'Bilan carbone', render: 'renderDashCarbon' },
   { id: 'reliability', label: 'Fiabilite', render: 'renderDashReliability' },
   { id: 'badges', label: 'Badges', render: 'renderDashBadges' },
-  { id: 'parking', label: 'Parking', render: 'renderParkingReminder' },
 ];
 
 function getDashboardConfig() {
@@ -8590,8 +8071,8 @@ function getDashboardConfig() {
     const saved = localStorage.getItem('mongarage_dashboard_config');
     if (saved) return JSON.parse(saved);
   } catch {}
-  // Default: all widgets visible
-  return DASHBOARD_WIDGETS.map(w => w.id);
+  // Default: essential widgets only (user can enable more via config)
+  return ['alerts', 'vehicleCard', 'quickActions', 'lastFill', 'kpis', 'costPerKm', 'consoTrend', 'ecoScore', 'carbon', 'reliability', 'badges'];
 }
 
 function saveDashboardConfig(config) {
@@ -8723,48 +8204,6 @@ function filterDiagnosticLights() {
 function closeDiagnosticModal() {
   const modal = document.getElementById('diagnosticModal');
   if (modal) { modal.classList.remove('show'); releaseFocus(modal); }
-}
-
-// ── Feature 27: Alertes rappels constructeur ──
-
-async function checkRecallAlerts() {
-  const v = getActiveVehicle();
-  if (!v || !v.model) return;
-  // Use NHTSA API (US) as a best-effort free source - limited to US models
-  // For broader coverage, check known recall campaigns manually
-  const make = (v.model || '').split(' ')[0];
-  const year = v.circDate ? v.circDate.split('-')[0] : '';
-  if (!make || !year) return;
-  try {
-    const res = await fetch('https://api.nhtsa.gov/recalls/recallsByVehicle?make=' + encodeURIComponent(make) + '&modelYear=' + encodeURIComponent(year), {
-      signal: AbortSignal.timeout(10000)
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    const recalls = data.results || [];
-    if (recalls.length === 0) return;
-    renderRecallAlerts(recalls.slice(0, 5));
-  } catch (e) {
-    // Silently fail - NHTSA may not have FR vehicles
-    console.log('Recall check unavailable:', e.message);
-  }
-}
-
-function renderRecallAlerts(recalls) {
-  const el = document.getElementById('recallAlerts');
-  if (!el || recalls.length === 0) { if (el) el.innerHTML = ''; return; }
-  let html = '<div class="card" style="margin-top:12px;border-left:3px solid var(--orange);">';
-  html += '<h3 style="font-size:0.95em;margin-bottom:8px;">Rappels constructeur potentiels</h3>';
-  html += '<p style="font-size:0.78em;color:var(--muted);margin-bottom:8px;">Source: NHTSA (vehicules US). Verifiez aupres de votre concessionnaire.</p>';
-  for (const r of recalls) {
-    html += '<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.85em;">';
-    html += '<div style="font-weight:600;">' + escHtml(r.Component || 'Composant inconnu') + '</div>';
-    html += '<div style="color:var(--muted);margin-top:2px;">' + escHtml((r.Summary || '').substring(0, 200)) + '</div>';
-    if (r.NHTSACampaignNumber) html += '<div style="font-size:0.78em;color:var(--muted);margin-top:2px;">Campagne: ' + escHtml(r.NHTSACampaignNumber) + '</div>';
-    html += '</div>';
-  }
-  html += '</div>';
-  el.innerHTML = html;
 }
 
 // ── Feature 28: Import OBD-II (Web Bluetooth) ──
@@ -8940,131 +8379,12 @@ function disconnectOBD() {
   toast('OBD deconnecte', 'success');
 }
 
-// ── Feature 29: Multi-langue i18n ──
-
-const I18N = {
-  fr: {
-    dashboard: 'Tableau de bord', entretien: 'Entretien', carburant: 'Carburant', energie: 'Energie',
-    stats: 'Statistiques', alerts: 'Alertes', noAlerts: 'Tout est a jour',
-    addEntry: '+ Entretien', addFuel: '+ Plein', addCharge: '+ Charge',
-    date: 'Date', km: 'Kilometrage', operations: 'Operations', cost: 'Cout',
-    parts: 'Pieces', labor: 'Main d\'oeuvre', total: 'Total', provider: 'Prestataire',
-    notes: 'Notes', save: 'Enregistrer', cancel: 'Annuler', delete: 'Supprimer',
-    confirm: 'Confirmer', vehicle: 'Vehicule', vehicles: 'Mes vehicules',
-    exportJson: 'Export JSON', importJson: 'Import JSON', exportCsv: 'Export CSV',
-    exportSheet: 'Exporter fiche', salesFolder: 'Dossier vente', insuranceFolder: 'Dossier assurance',
-    qrCode: 'QR code', history: 'Historique', schedule: 'Programme', deadlines: 'Echeances',
-    notebook: 'Carnet', wash: 'Lavage', tires: 'Pneus', travel: 'Voyage',
-    levels: 'Niveaux', trips: 'Trajets', logout: 'Deconnexion', lightMode: 'Mode clair',
-    darkMode: 'Mode sombre', backup: 'Backup Google Drive', share: 'Partager',
-    settings: 'Parametres', search: 'Rechercher...', noData: 'Aucune donnee',
-    photoQuick: 'Photo rapide', parking: 'Parking', diagnostic: 'Diagnostic voyants',
-    obd: 'Import OBD', badges: 'Badges', budget: 'Budget', ecoScore: 'Eco-conduite',
-    carbon: 'Bilan carbone', reliability: 'Fiabilite', configure: 'Configurer',
-    offlineQueue: 'File hors-ligne', syncNow: 'Synchroniser', pending: 'en attente',
-    migratePhotos: 'Migrer photos', recalls: 'Rappels constructeur',
-    estimation: 'Estimation valeur', depreciation: 'Depreciation', comparison: 'Comparaison',
-    calendar: 'Calendrier', charts: 'Graphes', summary: 'Synthese',
-  },
-  en: {
-    dashboard: 'Dashboard', entretien: 'Maintenance', carburant: 'Fuel', energie: 'Energy',
-    stats: 'Statistics', alerts: 'Alerts', noAlerts: 'All up to date',
-    addEntry: '+ Service', addFuel: '+ Fill-up', addCharge: '+ Charge',
-    date: 'Date', km: 'Mileage', operations: 'Operations', cost: 'Cost',
-    parts: 'Parts', labor: 'Labor', total: 'Total', provider: 'Provider',
-    notes: 'Notes', save: 'Save', cancel: 'Cancel', delete: 'Delete',
-    confirm: 'Confirm', vehicle: 'Vehicle', vehicles: 'My vehicles',
-    exportJson: 'Export JSON', importJson: 'Import JSON', exportCsv: 'Export CSV',
-    exportSheet: 'Export sheet', salesFolder: 'Sales folder', insuranceFolder: 'Insurance folder',
-    qrCode: 'QR code', history: 'History', schedule: 'Schedule', deadlines: 'Deadlines',
-    notebook: 'Notebook', wash: 'Wash', tires: 'Tires', travel: 'Travel',
-    levels: 'Levels', trips: 'Trips', logout: 'Logout', lightMode: 'Light mode',
-    darkMode: 'Dark mode', backup: 'Google Drive Backup', share: 'Share',
-    settings: 'Settings', search: 'Search...', noData: 'No data',
-    photoQuick: 'Quick photo', parking: 'Parking', diagnostic: 'Warning lights',
-    obd: 'OBD Import', badges: 'Badges', budget: 'Budget', ecoScore: 'Eco-driving',
-    carbon: 'Carbon footprint', reliability: 'Reliability', configure: 'Configure',
-    offlineQueue: 'Offline queue', syncNow: 'Sync now', pending: 'pending',
-    migratePhotos: 'Migrate photos', recalls: 'Manufacturer recalls',
-    estimation: 'Value estimate', depreciation: 'Depreciation', comparison: 'Comparison',
-    calendar: 'Calendar', charts: 'Charts', summary: 'Summary',
-  },
-  es: {
-    dashboard: 'Panel', entretien: 'Mantenimiento', carburant: 'Combustible', energie: 'Energia',
-    stats: 'Estadisticas', alerts: 'Alertas', noAlerts: 'Todo al dia',
-    addEntry: '+ Servicio', addFuel: '+ Repostaje', addCharge: '+ Carga',
-    date: 'Fecha', km: 'Kilometraje', operations: 'Operaciones', cost: 'Coste',
-    parts: 'Piezas', labor: 'Mano de obra', total: 'Total', provider: 'Proveedor',
-    notes: 'Notas', save: 'Guardar', cancel: 'Cancelar', delete: 'Eliminar',
-    confirm: 'Confirmar', vehicle: 'Vehiculo', vehicles: 'Mis vehiculos',
-    exportJson: 'Exportar JSON', importJson: 'Importar JSON', exportCsv: 'Exportar CSV',
-    exportSheet: 'Exportar ficha', salesFolder: 'Dossier venta', insuranceFolder: 'Dossier seguro',
-    qrCode: 'Codigo QR', history: 'Historial', schedule: 'Programa', deadlines: 'Vencimientos',
-    notebook: 'Cuaderno', wash: 'Lavado', tires: 'Neumaticos', travel: 'Viaje',
-    levels: 'Niveles', trips: 'Trayectos', logout: 'Cerrar sesion', lightMode: 'Modo claro',
-    darkMode: 'Modo oscuro', backup: 'Backup Google Drive', share: 'Compartir',
-    settings: 'Ajustes', search: 'Buscar...', noData: 'Sin datos',
-    photoQuick: 'Foto rapida', parking: 'Aparcamiento', diagnostic: 'Testigos',
-    obd: 'Importar OBD', badges: 'Insignias', budget: 'Presupuesto', ecoScore: 'Eco-conduccion',
-    carbon: 'Huella de carbono', reliability: 'Fiabilidad', configure: 'Configurar',
-    offlineQueue: 'Cola sin conexion', syncNow: 'Sincronizar', pending: 'pendiente',
-    migratePhotos: 'Migrar fotos', recalls: 'Alertas fabricante',
-    estimation: 'Estimacion valor', depreciation: 'Depreciacion', comparison: 'Comparacion',
-    calendar: 'Calendario', charts: 'Graficos', summary: 'Resumen',
-  }
-};
-
-let _currentLang = localStorage.getItem('mongarage_lang') || 'fr';
-// Init language selector
-(function() {
-  const sel = document.querySelector('#profileMenu select[onchange*="setLanguage"]');
-  if (sel) sel.value = _currentLang;
-})();
-
-function t(key) {
-  return (I18N[_currentLang] || I18N.fr)[key] || (I18N.fr)[key] || key;
-}
-
-function setLanguage(lang) {
-  if (!I18N[lang]) return;
-  _currentLang = lang;
-  localStorage.setItem('mongarage_lang', lang);
-  applyTranslations();
-  toast('Langue : ' + { fr: 'Francais', en: 'English', es: 'Espanol' }[lang], 'success');
-}
-
-function applyTranslations() {
-  // Update nav labels
-  const navLabels = document.querySelectorAll('.nav-label');
-  const navKeys = ['dashboard', 'entretien', 'carburant', 'stats'];
-  navLabels.forEach((el, i) => {
-    if (navKeys[i]) el.textContent = t(navKeys[i]);
-  });
-  // Update sub-tab labels for entretien
-  const entretienTabs = document.querySelectorAll('#section-entretien .sub-tab');
-  const entretienKeys = ['history', 'schedule', 'deadlines', 'notebook', 'wash', 'tires', 'travel', 'levels', 'trips'];
-  entretienTabs.forEach((el, i) => {
-    if (entretienKeys[i]) el.textContent = t(entretienKeys[i]);
-  });
-  // Update header
-  const subtitle = document.getElementById('appSubtitle');
-  if (subtitle) subtitle.textContent = t('vehicles');
-  // Update theme toggle
-  const themeBtn = document.getElementById('themeToggleBtn');
-  if (themeBtn) {
-    const isLight = document.documentElement.classList.contains('light-theme');
-    themeBtn.textContent = isLight ? t('darkMode') : t('lightMode');
-  }
-  // Re-render current section
-  renderAll(getActiveSection());
-}
-
 const _sectionRenderers = {
-  dashboard: [renderAlerts, renderVehicleCard, renderOnboarding, renderOfflineQueueBanner, renderPendingEntries, renderQuickActions, renderLastFill, renderDashboard, renderDashCostPerKm, renderDashPredictions, renderDashConsoTrend, renderCostDonut, renderDashBudget, renderDashEcoScore, renderDashCarbon, renderDashReliability, renderDashBadges, renderParkingReminder],
-  entretien: [renderKmTab, renderHistory, renderSchedule, renderDeadlines, renderWash, renderTires, renderNotebook, renderChecklist, renderConsumables, renderTrips],
+  dashboard: [renderAlerts, renderVehicleCard, renderOnboarding, renderOfflineQueueBanner, renderPendingEntries, renderQuickActions, renderLastFill, renderDashboard, renderDashCostPerKm, renderDashPredictions, renderDashConsoTrend, renderCostDonut, renderDashBudget, renderDashEcoScore, renderDashCarbon, renderDashReliability, renderDashBadges],
+  entretien: [renderKmTab, renderHistory, renderSchedule, renderDeadlines, renderWash, renderTires, renderNotebook],
   carburant: [renderFuel, renderStationPrices, renderFuelPriceHistory, refreshStationListForVehicle, renderNextFillEstimate],
   energie: [renderBatterySoh, renderCharge, renderNextChargeEstimate, renderSohChart, renderSohReadings],
-  stats: [renderStats, renderEntretienComparator, renderDepreciation, renderDepreciationAdjusted, renderCumulativeCostChart, renderCompare, renderCharts, renderKmChart, renderCalendar]
+  stats: [renderStats, renderDepreciation, renderDepreciationAdjusted, renderEntretienComparator, renderCumulativeCostChart, renderCompare, renderCharts, renderKmChart, renderCalendar]
 };
 const _commonRenderers = [renderVehicleMini, renderNavBadges, populateDataLists, updateNavForVehicleType];
 
@@ -9105,8 +8425,6 @@ function renderAllSections() {
     try { fn(); } catch (e) { console.error('renderAll error in ' + fn.name + ':', e); }
   }
   updateSearchBars(v);
-  // Check recall alerts asynchronously (non-blocking)
-  checkRecallAlerts().catch(() => {});
 }
 
 // ── Profile menu ──
@@ -9137,7 +8455,7 @@ function renderVehicleMini() {
   let dropdown = '';
   if (multi) {
     dropdown = '<div class="vmb-dropdown">' + vehicles.map(veh =>
-      `<div class="vmb-option ${veh.id === store.activeVehicleId ? 'active' : ''}" onclick="event.stopPropagation(); selectVehicleFromMini('${veh.id}')"><span class="vmb-opt-name">${escHtml(veh.name)}</span><span class="vmb-opt-km">${veh.currentKm ? veh.currentKm.toLocaleString('fr-FR') + ' km' : ''}</span></div>`
+      `<div class="vmb-option ${veh.id === store.activeVehicleId ? 'active' : ''}" onclick="event.stopPropagation(); selectVehicleFromMini('${escAttr(veh.id)}')"><span class="vmb-opt-name">${escHtml(veh.name)}</span><span class="vmb-opt-km">${veh.currentKm ? veh.currentKm.toLocaleString('fr-FR') + ' km' : ''}</span></div>`
     ).join('') + '</div>';
   }
   el.innerHTML = `<div class="vmb-left" ${multi ? 'onclick="toggleVehicleMiniDropdown()"' : ''}><span class="vmb-name">${escHtml(v.name)}</span>${multi ? '<span class="vmb-arrow">&#9660;</span>' : ''}</div><span class="vmb-km">${v.currentKm ? v.currentKm.toLocaleString('fr-FR') + ' km' : ''}</span>${dropdown}`;
@@ -9238,10 +8556,7 @@ function renderQuickActions() {
       <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
       Photo rapide
     </button>
-    <button class="quick-action-btn" onclick="startParking()">
-      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
-      Parking
-    </button>`;
+    `;
 }
 
 // ── Quick Entry (photo rapide) ──
@@ -9484,6 +8799,16 @@ let _stationMap = null;
 let _stationMarkers = [];
 let _lastStations = [];
 let _lastStationFuelKey = '';
+let _userLat = null;
+let _userLon = null;
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 async function loadLeaflet() {
   if (_leafletLoaded) return;
@@ -9567,9 +8892,48 @@ const FUEL_FIELDS = ['gazole', 'sp95', 'sp98', 'e10', 'e85', 'gplc'];
 const FUEL_LABELS = { gazole: 'Gazole', sp95: 'SP95', sp98: 'SP98', e10: 'E10', e85: 'E85', gplc: 'GPLc' };
 
 function getFuelKey(fuelType) {
-  if (fuelType === 'diesel') return 'gazole';
-  if (fuelType === 'e85') return 'e85';
-  return 'sp95';
+  let ft = (fuelType || '').toLowerCase().trim();
+  // Si pas de fuelType, deviner depuis les pleins existants
+  if (!ft) {
+    const v = getActiveVehicle();
+    if (v && (v.fuelEntries || []).length > 0) {
+      const stations = v.fuelEntries.map(e => (e.fuelType || '').toLowerCase()).filter(Boolean);
+      if (stations.length > 0) ft = stations[stations.length - 1];
+    }
+  }
+  if (ft === 'diesel' || ft === 'gazole') return 'gazole';
+  if (ft === 'e85') return 'e85';
+  if (ft === 'essence' || ft === 'sp95') return 'sp95';
+  if (ft === 'sp98') return 'sp98';
+  if (ft === 'e10') return 'e10';
+  if (ft === 'gplc') return 'gplc';
+  return 'gazole';
+}
+
+function updateStationMarkers(stations, fuelKey) {
+  if (!_stationMap) return;
+  _stationMarkers.forEach(m => _stationMap.removeLayer(m));
+  _stationMarkers = [];
+  const allPrices = stations.map(s => s.prices[fuelKey]?.value).filter(Boolean).sort((a, b) => a - b);
+  const lowT = allPrices.length > 2 ? allPrices[Math.floor(allPrices.length / 3)] : 999;
+  const highT = allPrices.length > 2 ? allPrices[Math.floor(allPrices.length * 2 / 3)] : 999;
+  for (const s of stations) {
+    if (!s.lat || !s.lon) continue;
+    const price = s.prices[fuelKey]?.value ? s.prices[fuelKey].value.toFixed(3) : null;
+    const color = price ? (parseFloat(price) <= lowT ? '#4ecca3' : parseFloat(price) <= highT ? '#f0a500' : '#e94560') : '#888';
+    const marker = L.circleMarker([s.lat / 100000, s.lon / 100000], {
+      radius: 10, color, fillColor: color, fillOpacity: 0.7, weight: 2
+    }).addTo(_stationMap);
+    const popupHtml = `<div style="font-size:12px;min-width:140px;">
+      <strong>${escHtml(s.address)}</strong><br>
+      ${escHtml(s.cp)} ${escHtml(s.city)}<br>
+      ${Object.entries(s.prices).map(([k, p]) =>
+        `<div style="display:flex;justify-content:space-between;gap:12px;"><span>${escHtml(FUEL_LABELS[k] || k)}</span><strong style="${k === fuelKey ? 'color:var(--accent);' : ''}">${p.value.toFixed(3)} EUR</strong></div>`
+      ).join('')}
+    </div>`;
+    marker.bindPopup(popupHtml);
+    _stationMarkers.push(marker);
+  }
 }
 
 function parseStationRecord(rec) {
@@ -9588,6 +8952,8 @@ function parseStationRecord(rec) {
 }
 
 async function fetchNearbyStations(lat, lon) {
+  _userLat = lat;
+  _userLon = lon;
   stationMapStatus('Recherche des stations...', 'var(--orange)');
   const v = getActiveVehicle();
   const fuelType = v ? (v.fuelType || '') : '';
@@ -9614,36 +8980,13 @@ async function fetchNearbyStations(lat, lon) {
     }
 
     const fuelKey = getFuelKey(fuelType);
-
-    // Compute dynamic price thresholds (terciles of available prices)
-    const allPrices = stations.map(s => s.prices[fuelKey]?.value).filter(Boolean).sort((a, b) => a - b);
-    const lowThreshold = allPrices.length > 2 ? allPrices[Math.floor(allPrices.length / 3)] : 999;
-    const highThreshold = allPrices.length > 2 ? allPrices[Math.floor(allPrices.length * 2 / 3)] : 999;
-
-    // Add markers
-    for (const s of stations) {
-      if (!s.lat || !s.lon) continue;
-      const price = s.prices[fuelKey]?.value ? s.prices[fuelKey].value.toFixed(3) : null;
-      const color = price ? (parseFloat(price) <= lowThreshold ? '#4ecca3' : parseFloat(price) <= highThreshold ? '#f0a500' : '#e94560') : '#888';
-
-      const marker = L.circleMarker([s.lat / 100000, s.lon / 100000], {
-        radius: 10, color, fillColor: color, fillOpacity: 0.7, weight: 2
-      }).addTo(_stationMap);
-
-      const popupHtml = `<div style="font-size:12px;min-width:140px;">
-        <strong>${escHtml(s.address)}</strong><br>
-        ${escHtml(s.cp)} ${escHtml(s.city)}<br>
-        ${Object.entries(s.prices).map(([k, p]) =>
-          `<div style="display:flex;justify-content:space-between;gap:12px;"><span>${escHtml(FUEL_LABELS[k] || k)}</span><strong>${p.value.toFixed(3)} EUR</strong></div>`
-        ).join('')}
-      </div>`;
-      marker.bindPopup(popupHtml);
-      _stationMarkers.push(marker);
-    }
+    const fuelSel = document.getElementById('stationFuelSelect');
+    if (fuelSel) fuelSel.value = fuelKey;
 
     _lastStations = stations;
     _lastStationFuelKey = fuelKey;
-    stationMapStatus(stations.length + ' stations trouvees', 'var(--green)');
+    updateStationMarkers(stations, fuelKey);
+    stationMapStatus(stations.length + ' stations trouvees (' + (FUEL_LABELS[fuelKey] || fuelKey) + ')', 'var(--green)');
     renderNearbyStationsList(stations, fuelKey);
   } catch (e) {
     stationMapStatus('Erreur chargement prix : ' + e.message, 'var(--accent)');
@@ -9669,10 +9012,11 @@ function renderNearbyStationsList(stations, fuelKey) {
       const price = s.prices[fuelKey].value.toFixed(3);
       const updated = s.prices[fuelKey].updated ? new Date(s.prices[fuelKey].updated).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '';
       const barColor = parseFloat(price) <= lowT ? 'var(--green)' : parseFloat(price) <= highT ? 'var(--orange)' : 'var(--accent)';
+      const distHtml = (_userLat != null && !isNaN(s.lat) && !isNaN(s.lon)) ? `<span style="font-size:0.75em;color:var(--muted);margin-left:4px;">${haversineKm(_userLat, _userLon, s.lat, s.lon).toFixed(1)} km</span>` : '';
       return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface);border-radius:8px;margin-bottom:4px;border-left:3px solid ${barColor};">
         <div style="flex:1;min-width:0;">
           <div style="font-size:0.85em;font-weight:500;">${escHtml(s.address)}</div>
-          <div style="font-size:0.75em;color:var(--muted);">${escHtml(s.cp)} ${escHtml(s.city)} ${updated ? '- MAJ ' + updated : ''}</div>
+          <div style="font-size:0.75em;color:var(--muted);">${escHtml(s.cp)} ${escHtml(s.city)}${distHtml} ${updated ? '- MAJ ' + updated : ''}</div>
         </div>
         <div style="font-size:1em;font-weight:700;color:${barColor};white-space:nowrap;">${price} EUR</div>
       </div>`;
@@ -9680,13 +9024,25 @@ function renderNearbyStationsList(stations, fuelKey) {
 }
 
 function refreshStationListForVehicle() {
-  if (_lastStations.length === 0) return;
   const v = getActiveVehicle();
   const fuelKey = getFuelKey(v ? (v.fuelType || '') : '');
+  const sel = document.getElementById('stationFuelSelect');
+  if (sel) sel.value = fuelKey;
+  if (_lastStations.length === 0) return;
   if (fuelKey !== _lastStationFuelKey) {
     _lastStationFuelKey = fuelKey;
+    updateStationMarkers(_lastStations, fuelKey);
     renderNearbyStationsList(_lastStations, fuelKey);
   }
+}
+
+function onStationFuelChange() {
+  const sel = document.getElementById('stationFuelSelect');
+  if (!sel || _lastStations.length === 0) return;
+  const fuelKey = sel.value;
+  _lastStationFuelKey = fuelKey;
+  updateStationMarkers(_lastStations, fuelKey);
+  renderNearbyStationsList(_lastStations, fuelKey);
 }
 
 // ── Cumulative km chart ──
@@ -10025,7 +9381,7 @@ function renderOnboarding() {
   banner.innerHTML = `<div class="onboarding-banner">
     <h2>Bienvenue sur Mon Garage !</h2>
     <p>Commencez par configurer votre vehicule : nom, modele, kilometrage actuel.</p>
-    <button class="btn btn-primary" onclick="openEditVehicle('${v.id}')">Configurer mon vehicule</button>
+    <button class="btn btn-primary" onclick="openEditVehicle('${escAttr(v.id)}')">Configurer mon vehicule</button>
   </div>`;
 }
 
@@ -10189,27 +9545,10 @@ document.addEventListener('touchend', e => {
   indicator.classList.remove('pulling');
   ptrTriggered = false;
 
-  // Swipe navigation (horizontal dominant) - skip if touch started on map
+  // Swipe navigation (horizontal dominant) - main sections only, skip if touch started on map
   if (!touchStartedOnMap && Math.abs(dx) >= 80 && Math.abs(dy) <= Math.abs(dx) * 0.7) {
-    const section = getActiveSection();
-
-    // Try sub-tab swipe first for sections with sub-tabs
-    const subTabs = getSubTabs(section);
-    if (subTabs.length > 1) {
-      const activeTab = getActiveSubTab(section);
-      const tabIdx = subTabs.indexOf(activeTab);
-      if (tabIdx !== -1) {
-        if (dx < 0 && tabIdx < subTabs.length - 1) { switchSubTab(section, subTabs[tabIdx + 1]); haptic(); return; }
-        if (dx > 0 && tabIdx > 0) { switchSubTab(section, subTabs[tabIdx - 1]); haptic(); return; }
-      }
-    }
-
-    // If section has sub-tabs, stay within them (don't fall through to main sections)
-    if (subTabs.length > 1) return;
-
-    // Fallback: main section swipe (only for sections without sub-tabs, e.g. dashboard)
     const sections = getSwipeSections();
-    const idx = sections.indexOf(section);
+    const idx = sections.indexOf(getActiveSection());
     if (idx === -1) return;
     if (dx < 0 && idx < sections.length - 1) { switchSection(sections[idx + 1]); haptic(); }
     else if (dx > 0 && idx > 0) { switchSection(sections[idx - 1]); haptic(); }
@@ -10470,8 +9809,8 @@ async function processImportSchedule() {
   btn.disabled = true; btn.textContent = 'Analyse IA...';
   importScheduleStatus('L\'IA analyse le carnet...', 'var(--orange)');
 
-  if (typeof GROQ_API_KEY === 'undefined' || !GROQ_API_KEY) {
-    importScheduleStatus('Cle API Groq non configuree (config.js)', 'var(--accent)');
+  if (!GROQ_API_KEY && !currentUser) {
+    importScheduleStatus('Cle API Groq non configuree', 'var(--accent)');
     btn.disabled = false; btn.textContent = 'Analyser avec l\'IA';
     return;
   }
@@ -10500,15 +9839,24 @@ Si le texte mentionne des km ou des annees/mois pour les intervalles, utilise-le
 Reponds UNIQUEMENT avec le tableau JSON, sans texte avant ni apres.`;
 
   try {
-    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2, max_tokens: 3000
-      })
-    });
+    let resp;
+    if (currentUser) {
+      resp = await fetch(_cfUrl('groqProxy') + '?uid=' + encodeURIComponent(currentUser.uid), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, temperature: 0.2, max_tokens: 3000 })
+      });
+    } else {
+      resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.2, max_tokens: 3000
+        })
+      });
+    }
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
       throw new Error(err.error?.message || 'Erreur Groq: ' + resp.status);

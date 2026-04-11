@@ -86,3 +86,103 @@ exports.nearbyStations = onRequest({
     res.status(500).json({ error: "Failed to fetch station data" });
   }
 });
+
+// ── Cloud Function: plate lookup proxy ──
+// Proxies RapidAPI plate lookup to avoid exposing API key client-side
+exports.lookupPlate = onRequest({
+  cors: ALLOWED_ORIGINS,
+  region: "europe-west1",
+  maxInstances: 10
+}, async (req, res) => {
+  const uid = req.query.uid;
+  if (!uid) { res.status(401).json({ error: "Auth required" }); return; }
+
+  const plate = (req.query.plate || "").trim().toUpperCase();
+  if (!plate) { res.status(400).json({ error: "plate parameter required" }); return; }
+
+  try {
+    const snap = await admin.firestore().doc("config/api_keys").get();
+    const token = snap.exists ? snap.data().plateApiToken : null;
+    if (!token) { res.status(500).json({ error: "API key not configured" }); return; }
+
+    const url = "https://api-de-plaque-d-immatriculation-france.p.rapidapi.com/?plaque=" + encodeURIComponent(plate);
+    const data = await new Promise((resolve, reject) => {
+      const request = https.get(url, {
+        timeout: 10000,
+        headers: {
+          "Content-Type": "application/json",
+          "plaque": plate,
+          "x-rapidapi-host": "api-de-plaque-d-immatriculation-france.p.rapidapi.com",
+          "x-rapidapi-key": token
+        }
+      }, (resp) => {
+        let body = "";
+        resp.on("data", chunk => body += chunk);
+        resp.on("end", () => { try { resolve(JSON.parse(body)); } catch (e) { reject(e); } });
+        resp.on("error", reject);
+      });
+      request.on("error", reject);
+      request.on("timeout", () => { request.destroy(); reject(new Error("API timeout")); });
+    });
+
+    res.json(data);
+  } catch (e) {
+    console.error("lookupPlate error:", e);
+    res.status(500).json({ error: "Plate lookup failed" });
+  }
+});
+
+// ── Cloud Function: Groq AI proxy ──
+// Proxies Groq LLM calls to avoid exposing API key client-side
+exports.groqProxy = onRequest({
+  cors: ALLOWED_ORIGINS,
+  region: "europe-west1",
+  maxInstances: 10
+}, async (req, res) => {
+  if (req.method !== "POST") { res.status(405).json({ error: "POST required" }); return; }
+
+  const uid = req.query.uid;
+  if (!uid) { res.status(401).json({ error: "Auth required" }); return; }
+
+  const { prompt, temperature, max_tokens } = req.body || {};
+  if (!prompt) { res.status(400).json({ error: "prompt required" }); return; }
+
+  try {
+    const snap = await admin.firestore().doc("config/api_keys").get();
+    const apiKey = snap.exists ? snap.data().groqApiKey : null;
+    if (!apiKey) { res.status(500).json({ error: "Groq API key not configured" }); return; }
+
+    const postData = JSON.stringify({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      temperature: temperature || 0.3,
+      max_tokens: Math.min(max_tokens || 2000, 4000)
+    });
+
+    const data = await new Promise((resolve, reject) => {
+      const request = https.request("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        timeout: 30000,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey,
+          "Content-Length": Buffer.byteLength(postData)
+        }
+      }, (resp) => {
+        let body = "";
+        resp.on("data", chunk => body += chunk);
+        resp.on("end", () => { try { resolve(JSON.parse(body)); } catch (e) { reject(e); } });
+        resp.on("error", reject);
+      });
+      request.on("error", reject);
+      request.on("timeout", () => { request.destroy(); reject(new Error("Groq API timeout")); });
+      request.write(postData);
+      request.end();
+    });
+
+    res.json(data);
+  } catch (e) {
+    console.error("groqProxy error:", e);
+    res.status(500).json({ error: "Groq request failed" });
+  }
+});

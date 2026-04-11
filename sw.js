@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mongarage-v4.1.3';
+const CACHE_NAME = 'mongarage-v4.4.3';
 const ASSETS = [
   './app.html',
   './manifest.json',
@@ -33,8 +33,7 @@ self.addEventListener('fetch', e => {
       url.includes('/__/auth/') || url.includes('/__/firebase/') || url.includes('cdn.jsdelivr.net') ||
       url.includes('tessdata.projectnaptha.com') || url.includes('rapidapi.com') ||
       url.includes('unpkg.com') || url.includes('tile.openstreetmap.org') ||
-      url.includes('cloudfunctions.net') || url.includes('data.economie.gouv.fr') ||
-      url.includes('api.nhtsa.gov')) {
+      url.includes('cloudfunctions.net') || url.includes('data.economie.gouv.fr')) {
     return;
   }
   // Only cache same-origin requests
