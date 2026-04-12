@@ -203,12 +203,13 @@ async function clearFirebaseConfig() {
   /* Vehicle mini banner (non-dashboard pages) */
   .vehicle-mini-banner {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 6px 12px; margin-bottom: 10px;
+    padding: 8px 14px; margin-bottom: 10px;
     background: var(--surface); border-radius: var(--radius);
-    font-size: 0.8em; position: relative;
+    font-size: 0.9em; position: relative;
   }
   .vehicle-mini-banner .vmb-left { display: flex; align-items: center; gap: 6px; cursor: pointer; }
   .vehicle-mini-banner .vmb-name { font-weight: 700; color: var(--text); }
+  .vehicle-mini-banner .vmb-engine { color: var(--muted); font-size: 0.85em; }
   .vehicle-mini-banner .vmb-arrow { color: var(--muted); font-size: 0.7em; transition: transform 0.2s; }
   .vehicle-mini-banner.open .vmb-arrow { transform: rotate(180deg); }
   .vehicle-mini-banner .vmb-km { color: var(--muted); }
@@ -460,7 +461,7 @@ async function clearFirebaseConfig() {
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 8px;
     color: var(--text);
-    font-size: 16px; /* Prevent iOS zoom on focus */
+    font-size: 0.9em;
   }
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -628,9 +629,10 @@ async function clearFirebaseConfig() {
   @media (max-width: 600px) {
     .form-row { grid-template-columns: 1fr; }
     .km-form-inline { flex-wrap: wrap; }
-    .km-reading { grid-template-columns: 1fr 1fr auto; font-size: 0.82em; }
+    .km-reading { grid-template-columns: 1fr 1fr auto auto; font-size: 0.8em; gap: 4px; }
     .km-reading .km-delta { grid-column: 1 / -1; }
     .km-reading > span:nth-child(4) { display: none; }
+    .km-reading button { font-size: 0.75em; padding: 4px 6px; white-space: nowrap; min-width: 0; }
     .action-bar { justify-content: center; }
     .action-bar .spacer { display: none; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -642,6 +644,10 @@ async function clearFirebaseConfig() {
     .maint-card { padding: 12px 14px; }
     h1 { font-size: 1.4em; }
     .schedule-editor-row { grid-template-columns: 1fr 80px 60px 36px; gap: 6px; }
+    input, select, textarea { font-size: 16px; } /* Prevent iOS zoom on focus */
+    input[type="date"] { font-size: 14px; padding: 6px 8px; }
+    .vehicle-mini-banner .vmb-engine { display: none; }
+    #dashboardList { margin-top: 12px; }
   }
 
   /* Login screen */
@@ -670,7 +676,7 @@ async function clearFirebaseConfig() {
   #setupScreen h1 { font-size: 2em; margin-bottom: 8px; }
   #setupScreen p { color: var(--muted); margin-bottom: 16px; }
   .setup-label { display: block; text-align: left; color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
-  .setup-input { display: block; width: 100%; margin-top: 3px; padding: 10px 12px; background: var(--card); color: var(--text); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-size: 16px; box-sizing: border-box; min-height: 44px; }
+  .setup-input { display: block; width: 100%; margin-top: 3px; padding: 10px 12px; background: var(--card); color: var(--text); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-size: 0.95em; box-sizing: border-box; min-height: 44px; }
   .setup-input:focus { border-color: var(--accent); outline: none; }
   .user-bar {
     display: flex; align-items: center; justify-content: flex-end;
@@ -813,7 +819,7 @@ async function clearFirebaseConfig() {
     display: flex; gap: 8px; margin-bottom: 12px; align-items: center;
   }
   .search-bar input {
-    flex: 1; padding: 10px 16px; font-size: 16px;
+    flex: 1; padding: 10px 16px; font-size: 0.9em;
     background: var(--surface); border: 1px solid rgba(255,255,255,0.1);
     border-radius: 20px; color: var(--text);
     min-height: 44px;
@@ -1014,7 +1020,10 @@ async function clearFirebaseConfig() {
   <!-- Pull to refresh indicator -->
   <div class="ptr-indicator" id="ptrIndicator">&#8635; Tirer pour rafraichir</div>
 
-  <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px;position:relative;">
+  <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:6px;position:relative;">
+    <button onclick="showDashboardConfig()" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;" title="Configurer le tableau de bord" id="dashConfigBtn">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1115.6 12 3.6 3.6 0 0112 15.6z"/></svg>
+    </button>
     <button class="profile-toggle" onclick="toggleProfileMenu()" id="profileToggle" aria-label="Menu utilisateur">
       <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     </button>
@@ -1028,6 +1037,7 @@ async function clearFirebaseConfig() {
       <button class="profile-menu-item" onclick="migratePhotosToDrive(); toggleProfileMenu();">Migrer photos Drive</button>
       <button class="profile-menu-item" onclick="showDiagnosticLights(); toggleProfileMenu();">Diagnostic voyants</button>
       <button class="profile-menu-item" onclick="connectOBD(); toggleProfileMenu();">Import OBD-II</button>
+      <button class="profile-menu-item" onclick="importData(); toggleProfileMenu();">Importer JSON</button>
       <button class="profile-menu-item" onclick="resetFirebaseConfig()">Reinitialiser config</button>
       <button class="profile-menu-item" onclick="signOut()">Deconnexion</button>
     </div>
@@ -1044,11 +1054,6 @@ async function clearFirebaseConfig() {
 
   <!-- === Section: Tableau de bord === -->
   <div id="section-dashboard" class="section-content active">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
-      <button onclick="showDashboardConfig()" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;" title="Configurer le tableau de bord">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1115.6 12 3.6 3.6 0 0112 15.6z"/></svg>
-      </button>
-    </div>
     <div id="onboardingBanner"></div>
 
     <!-- Offline queue banner -->
@@ -1108,10 +1113,8 @@ async function clearFirebaseConfig() {
     <div class="sub-tabs-wrapper"><div class="sub-tabs">
       <button class="sub-tab active" onclick="switchSubTab('entretien','history')">Historique</button>
       <button class="sub-tab" id="subtabBtnSchedule" onclick="switchSubTab('entretien','schedule')">Programme</button>
-      <button class="sub-tab" id="subtabBtnDeadlines" onclick="switchSubTab('entretien','deadlines')">Echeances</button>
-      <button class="sub-tab" onclick="switchSubTab('entretien','notebook')">Carnet</button>
-      <button class="sub-tab" onclick="switchSubTab('entretien','wash')">Lavage</button>
-      <button class="sub-tab" onclick="switchSubTab('entretien','tires')">Pneus</button>
+      <button class="sub-tab" id="subtabBtnSuivi" onclick="switchSubTab('entretien','suivi')">Suivi</button>
+      <button class="sub-tab" onclick="switchSubTab('entretien','carnet')">Carnet</button>
     </div></div>
 
     <!-- Sub: Historique -->
@@ -1119,12 +1122,16 @@ async function clearFirebaseConfig() {
       <div class="action-bar">
         <button class="btn btn-primary btn-sm" onclick="toggleEntryForm()">+ Entretien</button>
         <span class="spacer"></span>
-        <button class="btn btn-secondary btn-sm" onclick="exportData()">Export JSON</button>
-        <button class="btn btn-secondary btn-sm" onclick="importData()">Import JSON</button>
-        <button class="btn btn-secondary btn-sm" onclick="exportCSV()">Export CSV</button>
-        <button class="btn btn-secondary btn-sm" onclick="exportCarnet()">Exporter fiche</button>
-        <button class="btn btn-secondary btn-sm" style="background:var(--orange);color:#000;" onclick="exportDossierVente()">Dossier vente</button>
-        <button class="btn btn-secondary btn-sm" onclick="exportDossierAssurance()">Dossier assurance</button>
+        <div style="position:relative;">
+          <button class="btn btn-secondary btn-sm" onclick="toggleExportMenu()" id="exportMenuBtn" title="Exporter">&#8943;</button>
+          <div id="exportDropdown" style="display:none;position:absolute;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius);min-width:180px;z-index:80;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+            <button class="profile-menu-item" onclick="exportData();closeExportMenu();">Export JSON</button>
+            <button class="profile-menu-item" onclick="exportCSV();closeExportMenu();">Export CSV</button>
+            <button class="profile-menu-item" onclick="exportCarnet();closeExportMenu();">Exporter fiche</button>
+            <button class="profile-menu-item" style="color:var(--orange);" onclick="exportDossierVente();closeExportMenu();">Dossier vente</button>
+            <button class="profile-menu-item" onclick="exportDossierAssurance();closeExportMenu();">Dossier assurance</button>
+          </div>
+        </div>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
       </div>
       <div id="entryFormWrapper" class="form-collapse">
@@ -1213,8 +1220,8 @@ async function clearFirebaseConfig() {
       </div>
     </div>
 
-    <!-- Sub: Echeances -->
-    <div id="subtab-entretien-deadlines" class="subtab-content">
+    <!-- Sub: Suivi (Echeances + Pneus) -->
+    <div id="subtab-entretien-suivi" class="subtab-content">
       <div class="form-section">
         <h3 style="margin-bottom:14px; font-size:1em;">Ajouter une echeance</h3>
         <div class="form-row">
@@ -1229,10 +1236,44 @@ async function clearFirebaseConfig() {
         <button class="btn btn-primary" onclick="addDeadline()">Ajouter</button>
       </div>
       <div id="deadlinesList" style="margin-top:16px;"></div>
+
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:20px 0;">
+
+      <div class="form-section">
+        <h3 style="margin-bottom:14px; font-size:1em;" id="tireFormTitle">Nouveau jeu de pneus</h3>
+        <div class="form-row">
+          <div><label for="tireBrand">Marque</label><input type="text" id="tireBrand" placeholder="ex: Michelin"></div>
+          <div><label for="tireModel">Modele</label><input type="text" id="tireModel" placeholder="ex: Primacy 4"></div>
+        </div>
+        <div class="form-row">
+          <div><label for="tireType">Type</label><select id="tireType"><option value="ete">Ete</option><option value="hiver">Hiver</option><option value="4s">4 saisons</option></select></div>
+          <div><label for="tireSize">Dimension</label><input type="text" id="tireSize" placeholder="ex: 205/55 R16"></div>
+        </div>
+        <div class="form-row">
+          <div><label for="tireInstallDate">Date de pose</label><input type="date" id="tireInstallDate"></div>
+          <div><label for="tireInstallKm">Km a la pose</label><input type="number" id="tireInstallKm" placeholder="ex: 52000"></div>
+        </div>
+        <div class="form-row">
+          <div><label for="tireWear">Usure (1=neuf, 10=use)</label><input type="range" id="tireWear" min="1" max="10" value="1" oninput="document.getElementById('tireWearVal').textContent=this.value"><span id="tireWearVal" style="font-size:0.85em;margin-left:6px;">1</span></div>
+          <div><label for="tirePosition">Position</label><select id="tirePosition"><option value="all">Tous (4)</option><option value="av">Avant (2)</option><option value="ar">Arriere (2)</option></select></div>
+        </div>
+        <div class="form-row">
+          <div style="grid-column:1/-1;"><label for="tireNotes">Notes</label><input type="text" id="tireNotes" placeholder="ex: DOT 2024, achat Norauto"></div>
+        </div>
+        <div class="form-row">
+          <div><label for="tireCost">Cout (EUR)</label><input type="number" id="tireCost" step="0.01" placeholder="ex: 320"></div>
+          <div style="display:flex;align-items:end;gap:8px;">
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="tireActive" checked> Montes actuellement</label>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addTire()">Enregistrer</button>
+        <button class="btn btn-secondary" id="cancelTireBtn" onclick="cancelTireEdit()" style="margin-left:8px;display:none;">Annuler</button>
+      </div>
+      <div id="tiresList" style="margin-top:12px;"></div>
     </div>
 
-    <!-- Sub: Carnet de bord -->
-    <div id="subtab-entretien-notebook" class="subtab-content">
+    <!-- Sub: Carnet (Carnet de bord + Lavage) -->
+    <div id="subtab-entretien-carnet" class="subtab-content">
       <div class="form-section">
         <h3 style="margin-bottom:14px; font-size:1em;">Nouvelle note</h3>
         <div class="form-row">
@@ -1246,10 +1287,9 @@ async function clearFirebaseConfig() {
         <button class="btn btn-primary" onclick="addNotebookEntry()">Ajouter</button>
       </div>
       <div id="notebookList" style="margin-top:16px;"></div>
-    </div>
 
-    <!-- Sub: Lavage -->
-    <div id="subtab-entretien-wash" class="subtab-content">
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:20px 0;">
+
       <div class="form-section">
         <h3 style="margin-bottom:14px; font-size:1em;">Nouveau lavage</h3>
         <div class="form-row">
@@ -1285,41 +1325,6 @@ async function clearFirebaseConfig() {
       </div>
       <div id="washSummary" style="margin-top:16px;"></div>
       <div id="washList" style="margin-top:12px;"></div>
-    </div>
-
-    <!-- Sub: Pneus -->
-    <div id="subtab-entretien-tires" class="subtab-content">
-      <div class="form-section">
-        <h3 style="margin-bottom:14px; font-size:1em;" id="tireFormTitle">Nouveau jeu de pneus</h3>
-        <div class="form-row">
-          <div><label for="tireBrand">Marque</label><input type="text" id="tireBrand" placeholder="ex: Michelin"></div>
-          <div><label for="tireModel">Modele</label><input type="text" id="tireModel" placeholder="ex: Primacy 4"></div>
-        </div>
-        <div class="form-row">
-          <div><label for="tireType">Type</label><select id="tireType"><option value="ete">Ete</option><option value="hiver">Hiver</option><option value="4s">4 saisons</option></select></div>
-          <div><label for="tireSize">Dimension</label><input type="text" id="tireSize" placeholder="ex: 205/55 R16"></div>
-        </div>
-        <div class="form-row">
-          <div><label for="tireInstallDate">Date de pose</label><input type="date" id="tireInstallDate"></div>
-          <div><label for="tireInstallKm">Km a la pose</label><input type="number" id="tireInstallKm" placeholder="ex: 52000"></div>
-        </div>
-        <div class="form-row">
-          <div><label for="tireWear">Usure (1=neuf, 10=use)</label><input type="range" id="tireWear" min="1" max="10" value="1" oninput="document.getElementById('tireWearVal').textContent=this.value"><span id="tireWearVal" style="font-size:0.85em;margin-left:6px;">1</span></div>
-          <div><label for="tirePosition">Position</label><select id="tirePosition"><option value="all">Tous (4)</option><option value="av">Avant (2)</option><option value="ar">Arriere (2)</option></select></div>
-        </div>
-        <div class="form-row">
-          <div style="grid-column:1/-1;"><label for="tireNotes">Notes</label><input type="text" id="tireNotes" placeholder="ex: DOT 2024, achat Norauto"></div>
-        </div>
-        <div class="form-row">
-          <div><label for="tireCost">Cout (EUR)</label><input type="number" id="tireCost" step="0.01" placeholder="ex: 320"></div>
-          <div style="display:flex;align-items:end;gap:8px;">
-            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="tireActive" checked> Montes actuellement</label>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="addTire()">Enregistrer</button>
-        <button class="btn btn-secondary" id="cancelTireBtn" onclick="cancelTireEdit()" style="margin-left:8px;display:none;">Annuler</button>
-      </div>
-      <div id="tiresList" style="margin-top:12px;"></div>
     </div>
 
   </div>
@@ -1874,7 +1879,7 @@ async function resetFirebaseConfig() {
 }
 
 // ── Boot: IndexedDB > Firebase Hosting auto > config.js > setup screen ──
-(async function boot() {
+const _bootReady = (async function boot() {
   function startApp(cfg, skipSave) {
     if (initFirebase(cfg)) {
       if (!skipSave) saveFirebaseConfig(cfg).catch(() => {});
@@ -1979,6 +1984,7 @@ async function onAuthReady(user) {
     await loadApiKeys();
     await startFirestoreSync();
     loadSharedGarages();
+    invalidateStoreCache();
     renderAll();
   } else {
     document.getElementById('loginScreen').style.display = 'flex';
@@ -3742,13 +3748,13 @@ function alertAction(index) {
     if (a.op) document.getElementById('addOps').value = a.op;
   } else if (a.action === 'deadline') {
     switchSection('entretien');
-    switchSubTab('entretien', 'deadlines');
+    switchSubTab('entretien', 'suivi');
   } else if (a.action === 'km') {
     switchSection('stats');
     switchSubTab('stats', 'km');
   } else if (a.action === 'tires') {
     switchSection('entretien');
-    switchSubTab('entretien', 'tires');
+    switchSubTab('entretien', 'suivi');
   }
 }
 
@@ -4557,11 +4563,24 @@ async function processOcrCapture(input) {
   const btn = document.getElementById('ocrBtn');
   btn.disabled = true;
   try {
-    ocrStatus('Preparation de l\'image...', 'var(--orange)');
+    // Try Groq Vision first (better accuracy on pump displays)
+    if (currentUser) {
+      ocrStatus('Analyse IA du ticket...', 'var(--orange)');
+      try {
+        const parsed = await ocrViaGroqVision(file);
+        if (parsed && (parsed.liters || parsed.totalPrice || parsed.unitPrice)) {
+          applyOcrResults(parsed, 'Groq Vision');
+          return;
+        }
+      } catch (e) {
+        console.warn('Groq Vision OCR failed, falling back to Tesseract:', e.message);
+      }
+    }
+    // Fallback: Tesseract local OCR
+    ocrStatus('Analyse locale du ticket...', 'var(--orange)');
     const processed = await preprocessImageForOcr(file);
     const worker = await getTesseractWorker();
     ocrStatus('Analyse du ticket en cours...', 'var(--orange)');
-    // Try preprocessed image first, fallback to original if no result
     const { data: { text } } = await worker.recognize(processed);
     let parsed = parseTicketText(text);
     if (!parsed.liters && !parsed.totalPrice && !parsed.unitPrice) {
@@ -4574,7 +4593,6 @@ async function processOcrCapture(input) {
         scheduleTesseractCleanup();
         return;
       }
-      // Both failed - show raw from original (more readable)
       applyOcrResults(parsed, textOrig || text);
       scheduleTesseractCleanup();
       return;
@@ -4587,6 +4605,43 @@ async function processOcrCapture(input) {
   } finally {
     btn.disabled = false;
   }
+}
+
+async function ocrViaGroqVision(file) {
+  const base64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  const prompt = `Analyse cette photo de ticket de pompe a carburant ou d'ecran de pompe.
+Extrais les valeurs suivantes si visibles :
+- volume en litres (ex: 42.35)
+- prix total en euros (ex: 65.20)
+- prix unitaire au litre (ex: 1.679)
+- date (format AAAA-MM-JJ)
+
+Reponds UNIQUEMENT en JSON, sans texte avant ni apres :
+{"liters": null, "totalPrice": null, "unitPrice": null, "date": null}
+Remplace null par la valeur trouvee (nombre ou string pour date). Si non visible, laisse null.`;
+
+  const resp = await fetch(_cfUrl('groqProxy') + '?uid=' + encodeURIComponent(currentUser.uid), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, image_base64: base64, temperature: 0.1, max_tokens: 200 })
+  });
+  if (!resp.ok) throw new Error('Groq API error: ' + resp.status);
+  const data = await resp.json();
+  const content = (data.choices?.[0]?.message?.content || '').trim();
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in response');
+  const result = JSON.parse(jsonMatch[0]);
+  return {
+    liters: typeof result.liters === 'number' ? result.liters : null,
+    totalPrice: typeof result.totalPrice === 'number' ? result.totalPrice : null,
+    unitPrice: typeof result.unitPrice === 'number' ? result.unitPrice : null,
+    date: typeof result.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(result.date) ? result.date : null
+  };
 }
 
 function parseTicketText(text) {
@@ -5525,7 +5580,7 @@ function editTire(id) {
   document.getElementById('tireActive').checked = !!t.active;
   document.getElementById('tireFormTitle').textContent = 'Modifier pneu';
   document.getElementById('cancelTireBtn').style.display = '';
-  switchSubTab('entretien', 'tires');
+  switchSubTab('entretien', 'suivi');
 }
 
 function cancelTireEdit() {
@@ -6252,13 +6307,23 @@ function toggleEntryForm() {
   }
 }
 
+// ── Export dropdown ──
+function toggleExportMenu() {
+  const dd = document.getElementById('exportDropdown');
+  if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+function closeExportMenu() {
+  const dd = document.getElementById('exportDropdown');
+  if (dd) dd.style.display = 'none';
+}
+
 // ── Export / Import ──
 function exportData() {
   const store = loadStore();
   const exportPayload = {
     _meta: {
       exportDate: new Date().toISOString(),
-      appVersion: '3.3',
+      appVersion: '4.0',
       vehicleCount: Object.keys(store.vehicles).length
     },
     ...store
@@ -6765,34 +6830,47 @@ function loadMechanicShareTab() {
   renderMechanicShareLinks();
 }
 
-function renderMechanicShareLinks() {
+async function renderMechanicShareLinks() {
   const el = document.getElementById('mechanicShareLinks');
   if (!el) return;
-  const existing = JSON.parse(localStorage.getItem('mechanicShares') || '[]');
-  const now = Date.now();
-  const valid = existing.filter(s => s.expiry > now);
-  if (valid.length !== existing.length) localStorage.setItem('mechanicShares', JSON.stringify(valid));
-  if (valid.length === 0) {
-    el.innerHTML = '<p style="color:var(--muted);font-size:0.85em;">Aucun lien actif.</p>';
-    return;
-  }
-  el.innerHTML = valid.map(s => {
-    const remaining = Math.round((s.expiry - now) / 3600000);
-    return `<div style="background:var(--surface);border-radius:8px;padding:10px;margin-bottom:6px;font-size:0.85em;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span>${escHtml(s.vehicleName)} - expire dans ${remaining}h</span>
-        <button class="btn btn-secondary btn-sm" onclick="copyMechanicLink('${escAttr(s.id)}')">Copier</button>
-      </div>
-    </div>`;
-  }).join('');
+  if (!db || !currentUser) { el.innerHTML = '<p style="color:var(--muted);font-size:0.85em;">Connectez-vous pour partager.</p>'; return; }
+  try {
+    const snap = await db.collection('shares').where('createdBy', '==', currentUser.uid).get();
+    const now = Date.now();
+    const mecShares = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (d.type !== 'mechanic') return;
+      const exp = d.expiresAt?.toDate ? d.expiresAt.toDate() : new Date(d.expiresAt);
+      if (now > exp.getTime()) return;
+      mecShares.push({ id: doc.id, ...d, expiresAt: exp });
+    });
+    if (mecShares.length === 0) {
+      el.innerHTML = '<p style="color:var(--muted);font-size:0.85em;">Aucun lien actif.</p>';
+      return;
+    }
+    el.innerHTML = mecShares.map(s => {
+      const remaining = Math.max(1, Math.round((s.expiresAt.getTime() - now) / 3600000));
+      const url = location.origin + location.pathname + '?share=' + s.id;
+      return `<div style="background:var(--surface);border-radius:8px;padding:10px;margin-bottom:6px;font-size:0.85em;">
+        <div><strong>${escHtml(s.vehicleName || '?')}</strong> - expire dans ${remaining}h</div>
+        <div style="margin-top:6px;display:flex;gap:6px;">
+          <input type="text" value="${escAttr(url)}" readonly style="flex:1;font-size:0.8em;padding:4px 6px;" onclick="this.select()">
+          <button class="btn btn-secondary btn-sm" data-share-url="${escAttr(url)}" onclick="copyToClipboard(this.dataset.shareUrl)">Copier</button>
+          <button class="btn btn-danger btn-sm" data-share-id="${escAttr(s.id)}" onclick="revokeMechanicShare(this.dataset.shareId)">Supprimer</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) { el.innerHTML = '<p style="color:var(--red);font-size:0.85em;">Erreur chargement</p>'; }
 }
 
-function createMechanicShare() {
+async function createMechanicShare() {
+  if (!db || !currentUser) { toast('Non connecte', 'error'); return; }
   const sel = document.getElementById('mechanicShareVehicle');
   const vehicleId = sel.value;
   const store = loadStore();
   const v = store.vehicles[vehicleId];
-  if (!v) return;
+  if (!v) { toast('Vehicule introuvable', 'error'); return; }
 
   // Build technical-only data (no financial info, no personal notes)
   const techData = {
@@ -6809,127 +6887,34 @@ function createMechanicShare() {
     deadlines: (v.deadlines || []).filter(d => d.type === 'ct').map(d => ({ type: d.type, label: d.label, date: d.date }))
   };
 
-  const shareId = genId();
-  const shareObj = {
-    id: shareId, vehicleId, vehicleName: v.name,
-    expiry: Date.now() + 24 * 3600000,
-    data: btoa(unescape(encodeURIComponent(JSON.stringify(techData))))
-  };
+  const token = generateToken();
+  try {
+    await db.collection('shares').doc(token).set({
+      type: 'mechanic',
+      vehicleName: v.name,
+      vehicleModel: v.model || '',
+      techData,
+      createdBy: currentUser.uid,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    });
+    const url = location.origin + location.pathname + '?share=' + token;
+    copyToClipboard(url);
+    toast('Lien mecanicien cree !', 'success');
+    haptic();
+    renderMechanicShareLinks();
+  } catch (e) {
+    console.error('createMechanicShare error:', e);
+    toast('Erreur : ' + e.message, 'error');
+  }
+}
 
-  const existing = JSON.parse(localStorage.getItem('mechanicShares') || '[]');
-  existing.push(shareObj);
-  localStorage.setItem('mechanicShares', JSON.stringify(existing));
+async function revokeMechanicShare(token) {
+  if (!db) return;
+  try {
+    await db.collection('shares').doc(token).delete();
+    toast('Lien mecanicien supprime');
+  } catch (e) { console.warn('Erreur suppression:', e); toast('Erreur suppression', 'error'); }
   renderMechanicShareLinks();
-
-  // Generate standalone HTML page
-  const htmlPage = generateMechanicPage(techData, shareId);
-  const blob = new Blob([htmlPage], { type: 'text/html' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `fiche_mecanicien_${v.name.toLowerCase().replace(/\s+/g, '_')}.html`;
-  a.click();
-  toast('Fiche mecanicien generee (24h)');
-}
-
-function copyMechanicLink(shareId) {
-  const existing = JSON.parse(localStorage.getItem('mechanicShares') || '[]');
-  const share = existing.find(s => s.id === shareId);
-  if (!share) return;
-  const techData = JSON.parse(decodeURIComponent(escape(atob(share.data))));
-  const htmlPage = generateMechanicPage(techData, shareId);
-  const blob = new Blob([htmlPage], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `fiche_mecanicien_${techData.name.toLowerCase().replace(/\s+/g, '_')}.html`;
-  a.click();
-  toast('Fiche re-telechargee');
-}
-
-function generateMechanicPage(d, shareId) {
-  const scheduleRows = (d.schedule || []).map(item => {
-    const entries = d.entries.filter(e => e.ops.some(o => o.toLowerCase().includes(item.name.toLowerCase())));
-    const last = entries.length > 0 ? entries.sort((a, b) => b.date.localeCompare(a.date))[0] : null;
-    return { name: item.name, kmInterval: item.kmInterval, yearInterval: item.yearInterval, lastDate: last ? last.date : '-', lastKm: last ? last.km : '-' };
-  });
-
-  return `<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>Fiche technique - ${escHtml(d.name)}</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #222; font-size: 13px; }
-  .header { text-align: center; border-bottom: 3px solid #2980b9; padding-bottom: 16px; margin-bottom: 20px; }
-  .header h1 { font-size: 1.6em; color: #2980b9; }
-  .header .sub { color: #666; margin-top: 4px; font-size: 0.85em; }
-  h2 { font-size: 1.1em; color: #2980b9; margin: 24px 0 10px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
-  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; margin: 10px 0; }
-  .info-grid dt { font-weight: 600; color: #555; }
-  .info-grid dd { margin: 0; }
-  table { width: 100%; border-collapse: collapse; margin: 8px 0; }
-  th, td { border: 1px solid #ddd; padding: 5px 8px; text-align: left; font-size: 0.85em; }
-  th { background: #f5f5f5; font-weight: 600; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75em; font-weight: 600; }
-  .badge-panne { background: #fadbd8; color: #c0392b; }
-  .footer { margin-top: 30px; font-size: 0.75em; color: #aaa; text-align: center; border-top: 1px solid #eee; padding-top: 8px; }
-  @media print { body { padding: 0; } }
-</style>
-</head>
-<body>
-<div class="header">
-  <h1>Fiche technique vehicule</h1>
-  <div class="sub">${escHtml(d.name)} - ${escHtml(d.model)} ${d.engine ? '(' + escHtml(d.engine) + ')' : ''}</div>
-</div>
-
-<h2>Identification</h2>
-<dl class="info-grid">
-  <dt>Vehicule</dt><dd>${escHtml(d.name)}</dd>
-  <dt>Modele</dt><dd>${escHtml(d.model || '-')}</dd>
-  <dt>Motorisation</dt><dd>${escHtml(d.engine || '-')}</dd>
-  <dt>Carburant</dt><dd>${escHtml(d.fuelType || '-')}</dd>
-  <dt>Boite</dt><dd>${escHtml(d.gearbox || '-')}</dd>
-  <dt>Immatriculation</dt><dd>${escHtml(d.plate || '-')}</dd>
-  <dt>MEC</dt><dd>${d.circDate || '-'}</dd>
-  <dt>Kilometrage</dt><dd>${d.currentKm ? d.currentKm.toLocaleString('fr-FR') + ' km' : '-'}</dd>
-</dl>
-
-${scheduleRows.length > 0 ? `
-<h2>Programme d'entretien</h2>
-<table>
-<tr><th>Operation</th><th>Periodicite</th><th>Dernier</th><th>Km dernier</th></tr>
-${scheduleRows.map(r => `<tr>
-  <td>${escHtml(r.name)}</td>
-  <td>${r.kmInterval ? r.kmInterval.toLocaleString('fr-FR') + ' km' : ''} ${r.yearInterval ? '/ ' + r.yearInterval + ' an' + (r.yearInterval > 1 ? 's' : '') : ''}</td>
-  <td>${r.lastDate}</td>
-  <td>${typeof r.lastKm === 'number' ? r.lastKm.toLocaleString('fr-FR') : '-'}</td>
-</tr>`).join('')}
-</table>` : ''}
-
-<h2>Historique interventions</h2>
-<table>
-<tr><th>Date</th><th>Km</th><th>Operations</th><th>Prestataire</th><th>Notes</th></tr>
-${[...d.entries].sort((a, b) => b.date.localeCompare(a.date)).map(e => `<tr>
-  <td>${e.date}${e.isPanne ? ' <span class="badge badge-panne">Panne</span>' : ''}</td>
-  <td>${e.km ? e.km.toLocaleString('fr-FR') : '-'}</td>
-  <td>${e.ops.map(o => escHtml(o)).join(', ')}</td>
-  <td>${escHtml(e.provider || '-')}</td>
-  <td>${escHtml(e.notes || '-')}</td>
-</tr>`).join('')}
-</table>
-
-${(d.tires || []).length > 0 ? '<h2>Pneumatiques montes</h2><table><tr><th>Marque/Modele</th><th>Dimension</th><th>Type</th><th>Date pose</th><th>Usure</th><th>Position</th></tr>' + d.tires.map(t => {
-  const typeLabels = { ete: 'Ete', hiver: 'Hiver', '4s': '4 Saisons' };
-  return '<tr><td>' + escHtml((t.brand || '') + ' ' + (t.model || '')) + '</td><td>' + escHtml(t.size || '-') + '</td><td>' + (typeLabels[t.type] || '-') + '</td><td>' + (t.installDate || '-') + '</td><td>' + (t.wear || '-') + '/10</td><td>' + escHtml(t.position || '-') + '</td></tr>';
-}).join('') + '</table>' : ''}
-
-<div class="footer">
-  Fiche technique generee par Mon Garage - Valide 24h (ref: ${escHtml(shareId.slice(0, 8))})<br>
-  Donnees techniques uniquement - aucune information personnelle ou financiere.
-</div>
-</body>
-</html>`;
 }
 
 function importData() { document.getElementById('importFile').click(); }
@@ -7478,7 +7463,21 @@ async function processInvoiceOcr(input) {
   const btn = document.getElementById('invoiceOcrBtn');
   if (btn) btn.disabled = true;
   try {
-    invoiceOcrStatus('Preparation de l\'image...', 'var(--orange)');
+    // Try Groq Vision first
+    if (currentUser) {
+      invoiceOcrStatus('Analyse IA de la facture...', 'var(--orange)');
+      try {
+        const parsed = await invoiceOcrViaGroqVision(file);
+        if (parsed && (parsed.totalTTC || parsed.operations.length > 0)) {
+          applyInvoiceResults(parsed, 'Groq Vision');
+          return;
+        }
+      } catch (e) {
+        console.warn('Groq Vision invoice OCR failed, falling back to Tesseract:', e.message);
+      }
+    }
+    // Fallback: Tesseract local OCR
+    invoiceOcrStatus('Analyse locale de la facture...', 'var(--orange)');
     const processed = await preprocessImageForOcr(file);
     const worker = await getTesseractWorker();
     invoiceOcrStatus('Analyse de la facture en cours...', 'var(--orange)');
@@ -7506,6 +7505,48 @@ async function processInvoiceOcr(input) {
   } finally {
     if (btn) btn.disabled = false;
   }
+}
+
+async function invoiceOcrViaGroqVision(file) {
+  const base64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  const prompt = `Analyse cette photo de facture d'entretien automobile.
+Extrais les informations suivantes si visibles :
+- operations : liste des operations/prestations effectuees (noms courts)
+- totalTTC : montant total TTC en euros (nombre)
+- totalParts : montant total pieces en euros (nombre ou null)
+- totalLabor : montant total main d'oeuvre en euros (nombre ou null)
+- date : date de la facture (format AAAA-MM-JJ)
+- provider : nom du garage/prestataire
+- km : kilometrage du vehicule (nombre entier)
+
+Reponds UNIQUEMENT en JSON :
+{"operations":[],"totalTTC":null,"totalParts":null,"totalLabor":null,"date":null,"provider":null,"km":null}`;
+
+  const resp = await fetch(_cfUrl('groqProxy') + '?uid=' + encodeURIComponent(currentUser.uid), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, image_base64: base64, temperature: 0.1, max_tokens: 500 })
+  });
+  if (!resp.ok) throw new Error('Groq API error: ' + resp.status);
+  const data = await resp.json();
+  const content = (data.choices?.[0]?.message?.content || '').trim();
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in response');
+  const result = JSON.parse(jsonMatch[0]);
+  return {
+    operations: Array.isArray(result.operations) ? result.operations.filter(o => typeof o === 'string') : [],
+    totalTTC: typeof result.totalTTC === 'number' ? result.totalTTC : null,
+    totalParts: typeof result.totalParts === 'number' ? result.totalParts : null,
+    totalLabor: typeof result.totalLabor === 'number' ? result.totalLabor : null,
+    date: typeof result.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(result.date) ? result.date : null,
+    provider: typeof result.provider === 'string' ? result.provider : null,
+    km: typeof result.km === 'number' ? Math.round(result.km) : null
+  };
 }
 
 function parseInvoiceText(text) {
@@ -8092,7 +8133,7 @@ function showDashboardConfig() {
   html += '<div style="margin-top:14px;display:flex;gap:8px;">';
   html += '<button class="btn btn-primary btn-sm" onclick="applyDashboardConfig()">Appliquer</button>';
   html += '<button class="btn btn-secondary btn-sm" onclick="closeDashboardConfig()">Annuler</button>';
-  html += '<button class="btn btn-secondary btn-sm" onclick="resetDashboardConfig()">Tout afficher</button>';
+  html += '<button class="btn btn-sm" style="background:var(--accent);color:#fff;" onclick="resetDashboardConfig()">Tout afficher</button>';
   html += '</div>';
   const modal = document.getElementById('dashConfigModal');
   if (modal) {
@@ -8113,8 +8154,7 @@ function applyDashboardConfig() {
 
 function resetDashboardConfig() {
   localStorage.removeItem('mongarage_dashboard_config');
-  closeDashboardConfig();
-  renderAll('dashboard');
+  document.querySelectorAll('.dash-widget-toggle').forEach(c => { c.checked = true; });
 }
 
 function closeDashboardConfig() {
@@ -8442,6 +8482,12 @@ document.addEventListener('click', (e) => {
   if (vmb && vmb.classList.contains('open') && !vmb.contains(e.target)) {
     vmb.classList.remove('open');
   }
+  // Close export dropdown on outside click
+  const expBtn = document.getElementById('exportMenuBtn');
+  const expDd = document.getElementById('exportDropdown');
+  if (expDd && expDd.style.display !== 'none' && !expBtn?.contains(e.target) && !expDd.contains(e.target)) {
+    expDd.style.display = 'none';
+  }
 });
 
 // ── Vehicle mini banner ──
@@ -8452,13 +8498,15 @@ function renderVehicleMini() {
   const store = loadStore();
   const vehicles = Object.values(store.vehicles);
   const multi = vehicles.length > 1;
+  const engineInfo = v.engine ? ' - ' + escHtml(v.engine) : '';
   let dropdown = '';
   if (multi) {
-    dropdown = '<div class="vmb-dropdown">' + vehicles.map(veh =>
-      `<div class="vmb-option ${veh.id === store.activeVehicleId ? 'active' : ''}" onclick="event.stopPropagation(); selectVehicleFromMini('${escAttr(veh.id)}')"><span class="vmb-opt-name">${escHtml(veh.name)}</span><span class="vmb-opt-km">${veh.currentKm ? veh.currentKm.toLocaleString('fr-FR') + ' km' : ''}</span></div>`
-    ).join('') + '</div>';
+    dropdown = '<div class="vmb-dropdown">' + vehicles.map(veh => {
+      const engShort = veh.engine ? ' <span style="color:var(--muted);font-size:0.85em;">' + escHtml(veh.engine) + '</span>' : '';
+      return `<div class="vmb-option ${veh.id === store.activeVehicleId ? 'active' : ''}" onclick="event.stopPropagation(); selectVehicleFromMini('${escAttr(veh.id)}')"><span class="vmb-opt-name">${escHtml(veh.name)}${engShort}</span><span class="vmb-opt-km">${veh.currentKm ? veh.currentKm.toLocaleString('fr-FR') + ' km' : ''}</span></div>`;
+    }).join('') + '</div>';
   }
-  el.innerHTML = `<div class="vmb-left" ${multi ? 'onclick="toggleVehicleMiniDropdown()"' : ''}><span class="vmb-name">${escHtml(v.name)}</span>${multi ? '<span class="vmb-arrow">&#9660;</span>' : ''}</div><span class="vmb-km">${v.currentKm ? v.currentKm.toLocaleString('fr-FR') + ' km' : ''}</span>${dropdown}`;
+  el.innerHTML = `<div class="vmb-left" ${multi ? 'onclick="toggleVehicleMiniDropdown()"' : ''}><span class="vmb-name">${escHtml(v.name)}</span><span class="vmb-engine">${engineInfo}</span>${multi ? '<span class="vmb-arrow">&#9660;</span>' : ''}</div><span class="vmb-km">${v.currentKm ? v.currentKm.toLocaleString('fr-FR') + ' km' : ''}</span>${dropdown}`;
 }
 
 function toggleVehicleMiniDropdown() {
@@ -8944,9 +8992,13 @@ function parseStationRecord(rec) {
       prices[f] = { value: parseFloat(prix), updated: rec[f + '_maj'] || '' };
     }
   }
+  let lat = parseFloat(rec.latitude), lon = parseFloat(rec.longitude);
+  // API may return lat/lon in 1/100000 degrees (e.g. 4365200 instead of 43.652)
+  if (Math.abs(lat) > 90) lat /= 100000;
+  if (Math.abs(lon) > 180) lon /= 100000;
   return {
     id: rec.id, address: rec.adresse || '', city: rec.ville || '',
-    cp: rec.cp || '', lat: parseFloat(rec.latitude), lon: parseFloat(rec.longitude),
+    cp: rec.cp || '', lat, lon,
     prices
   };
 }
@@ -9545,13 +9597,18 @@ document.addEventListener('touchend', e => {
   indicator.classList.remove('pulling');
   ptrTriggered = false;
 
-  // Swipe navigation (horizontal dominant) - main sections only, skip if touch started on map
+  // Sub-tab swipe (horizontal dominant) - within current section only, skip if touch started on map
   if (!touchStartedOnMap && Math.abs(dx) >= 80 && Math.abs(dy) <= Math.abs(dx) * 0.7) {
-    const sections = getSwipeSections();
-    const idx = sections.indexOf(getActiveSection());
+    const section = getActiveSection();
+    const container = document.getElementById('section-' + section);
+    if (!container) return;
+    const subTabs = Array.from(container.querySelectorAll('.sub-tab'));
+    if (subTabs.length < 2) return;
+    const activeBtn = container.querySelector('.sub-tab.active');
+    const idx = subTabs.indexOf(activeBtn);
     if (idx === -1) return;
-    if (dx < 0 && idx < sections.length - 1) { switchSection(sections[idx + 1]); haptic(); }
-    else if (dx > 0 && idx > 0) { switchSection(sections[idx - 1]); haptic(); }
+    if (dx < 0 && idx < subTabs.length - 1) { subTabs[idx + 1].click(); haptic(); }
+    else if (dx > 0 && idx > 0) { subTabs[idx - 1].click(); haptic(); }
   }
 });
 
@@ -10294,6 +10351,107 @@ if (firestoreReady && currentUser) {
   if (sub) sub.textContent += ' - sync active';
 }
 
+// ── Mechanic share view renderer ──
+function renderMechanicShareView(d, exp) {
+  const td = d.techData || {};
+  const entries = [...(td.entries || [])].sort((a, b) => b.date.localeCompare(a.date));
+  const schedule = td.schedule || [];
+  const tires = td.tires || [];
+  const deadlines = td.deadlines || [];
+
+  // Build schedule rows with last service info
+  const scheduleRows = schedule.map(item => {
+    const matching = entries.filter(e => (e.ops || []).some(o => o.toLowerCase().includes(item.name.toLowerCase())));
+    const last = matching.length > 0 ? matching[0] : null;
+    return { name: item.name, kmInterval: item.kmInterval, yearInterval: item.yearInterval, lastDate: last ? last.date : '-', lastKm: last ? last.km : null };
+  });
+
+  let html = `<h1 style="text-align:center;color:#2980b9;">Fiche technique vehicule</h1>`;
+  html += `<p style="text-align:center;color:var(--muted);font-size:0.85em;">${escHtml(td.name || d.vehicleName || '?')} - ${escHtml(td.model || d.vehicleModel || '')} ${td.engine ? '(' + escHtml(td.engine) + ')' : ''}</p>`;
+
+  // Vehicle ID card
+  html += `<div class="share-vehicle" style="margin-top:16px;">
+    <h3 style="font-size:0.95em;color:#2980b9;margin-bottom:8px;">Identification</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:0.85em;">
+      <div><strong>Vehicule</strong></div><div>${escHtml(td.name || '-')}</div>
+      <div><strong>Modele</strong></div><div>${escHtml(td.model || '-')}</div>
+      <div><strong>Motorisation</strong></div><div>${escHtml(td.engine || '-')}</div>
+      <div><strong>Carburant</strong></div><div>${escHtml(td.fuelType || '-')}</div>
+      <div><strong>Boite</strong></div><div>${escHtml(td.gearbox || '-')}</div>
+      <div><strong>Immatriculation</strong></div><div>${escHtml(td.plate || '-')}</div>
+      <div><strong>MEC</strong></div><div>${td.circDate || '-'}</div>
+      <div><strong>Kilometrage</strong></div><div>${td.currentKm ? Number(td.currentKm).toLocaleString('fr-FR') + ' km' : '-'}</div>
+    </div>
+  </div>`;
+
+  // Schedule
+  if (scheduleRows.length > 0) {
+    html += `<div style="margin-top:16px;"><h3 style="font-size:0.95em;color:#2980b9;margin-bottom:8px;">Programme d'entretien</h3>`;
+    html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.82em;">
+      <tr style="background:var(--surface);"><th style="padding:6px 8px;text-align:left;">Operation</th><th style="padding:6px 8px;text-align:left;">Periodicite</th><th style="padding:6px 8px;text-align:left;">Dernier</th><th style="padding:6px 8px;text-align:left;">Km</th></tr>`;
+    scheduleRows.forEach(r => {
+      const period = (r.kmInterval ? Number(r.kmInterval).toLocaleString('fr-FR') + ' km' : '') + (r.yearInterval ? ' / ' + r.yearInterval + ' an' + (r.yearInterval > 1 ? 's' : '') : '');
+      html += `<tr style="border-bottom:1px solid var(--surface);">
+        <td style="padding:5px 8px;">${escHtml(r.name)}</td>
+        <td style="padding:5px 8px;">${period}</td>
+        <td style="padding:5px 8px;">${r.lastDate}</td>
+        <td style="padding:5px 8px;">${typeof r.lastKm === 'number' ? Number(r.lastKm).toLocaleString('fr-FR') : '-'}</td>
+      </tr>`;
+    });
+    html += `</table></div></div>`;
+  }
+
+  // Entries
+  html += `<div style="margin-top:16px;"><h3 style="font-size:0.95em;color:#2980b9;margin-bottom:8px;">Historique interventions</h3>`;
+  if (entries.length === 0) {
+    html += '<div class="empty-state">Aucun entretien enregistre</div>';
+  } else {
+    entries.forEach(e => {
+      const dateStr = new Date(e.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      html += `<div class="share-entry">
+        <div class="date">${dateStr}${e.isPanne ? ' <span style="background:#fadbd8;color:#c0392b;padding:2px 8px;border-radius:10px;font-size:0.75em;font-weight:600;">Panne</span>' : ''}</div>
+        <div style="font-size:0.85em;">${e.km ? Number(e.km).toLocaleString('fr-FR') + ' km' : ''}</div>
+        <div class="ops">${(e.ops || []).map(o => '&bull; ' + escHtml(o)).join('<br>')}</div>
+        ${e.provider ? '<div style="font-size:0.8em;color:var(--muted);">Prestataire : ' + escHtml(e.provider) + '</div>' : ''}
+        ${e.notes ? '<div style="font-size:0.8em;color:var(--muted);font-style:italic;">' + escHtml(e.notes) + '</div>' : ''}
+      </div>`;
+    });
+  }
+  html += `</div>`;
+
+  // Tires
+  if (tires.length > 0) {
+    const typeLabels = { ete: 'Ete', hiver: 'Hiver', '4s': '4 Saisons' };
+    html += `<div style="margin-top:16px;"><h3 style="font-size:0.95em;color:#2980b9;margin-bottom:8px;">Pneumatiques montes</h3>`;
+    html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.82em;">
+      <tr style="background:var(--surface);"><th style="padding:6px 8px;text-align:left;">Marque/Modele</th><th style="padding:6px 8px;">Dimension</th><th style="padding:6px 8px;">Type</th><th style="padding:6px 8px;">Pose</th><th style="padding:6px 8px;">Usure</th><th style="padding:6px 8px;">Position</th></tr>`;
+    tires.forEach(t => {
+      html += `<tr style="border-bottom:1px solid var(--surface);">
+        <td style="padding:5px 8px;">${escHtml((t.brand || '') + ' ' + (t.model || ''))}</td>
+        <td style="padding:5px 8px;text-align:center;">${escHtml(t.size || '-')}</td>
+        <td style="padding:5px 8px;text-align:center;">${typeLabels[t.type] || '-'}</td>
+        <td style="padding:5px 8px;text-align:center;">${t.installDate || '-'}</td>
+        <td style="padding:5px 8px;text-align:center;">${t.wear || '-'}/10</td>
+        <td style="padding:5px 8px;text-align:center;">${escHtml(t.position || '-')}</td>
+      </tr>`;
+    });
+    html += `</table></div></div>`;
+  }
+
+  // CT deadline
+  if (deadlines.length > 0) {
+    html += `<div style="margin-top:16px;"><h3 style="font-size:0.95em;color:#2980b9;margin-bottom:8px;">Controle technique</h3>`;
+    deadlines.forEach(dl => {
+      html += `<div style="font-size:0.85em;padding:6px 0;">${escHtml(dl.label || 'CT')} : ${dl.date || '-'}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `<p style="text-align:center;color:var(--muted);font-size:0.75em;margin-top:24px;">Fiche technique - Donnees techniques uniquement, aucune information personnelle ou financiere.<br>Expire le ${exp.toLocaleDateString('fr-FR')}</p>`;
+  html += `<p style="text-align:center;margin-top:8px;"><button onclick="window.print()" style="padding:8px 20px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:0.85em;">Imprimer</button></p>`;
+  return html;
+}
+
 // ── Share view (public, no auth needed) ──
 async function renderShareView(token) {
   isShareView = true;
@@ -10315,21 +10473,25 @@ async function renderShareView(token) {
       container.innerHTML = '<div class="share-expired"><h2>Lien expire</h2><p>Ce lien de partage a expire. Demandez un nouveau lien au proprietaire.</p></div>';
       return;
     }
-    let html = `<h1>Mon Garage</h1><p class="share-subtitle">Historique entretien - lecture seule</p>`;
-    html += `<div class="share-vehicle"><strong>${escHtml(d.vehicleName)}</strong>`;
-    if (d.vehicleModel) html += ` <span style="color:var(--muted)">${escHtml(d.vehicleModel)}</span>`;
-    html += `</div>`;
-    const entries = (d.entries || []).sort((a, b) => b.date.localeCompare(a.date));
-    if (entries.length === 0) {
-      html += '<div class="empty-state">Aucun entretien enregistre</div>';
+    if (d.type === 'mechanic') {
+      container.innerHTML = renderMechanicShareView(d, exp);
     } else {
-      for (const e of entries) {
-        const dateStr = new Date(e.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-        html += `<div class="share-entry"><div class="date">${dateStr}</div><div class="ops">${(e.ops || []).map(o => '&bull; ' + escHtml(o)).join('<br>')}</div></div>`;
+      let html = `<h1>Mon Garage</h1><p class="share-subtitle">Historique entretien - lecture seule</p>`;
+      html += `<div class="share-vehicle"><strong>${escHtml(d.vehicleName)}</strong>`;
+      if (d.vehicleModel) html += ` <span style="color:var(--muted)">${escHtml(d.vehicleModel)}</span>`;
+      html += `</div>`;
+      const entries = (d.entries || []).sort((a, b) => b.date.localeCompare(a.date));
+      if (entries.length === 0) {
+        html += '<div class="empty-state">Aucun entretien enregistre</div>';
+      } else {
+        for (const e of entries) {
+          const dateStr = new Date(e.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+          html += `<div class="share-entry"><div class="date">${dateStr}</div><div class="ops">${(e.ops || []).map(o => '&bull; ' + escHtml(o)).join('<br>')}</div></div>`;
+        }
       }
+      html += `<p style="text-align:center;color:var(--muted);font-size:0.75em;margin-top:20px;">Expire le ${exp.toLocaleDateString('fr-FR')}</p>`;
+      container.innerHTML = html;
     }
-    html += `<p style="text-align:center;color:var(--muted);font-size:0.75em;margin-top:20px;">Expire le ${exp.toLocaleDateString('fr-FR')}</p>`;
-    container.innerHTML = html;
   } catch (e) {
     container.innerHTML = '<div class="share-expired"><h2>Erreur</h2><p>Impossible de charger les donnees.</p></div>';
   }
@@ -10339,7 +10501,7 @@ async function renderShareView(token) {
 const urlParams = new URLSearchParams(window.location.search);
 const shareToken = urlParams.get('share');
 if (shareToken) {
-  renderShareView(shareToken);
+  _bootReady.then(() => renderShareView(shareToken));
 }
 </script>
 

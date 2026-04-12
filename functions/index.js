@@ -144,7 +144,7 @@ exports.groqProxy = onRequest({
   const uid = req.query.uid;
   if (!uid) { res.status(401).json({ error: "Auth required" }); return; }
 
-  const { prompt, temperature, max_tokens } = req.body || {};
+  const { prompt, temperature, max_tokens, image_base64, model: reqModel } = req.body || {};
   if (!prompt) { res.status(400).json({ error: "prompt required" }); return; }
 
   try {
@@ -152,9 +152,22 @@ exports.groqProxy = onRequest({
     const apiKey = snap.exists ? snap.data().groqApiKey : null;
     if (!apiKey) { res.status(500).json({ error: "Groq API key not configured" }); return; }
 
+    // Build messages: text-only or vision (with image)
+    let messages;
+    let model = reqModel || "llama-3.3-70b-versatile";
+    if (image_base64) {
+      model = "llama-3.2-90b-vision-preview";
+      messages = [{ role: "user", content: [
+        { type: "text", text: prompt },
+        { type: "image_url", image_url: { url: "data:image/jpeg;base64," + image_base64 } }
+      ]}];
+    } else {
+      messages = [{ role: "user", content: prompt }];
+    }
+
     const postData = JSON.stringify({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
+      model,
+      messages,
       temperature: temperature || 0.3,
       max_tokens: Math.min(max_tokens || 2000, 4000)
     });
